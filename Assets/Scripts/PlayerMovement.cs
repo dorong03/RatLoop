@@ -21,6 +21,7 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
     {
         _rigidbody2D = GetComponent<Rigidbody2D>();
+        _collider2D = GetComponent<BoxCollider2D>();
     }
 
     private void FixedUpdate()
