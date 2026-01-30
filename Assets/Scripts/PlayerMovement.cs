@@ -1,31 +1,35 @@
-using System.Numerics;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Vector2 = UnityEngine.Vector2;
 
 public class PlayerMovement : MonoBehaviour
 {
     private Rigidbody2D _rigidbody2D;
+    private Collider2D _collider2D;
     
-    [Header("움직임 속도")]
+    [Header("Settings")]
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float jumpForce = 10f;
     
-    [Header("점프 및 잡기 판정")]
+    [Header("Detection")]
     [SerializeField] private BoxCollider2D groundCheckCollider;
+    [SerializeField] private BoxCollider2D hangWallCheckCollider;
     [SerializeField] private LayerMask groundLayer;
-
+    
     private Vector2 inputVector;
-
-    private bool isGrounded;
+    private bool isHanging = false;
 
     private void Awake()
     {
-        _rigidbody2D = gameObject.GetComponent<Rigidbody2D>();
+        _rigidbody2D = GetComponent<Rigidbody2D>();
     }
 
     private void FixedUpdate()
     {
+        if (isHanging)
+        {
+            return;
+        }
+        HandleRotation();
         _rigidbody2D.linearVelocity = new Vector2(inputVector.x * moveSpeed, _rigidbody2D.linearVelocity.y);
     }
     
@@ -36,15 +40,77 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnJump(InputValue value)
     {
-        if (value.isPressed && IsGrounded())
+        if (value.isPressed)
         {
-            _rigidbody2D.linearVelocity = new Vector2(_rigidbody2D.linearVelocity.x, jumpForce);
+            if (isHanging)
+            {
+                CancelHanging();
+                return;
+            }
+            else if (IsGrounded())
+            {
+                _rigidbody2D.linearVelocity = new Vector2(_rigidbody2D.linearVelocity.x, jumpForce);
+            }
         }
     }
 
+    private void OnHang(InputValue value)
+    {
+        if (value.isPressed)
+        {
+            if (isHanging)
+            {
+                CancelHanging();
+            } 
+            else if (hangWallCheckCollider.IsTouchingLayers(groundLayer))
+            {
+                HangingObject();
+            }
+        }
+    }
+
+    private void CancelHanging()
+    {
+        isHanging = false;
+        _rigidbody2D.bodyType = RigidbodyType2D.Dynamic;
+    }
+
+    private void HangingObject()
+    {
+        isHanging = true;
+        _rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
+        _rigidbody2D.linearVelocity = Vector2.zero;
+        SnapToWall();
+    }
+    
     private bool IsGrounded()
     {
-        isGrounded = groundCheckCollider.IsTouchingLayers(groundLayer);
-        return isGrounded;
+        return groundCheckCollider.IsTouchingLayers(groundLayer);
+    }
+
+    private void HandleRotation()
+    {
+        if (inputVector.x > 0)
+        {
+            transform.rotation = Quaternion.Euler(0, 0, 0);
+        }
+        else if (inputVector.x < 0)
+        {
+            transform.rotation = Quaternion.Euler(0, 180, 0);
+        }
+    }
+    
+    private void SnapToWall()
+    {
+        float direction = transform.rotation.eulerAngles.y == 180 ? -1f : 1f;
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.right * direction, 1.0f, groundLayer);
+
+        if (hit.collider != null)
+        {
+            float playerHalfWidth = _collider2D.bounds.extents.x;
+            float newX = hit.point.x - (direction * playerHalfWidth);
+
+            transform.position = new Vector2(newX, transform.position.y);
+        }
     }
 }
