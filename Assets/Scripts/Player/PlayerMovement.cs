@@ -108,6 +108,7 @@ public class PlayerMovement : MonoBehaviour
             float newX = hit.point.x - (direction * playerHalfWidth);
 
             transform.position = new Vector2(newX, transform.position.y);
+            gameObject.transform.SetParent(hit.collider.transform);
         }
     }
 }

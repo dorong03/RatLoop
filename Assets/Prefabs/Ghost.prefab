@@ -623,7 +623,7 @@ MonoBehaviour:
   hangWallCheckCollider: {fileID: 1591313861624791812}
   groundLayer:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 8
 --- !u!114 &2735959092271683024
 MonoBehaviour:
   m_ObjectHideFlags: 0
