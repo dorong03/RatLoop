@@ -30,43 +30,39 @@ public class PlayerMovement : MonoBehaviour
         {
             return;
         }
+        
         HandleRotation();
         _rigidbody2D.linearVelocity = new Vector2(inputVector.x * moveSpeed, _rigidbody2D.linearVelocity.y);
     }
     
-    private void OnMove(InputValue value)
+    public void SetMoveInput(Vector2 input)
     {
-        inputVector = value.Get<Vector2>();
+        inputVector = input;
     }
 
-    private void OnJump(InputValue value)
+    public void TryJump()
     {
-        if (value.isPressed)
+        Debug.Log(IsGrounded());
+        if (isHanging)
         {
-            if (isHanging)
-            {
-                CancelHanging();
-                return;
-            }
-            else if (IsGrounded())
-            {
-                _rigidbody2D.linearVelocity = new Vector2(_rigidbody2D.linearVelocity.x, jumpForce);
-            }
+            CancelHanging();
+        }
+        
+        else if (IsGrounded())
+        {
+            _rigidbody2D.linearVelocity = new Vector2(_rigidbody2D.linearVelocity.x, jumpForce);
         }
     }
 
-    private void OnHang(InputValue value)
+    public void TryHang()
     {
-        if (value.isPressed)
+        if (isHanging)
         {
-            if (isHanging)
-            {
-                CancelHanging();
-            } 
-            else if (hangWallCheckCollider.IsTouchingLayers(groundLayer))
-            {
-                HangingObject();
-            }
+            CancelHanging();
+        } 
+        else if (hangWallCheckCollider.IsTouchingLayers(groundLayer))
+        {
+            HangingObject();
         }
     }
 
