@@ -80,17 +80,17 @@ public class RecordingManager : MonoBehaviour
         
         foreach (var record in allRecordedFrames)
         {
-            for(int i = 0 ;i < 500; i++)
-            {
-                GameObject ghost = Instantiate(ghostPrefab, spawnPoint.position, Quaternion.identity);
-                GhostController ghostController = ghost.GetComponent<GhostController>();
-                
-                ActiveGhost addedGhost = new ActiveGhost();
-                addedGhost.controller = ghostController;
-                addedGhost.recordedFrames = record;
-                
-                activeGhostList.Add(addedGhost);
-            }
+            // for(int i = 0 ;i < 1; i++)
+            // {
+            GameObject ghost = Instantiate(ghostPrefab, spawnPoint.position, Quaternion.identity);
+            GhostController ghostController = ghost.GetComponent<GhostController>();
+            
+            ActiveGhost addedGhost = new ActiveGhost();
+            addedGhost.controller = ghostController;
+            addedGhost.recordedFrames = record;
+            
+            activeGhostList.Add(addedGhost);
+            // }
         }
     }
 

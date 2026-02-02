@@ -1,20 +1,27 @@
+using System.Numerics;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Quaternion = UnityEngine.Quaternion;
+using Vector2 = UnityEngine.Vector2;
 
 public class PlayerMovement : MonoBehaviour
 {
     private Rigidbody2D _rigidbody2D;
     private Collider2D _collider2D;
     
-    [Header("Settings")]
+    [Header("속도 설정")]
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float jumpForce = 10f;
+    [SerializeField] private float poleForce = 3f;
     
-    [Header("Detection")]
+    [Header("감지 설정")]
     [SerializeField] private BoxCollider2D groundCheckCollider;
     [SerializeField] private BoxCollider2D hangWallCheckCollider;
     [SerializeField] private LayerMask groundLayer;
-    
+
+
+    private Collider2D hangingWallCollider;
+    private Rigidbody2D hangingWallRigidBody;
     private Vector2 inputVector;
     private bool isHanging = false;
 
@@ -28,6 +35,10 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isHanging)
         {
+            if (inputVector.x != 0)
+            {
+                hangingWallRigidBody.AddForce(Vector2.right * inputVector.x * poleForce);
+            }
             return;
         }
         
@@ -70,6 +81,12 @@ public class PlayerMovement : MonoBehaviour
     {
         isHanging = false;
         _rigidbody2D.bodyType = RigidbodyType2D.Dynamic;
+        hangingWallRigidBody = null;
+        if (hangingWallCollider != null)
+        {
+            Physics2D.IgnoreCollision(_collider2D, hangingWallCollider, false);
+            hangingWallCollider = null;
+        }
         transform.SetParent(null, true);
     }
 
@@ -105,12 +122,17 @@ public class PlayerMovement : MonoBehaviour
 
         if (hit.collider != null)
         {
+            hangingWallCollider = hit.collider;
+            hangingWallRigidBody = hit.rigidbody;
+            Physics2D.IgnoreCollision(_collider2D, hangingWallCollider, true);
+            
             float playerHalfWidth = _collider2D.bounds.extents.x;
             float newX = hit.point.x - (direction * playerHalfWidth);
 
             transform.position = new Vector2(newX, transform.position.y);
             
             gameObject.transform.SetParent(hit.transform, true);
+            transform.localRotation = Quaternion.identity;
         }
     }
 }
