@@ -1,6 +1,7 @@
 using System.Numerics;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using Quaternion = UnityEngine.Quaternion;
 using Vector2 = UnityEngine.Vector2;
 
@@ -82,6 +83,14 @@ public class PlayerMovement : MonoBehaviour
             {
                 HangingObject();
             }
+        }
+    }
+    
+    private void OnReset(InputValue value)
+    {
+        if (value.isPressed)
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
 

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class RecordingManager : MonoBehaviour
 {
@@ -61,7 +63,8 @@ public class RecordingManager : MonoBehaviour
         }
         currentReplayIndex++;
     }
-
+    
+    
     public void PlayerAllRecord()
     {
         isPlaying = true;

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class GoalTrigger : MonoBehaviour
 {
@@ -19,5 +20,6 @@ public class GoalTrigger : MonoBehaviour
         {
             clearMessageUI.SetActive(true); 
         }
+        GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>().enabled = false;
     }
 }

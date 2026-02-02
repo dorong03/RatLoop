@@ -627,6 +627,34 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "System",
+            "id": "dc903f12-45f4-4a5c-9953-15686b4204eb",
+            "actions": [
+                {
+                    "name": "Reset",
+                    "type": "Button",
+                    "id": "09a125bc-6864-4414-ad52-1740508a763e",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "19642b7e-3a86-40e8-93f7-a645e9150377",
+                    "path": "<Keyboard>/p",
+                    "interactions": "Press",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Reset",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": [
