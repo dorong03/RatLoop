@@ -70,14 +70,14 @@ public class PlayerMovement : MonoBehaviour
     {
         isHanging = false;
         _rigidbody2D.bodyType = RigidbodyType2D.Dynamic;
-        transform.parent = null;
+        transform.SetParent(null, true);
     }
 
     private void HangingObject()
     {
         isHanging = true;
-        _rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
         _rigidbody2D.linearVelocity = Vector2.zero;
+        _rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
         SnapToWall();
     }
     
@@ -101,7 +101,7 @@ public class PlayerMovement : MonoBehaviour
     private void SnapToWall()
     {
         float direction = transform.rotation.eulerAngles.y == 180 ? -1f : 1f;
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.right * direction, 1.0f, groundLayer);
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.right * direction, 1f, groundLayer);
 
         if (hit.collider != null)
         {
@@ -109,7 +109,8 @@ public class PlayerMovement : MonoBehaviour
             float newX = hit.point.x - (direction * playerHalfWidth);
 
             transform.position = new Vector2(newX, transform.position.y);
-            gameObject.transform.SetParent(hit.collider.transform);
+            
+            gameObject.transform.SetParent(hit.transform, true);
         }
     }
 }
