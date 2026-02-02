@@ -38,6 +38,7 @@ public class PlayerMovement : MonoBehaviour
             if (inputVector.x != 0)
             {
                 hangingWallRigidBody.AddForce(Vector2.right * inputVector.x * poleForce);
+                Debug.Log(hangingWallRigidBody.gameObject.name);
             }
             return;
         }
@@ -71,9 +72,13 @@ public class PlayerMovement : MonoBehaviour
         {
             CancelHanging();
         } 
-        else if (hangWallCheckCollider.IsTouchingLayers(groundLayer))
+        else 
         {
-            HangingObject();
+            Collider2D hit = Physics2D.OverlapBox(hangWallCheckCollider.bounds.center, hangWallCheckCollider.size, 0, groundLayer);
+            if (hit != null)
+            {
+                HangingObject();
+            }
         }
     }
 
