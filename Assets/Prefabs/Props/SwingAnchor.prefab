@@ -340,7 +340,7 @@ GameObject:
   m_Component:
   - component: {fileID: 545606912643510214}
   m_Layer: 0
-  m_Name: Chain
+  m_Name: ChainVisual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -560,7 +560,7 @@ GameObject:
   - component: {fileID: 4559253699302031635}
   - component: {fileID: 1278372560768194994}
   m_Layer: 3
-  m_Name: Square
+  m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
