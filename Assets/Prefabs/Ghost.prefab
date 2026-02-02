@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8354061827391739510}
   - component: {fileID: 8460095861745857899}
   - component: {fileID: 5965616281446492719}
-  m_Layer: 6
+  m_Layer: 7
   m_Name: Foot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -307,7 +307,7 @@ GameObject:
   - component: {fileID: 1806536103398767836}
   - component: {fileID: 4853694680767308140}
   - component: {fileID: 1591313861624791812}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Hang
   m_TagString: Untagged
   m_Icon: {fileID: 0}

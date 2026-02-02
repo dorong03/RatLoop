@@ -256,7 +256,7 @@ GameObject:
   - component: {fileID: 7944902203221672218}
   - component: {fileID: 6414477000461253142}
   - component: {fileID: 6481877445078531268}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Hang
   m_TagString: Untagged
   m_Icon: {fileID: 0}

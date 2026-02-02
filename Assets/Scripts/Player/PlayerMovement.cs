@@ -70,6 +70,7 @@ public class PlayerMovement : MonoBehaviour
     {
         isHanging = false;
         _rigidbody2D.bodyType = RigidbodyType2D.Dynamic;
+        transform.parent = null;
     }
 
     private void HangingObject()

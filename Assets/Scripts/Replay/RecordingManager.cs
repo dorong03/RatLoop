@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,10 +14,13 @@ public class RecordingManager : MonoBehaviour
     public Transform spawnPoint;
 
     private List<List<InputFrame>> allRecordedFrames = new List<List<InputFrame>>();
+    private List<ActiveGhost> activeGhostList = new List<ActiveGhost>();
 
     private InputRecorder currentPlayerRecorder;
     private GameObject currentPlayer;
-    private List<GameObject> ghostList = new List<GameObject>();
+    private int currentReplayIndex;
+    
+    private bool isPlaying = false;
     
     private void Awake()
     {
@@ -34,39 +38,86 @@ public class RecordingManager : MonoBehaviour
     {
         PlayerAllRecord();
     }
-    
+
+    private void FixedUpdate()
+    {
+        if (!isPlaying)
+        {
+            return;
+        }
+
+        for (int i = 0; i < activeGhostList.Count; i++)
+        {
+            ActiveGhost ghost = activeGhostList[i];
+
+            if (currentReplayIndex < ghost.recordedFrames.Count)
+            {
+                ghost.controller.GhostRunInput(ghost.recordedFrames[currentReplayIndex]);
+            }
+            else
+            {
+                ghost.controller.StopGhost();
+            }
+        }
+        currentReplayIndex++;
+    }
+
     public void PlayerAllRecord()
     {
+        isPlaying = true;
+        currentReplayIndex = 0;
+        
         currentPlayer = Instantiate(playerPrefab, spawnPoint.position, Quaternion.identity);
         currentPlayerRecorder = currentPlayer.GetComponent<InputRecorder>();
         currentPlayerRecorder.StartRecording();
+        
+        activeGhostList.Clear();
         
         if (!(allRecordedFrames.Count > 0))
         {
             return;
         }
-
+        
         foreach (var record in allRecordedFrames)
         {
-            GameObject ghost = Instantiate(ghostPrefab, spawnPoint.position, Quaternion.identity);
-            ghostList.Add(ghost);
-            ghost.GetComponent<GhostController>().Init(record);    
+            for(int i = 0 ;i < 500; i++)
+            {
+                GameObject ghost = Instantiate(ghostPrefab, spawnPoint.position, Quaternion.identity);
+                GhostController ghostController = ghost.GetComponent<GhostController>();
+                
+                ActiveGhost addedGhost = new ActiveGhost();
+                addedGhost.controller = ghostController;
+                addedGhost.recordedFrames = record;
+                
+                activeGhostList.Add(addedGhost);
+            }
         }
     }
 
     public void StopPlayingRecord()
     {
+        isPlaying = false;
+        
         currentPlayerRecorder.StopRecording();
         List<InputFrame> inputFrames = currentPlayerRecorder.GetInputFrames();
+        
         allRecordedFrames.Add(inputFrames);
         
         Destroy(currentPlayer);
 
-        foreach (GameObject ghost in ghostList)
+        foreach (var ghost in activeGhostList)
         {
-            Destroy(ghost);
+            Destroy(ghost.controller.gameObject);
         }
+        activeGhostList.Clear();
         
         Invoke("PlayerAllRecord", 1f);
     }
+}
+
+[System.Serializable]
+public class ActiveGhost
+{
+    public GhostController controller;
+    public List<InputFrame> recordedFrames;
 }
