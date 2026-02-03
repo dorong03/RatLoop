@@ -98,13 +98,14 @@ public class PlayerMovement : MonoBehaviour
     {
         isHanging = false;
         _rigidbody2D.bodyType = RigidbodyType2D.Dynamic;
-        hangingWallRigidBody = null;
         if (hangingWallCollider != null)
         {
             Physics2D.IgnoreCollision(_collider2D, hangingWallCollider, false);
             hangingWallCollider = null;
         }
         transform.SetParent(null, true);
+        _rigidbody2D.linearVelocity = hangingWallRigidBody.linearVelocity * 4;
+        hangingWallRigidBody = null;
     }
 
     private void HangingObject()
