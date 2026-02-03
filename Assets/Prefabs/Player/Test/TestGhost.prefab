@@ -398,7 +398,7 @@ GameObject:
   - component: {fileID: 6300331755610773185}
   - component: {fileID: 1005087433339588838}
   - component: {fileID: 2709621320460236112}
-  m_Layer: 6
+  m_Layer: 7
   m_Name: Foot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -536,7 +536,7 @@ GameObject:
   - component: {fileID: 6310145167924703520}
   - component: {fileID: 3755142527984776671}
   - component: {fileID: 808045438588007676}
-  m_Layer: 6
+  m_Layer: 7
   m_Name: Hang
   m_TagString: Untagged
   m_Icon: {fileID: 0}

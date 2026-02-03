@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3429486657845383126}
   - component: {fileID: 3202992198680588160}
   - component: {fileID: 3200954965165529008}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: SwingBar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -158,7 +158,7 @@ GameObject:
   m_Component:
   - component: {fileID: 98495782515993009}
   - component: {fileID: 7646120204544070395}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -249,7 +249,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8390795884858170179}
   - component: {fileID: 1734320431658050092}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -376,7 +376,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3153273311225917094}
   - component: {fileID: 1365331126839619804}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -467,7 +467,7 @@ GameObject:
   m_Component:
   - component: {fileID: 85040435949565380}
   - component: {fileID: 2369418877207112218}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -559,7 +559,7 @@ GameObject:
   - component: {fileID: 4582874155115673815}
   - component: {fileID: 4559253699302031635}
   - component: {fileID: 1278372560768194994}
-  m_Layer: 3
+  m_Layer: 9
   m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -697,7 +697,7 @@ GameObject:
   - component: {fileID: 8281752329829367064}
   - component: {fileID: 9129319342043502918}
   - component: {fileID: 34955886150687707}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: SwingAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}

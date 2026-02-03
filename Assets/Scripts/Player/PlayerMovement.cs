@@ -23,8 +23,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask hangingWallLayer;
 
 
-    private Collider2D hangingWallCollider;
-    private Rigidbody2D hangingWallRigidBody;
+    [SerializeField] private Collider2D hangingWallCollider;
+    [SerializeField] private Rigidbody2D hangingWallRigidBody;
     private Vector2 inputVector;
     private bool isHanging = false;
 
@@ -109,10 +109,24 @@ public class PlayerMovement : MonoBehaviour
 
     private void HangingObject()
     {
-        isHanging = true;
-        _rigidbody2D.linearVelocity = Vector2.zero;
-        _rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
-        SnapToWall();
+        float direction = transform.rotation.eulerAngles.y == 180 ? -1f : 1f;
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.right * direction, 1f, hangingWallLayer);
+
+        if (hit.collider != null)
+        {
+            isHanging = true;
+            _rigidbody2D.linearVelocity = Vector2.zero;
+            _rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
+            
+            hangingWallCollider = hit.collider;
+            hangingWallRigidBody = hit.collider.attachedRigidbody;
+            Physics2D.IgnoreCollision(_collider2D, hangingWallCollider, true);
+
+            transform.position = new Vector2(hit.point.x, transform.position.y);
+            
+            gameObject.transform.SetParent(hit.transform, true);
+            transform.localRotation = Quaternion.identity;
+        }
     }
     
     private bool IsGrounded()
@@ -129,24 +143,6 @@ public class PlayerMovement : MonoBehaviour
         else if (inputVector.x < 0)
         {
             transform.rotation = Quaternion.Euler(0, 180, 0);
-        }
-    }
-    
-    private void SnapToWall()
-    {
-        float direction = transform.rotation.eulerAngles.y == 180 ? -1f : 1f;
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.right * direction, 1f, hangingWallLayer);
-
-        if (hit.collider != null)
-        {
-            hangingWallCollider = hit.collider;
-            hangingWallRigidBody = hit.rigidbody;
-            Physics2D.IgnoreCollision(_collider2D, hangingWallCollider, true);
-
-            transform.position = new Vector2(hit.point.x, transform.position.y);
-            
-            gameObject.transform.SetParent(hit.transform, true);
-            transform.localRotation = Quaternion.identity;
         }
     }
 }
