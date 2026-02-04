@@ -757,11 +757,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1471101854}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0b7b9ee9f8858004c8defe87c1d6f448, type: 3}
+  m_Script: {fileID: 11500000, guid: 3f717f275185b6f4980de77d83f7fc2f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UpdateFpsUI
-  fps: 0
-  fpsText: {fileID: 1471101856}
 --- !u!1 &1712523066
 GameObject:
   m_ObjectHideFlags: 0
