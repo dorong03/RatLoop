@@ -1,14 +1,15 @@
+using System.Collections;
 using UnityEngine;
 
 public class CameraEffect : MonoBehaviour
 {
-    public Transform target;
+    private Transform target;
 
     public float smoothTime = 0.3f;
     public Vector3 offset = new Vector3(0, 0, -10f);
     private Vector3 _velocity = Vector3.zero;
-
-    void Update()
+    
+    private void Update()
     {
         if (target == null)
         {

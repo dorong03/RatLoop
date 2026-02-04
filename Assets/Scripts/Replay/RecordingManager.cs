@@ -67,19 +67,22 @@ public class RecordingManager : MonoBehaviour
     
     public void PlayerAllRecord()
     {
+        CancelInvoke("PlayerAllRecord");
+        
         isPlaying = true;
         currentReplayIndex = 0;
         
         currentPlayer = Instantiate(playerPrefab, spawnPoint.position, Quaternion.identity);
         currentPlayerRecorder = currentPlayer.GetComponent<InputRecorder>();
         currentPlayerRecorder.StartRecording();
-        
+        GameManager.instance.currentState = GameState.Playing;
         activeGhostList.Clear();
         
         if (!(allRecordedFrames.Count > 0))
         {
             return;
         }
+        GameManager.instance.PlayerAlive();
         
         foreach (var record in allRecordedFrames)
         {
@@ -99,6 +102,7 @@ public class RecordingManager : MonoBehaviour
 
     public void StopPlayingRecord()
     {
+        CancelInvoke("PlayerAllRecord");
         isPlaying = false;
         
         currentPlayerRecorder.StopRecording();

@@ -17,7 +17,6 @@ public class UpdateFpsUI : MonoBehaviour
     
     void Update()
     {
-        Debug.Log("Test");
         frameCount++;
         deltaTime += Time.unscaledDeltaTime;
         if (deltaTime > 1)

@@ -37,6 +37,12 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (GameManager.instance.currentState != GameState.Playing)
+        {
+            _rigidbody2D.linearVelocity = new Vector2(0, _rigidbody2D.linearVelocity.y);
+            return;
+        }
+        
         if (isHanging)
         {
             if (inputVector.x != 0)
@@ -59,6 +65,11 @@ public class PlayerMovement : MonoBehaviour
 
     public void TryJump()
     {
+        if (GameManager.instance.currentState != GameState.Playing)
+        {
+            return;
+        }
+
         if (isHanging)
         {
             CancelHanging();
@@ -72,6 +83,10 @@ public class PlayerMovement : MonoBehaviour
 
     public void TryHang()
     {
+        if (GameManager.instance.currentState != GameState.Playing)
+        {
+            return;
+        }
         if (isHanging)
         {
             CancelHanging();

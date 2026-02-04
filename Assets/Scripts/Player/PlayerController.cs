@@ -18,35 +18,52 @@ public class PlayerController : MonoBehaviour
 
     private void OnMove(InputValue value)
     {
-        moveInputBuffer = value.Get<Vector2>();
+        if (GameManager.instance.currentState == GameState.Playing)
+        {
+            moveInputBuffer = value.Get<Vector2>();
+        }
     }
 
     private void OnJump(InputValue value)
     {
-        if (value.isPressed)
+        if (GameManager.instance.currentState == GameState.Playing)
         {
-            jumpBuffer = true;
+            if (value.isPressed)
+            {
+                jumpBuffer = true;
+            }    
         }
     }
 
     private void OnHang(InputValue value)
     {
-        if (value.isPressed)
+        if (GameManager.instance.currentState == GameState.Playing)
         {
-            hangBuffer = true;
+            if (value.isPressed)
+            {
+                hangBuffer = true;
+            }    
         }
     }
 
     private void OnRetry(InputValue value)
     {
-        if (value.isPressed)
+        if (GameManager.instance.currentState == GameState.Playing)
         {
-            RecordingManager.instance.StopPlayingRecord();
+            if (value.isPressed)
+            {
+                GameManager.instance.PlayerDie();
+            }    
         }
     }
     
     private void FixedUpdate()
     {
+        if (GameManager.instance.currentState != GameState.Playing)
+        {
+            return;
+        }
+        
         InputFrame currentFrame = new InputFrame(moveInputBuffer.x, jumpBuffer, hangBuffer);
 
         _inputRecorder?.Record(currentFrame);
