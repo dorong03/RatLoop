@@ -20,5 +20,27 @@ public class CameraEffect : MonoBehaviour
         Vector3 targetPosition = target.position + offset;
         transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref _velocity, smoothTime);
     }
+
+    public void PlayPreView()
+    {
+        StartCoroutine(PlayStartSequence());
+    }
     
+    public IEnumerator PlayStartSequence()
+    {
+        Transform player = GameObject.FindGameObjectWithTag("Player").transform;
+        target = player;
+        yield return new WaitForSeconds(2f);
+
+        GameObject cheese = GameObject.FindGameObjectWithTag("Cheese");
+        if (cheese != null)
+        {
+            target = cheese.transform;
+            yield return new WaitForSeconds(2f);
+        }
+
+        target = player;
+        yield return new WaitForSeconds(2f);
+        GameManager.instance.PlayerAlive();
+    }
 }

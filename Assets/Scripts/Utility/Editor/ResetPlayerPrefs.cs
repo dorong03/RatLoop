@@ -3,7 +3,7 @@ using UnityEditor;
  
 public class ResetPlayerPrefs : MonoBehaviour
 {
-    [MenuItem("Window/PlayerPrefs 초기화")]
+    [MenuItem("Window/PlayerPrefs Init")]
     private static void ResetPrefs()
     {
         PlayerPrefs.SetInt("ClearLevelIndex", 1);

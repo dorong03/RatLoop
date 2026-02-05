@@ -38,7 +38,9 @@ public class RecordingManager : MonoBehaviour
 
     private void Start()
     {
-        PlayerAllRecord();
+        SpawnPlayer();
+        CameraEffect effect = Camera.main.GetComponent<CameraEffect>();
+        effect.PlayPreView();
     }
 
     private void FixedUpdate()
@@ -71,18 +73,14 @@ public class RecordingManager : MonoBehaviour
         
         isPlaying = true;
         currentReplayIndex = 0;
-        
-        currentPlayer = Instantiate(playerPrefab, spawnPoint.position, Quaternion.identity);
-        currentPlayerRecorder = currentPlayer.GetComponent<InputRecorder>();
-        currentPlayerRecorder.StartRecording();
-        GameManager.instance.currentState = GameState.Playing;
+        SpawnPlayer();
+        GameManager.instance.PlayerAlive();
         activeGhostList.Clear();
         
         if (!(allRecordedFrames.Count > 0))
         {
             return;
         }
-        GameManager.instance.PlayerAlive();
         
         foreach (var record in allRecordedFrames)
         {
@@ -98,6 +96,13 @@ public class RecordingManager : MonoBehaviour
             activeGhostList.Add(addedGhost);
             // }
         }
+    }
+
+    private void SpawnPlayer()
+    {
+        currentPlayer = Instantiate(playerPrefab, spawnPoint.position, Quaternion.identity);
+        currentPlayerRecorder = currentPlayer.GetComponent<InputRecorder>();
+        currentPlayerRecorder.StartRecording();
     }
 
     public void StopPlayingRecord()
