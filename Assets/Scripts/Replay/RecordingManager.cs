@@ -74,6 +74,7 @@ public class RecordingManager : MonoBehaviour
         isPlaying = true;
         currentReplayIndex = 0;
         SpawnPlayer();
+        SoundManager.instance.PlaySFX(SfxType.Replay);
         GameManager.instance.PlayerAlive();
         activeGhostList.Clear();
         

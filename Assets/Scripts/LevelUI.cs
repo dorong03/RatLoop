@@ -24,6 +24,7 @@ public class LevelUI : MonoBehaviour
         f_levelSelectButton.onClick.AddListener(GameManager.instance.ExitLevel);
         retryButton.onClick.AddListener(GameManager.instance.RetryLevel);
         continueButton.onClick.AddListener(GameManager.instance.NextLevel);
+        InitLevelUI();
     }
     
     public void EnableGameOverUI()
@@ -34,5 +35,11 @@ public class LevelUI : MonoBehaviour
     public void EnableClearUI()
     {
         GameClearUI.SetActive(true);
+    }
+
+    public void InitLevelUI()
+    {
+        timer.text = $"시간 : {Mathf.RoundToInt(GameManager.instance.timeForLive)}";
+        livesCount.text = $"목숨 : {GameManager.instance.currentLives.ToString()}";
     }
 }

@@ -19,9 +19,8 @@ public class GameManager : MonoBehaviour
     
     // 스테이지 내부 정보
     private int currentStageLevel;
-    private int currentLives;
-    private float timeForLive;
-    
+    public int currentLives { get; private set; }
+    public float timeForLive { get; private set; }
     private float stageTimer;
 
     private void Awake()
@@ -44,9 +43,10 @@ public class GameManager : MonoBehaviour
         if (currentState == GameState.Playing)
         {
             stageTimer -= Time.deltaTime;
-            levelUI.timer.text = $"타이머 : {(int)stageTimer}";
+            levelUI.timer.text = $"타이머 : {Mathf.RoundToInt(stageTimer)}";
             if (stageTimer <= 0)
             {
+                currentLives = 0;
                 PlayerDie();
             }
         }

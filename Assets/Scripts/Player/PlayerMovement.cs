@@ -22,11 +22,16 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask hangingWallLayer;
 
-
     [SerializeField] private Collider2D hangingWallCollider;
     [SerializeField] private Rigidbody2D hangingWallRigidBody;
+    
+    [Header("사운드 설정")]
+    [SerializeField] private float footstepRate = 0.3f;
+
     private Vector2 inputVector;
     private bool isHanging = false;
+    private float footstepTimer;
+    private bool wasGrounded;
 
     private void Awake()
     {
@@ -43,6 +48,13 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
         
+        bool isGrounded = IsGrounded();
+        if (!wasGrounded && isGrounded && _rigidbody2D.linearVelocity.y <= 0.1f)
+        {
+            SoundManager.instance.PlaySFX(SfxType.Land);
+        }
+        wasGrounded = isGrounded;
+
         if (isHanging)
         {
             if (inputVector.x != 0)
@@ -55,6 +67,20 @@ public class PlayerMovement : MonoBehaviour
         HandleRotation();
         _rigidbody2D.linearVelocity = new Vector2(inputVector.x * moveSpeed, _rigidbody2D.linearVelocity.y);
         _animator.SetBool("isJump" , _rigidbody2D.linearVelocity.y != 0f);
+
+        if (isGrounded && inputVector.x != 0)
+        {
+            footstepTimer -= Time.deltaTime;
+            if (footstepTimer <= 0)
+            {
+                SoundManager.instance.PlaySFX(SfxType.Walk);
+                footstepTimer = footstepRate;
+            }
+        }
+        else
+        {
+            footstepTimer = 0;
+        }
     }
     
     public void SetMoveInput(Vector2 input)
@@ -73,10 +99,12 @@ public class PlayerMovement : MonoBehaviour
         if (isHanging)
         {
             CancelHanging();
+            SoundManager.instance.PlaySFX(SfxType.Jump);
         }
         
         else if (IsGrounded())
         {
+            SoundManager.instance.PlaySFX(SfxType.Jump);
             _rigidbody2D.linearVelocity = new Vector2(_rigidbody2D.linearVelocity.x, jumpForce);
         }
     }

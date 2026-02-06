@@ -183,7 +183,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 'fps : 60'
+  m_Text: 'target : 120'
 --- !u!114 &6842793182993766239
 MonoBehaviour:
   m_ObjectHideFlags: 0

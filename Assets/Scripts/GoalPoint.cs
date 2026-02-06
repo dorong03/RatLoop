@@ -8,6 +8,7 @@ public class GoalTrigger : MonoBehaviour
     {
         if (collision.CompareTag("Player"))
         {
+            SoundManager.instance.PlaySFX(SfxType.Cheese);
             GameManager.instance.LevelClear();
         }
     }
