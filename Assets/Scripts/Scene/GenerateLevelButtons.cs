@@ -1,5 +1,6 @@
 using System.IO;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -7,6 +8,15 @@ public class GenerateLevelButtons : MonoBehaviour
 {
     [SerializeField] private GameObject levelButtonPrefab;
     [SerializeField] private Transform buttonsGrid;
+    
+    
+    private void Update()
+    {
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            SceneManager.LoadScene("Title"); 
+        }
+    }
     
     private void Start()
     {

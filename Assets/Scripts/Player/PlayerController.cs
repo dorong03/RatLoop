@@ -35,17 +35,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void OnHang(InputValue value)
-    {
-        if (GameManager.instance.currentState == GameState.Playing)
-        {
-            if (value.isPressed)
-            {
-                hangBuffer = true;
-            }    
-        }
-    }
-
     private void OnRetry(InputValue value)
     {
         if (GameManager.instance.currentState == GameState.Playing)
@@ -53,6 +42,17 @@ public class PlayerController : MonoBehaviour
             if (value.isPressed)
             {
                 GameManager.instance.PlayerDie();
+            }
+        }
+    }
+
+    private void OnHang(InputValue value)
+    {
+        if (GameManager.instance.currentState == GameState.Playing)
+        {
+            if (value.isPressed)
+            {
+                hangBuffer = true;
             }    
         }
     }

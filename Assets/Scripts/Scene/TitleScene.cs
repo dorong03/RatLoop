@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -9,6 +11,7 @@ public class TitleScene : MonoBehaviour
 
     private void Start()
     {
+        Cursor.visible = false;
         startButton.onClick.AddListener(OnClickStart);
         exitButton.onClick.AddListener(OnClickExit);
     }

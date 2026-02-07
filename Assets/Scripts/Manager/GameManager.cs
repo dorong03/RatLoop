@@ -3,7 +3,7 @@ using UnityEngine.SceneManagement;
 
 public enum GameState
 {
-    Lobby,Preview,Playing,Die,Paused,GameOver
+    Lobby,Preview,Playing,Die,GameOver
 }
 public class GameManager : MonoBehaviour
 {
@@ -47,25 +47,23 @@ public class GameManager : MonoBehaviour
             if (stageTimer <= 0)
             {
                 currentLives = 0;
-                PlayerDie();
+                EndGame();
             }
         }
     }
 
     public void PlayerDie()
     {
-        currentLives--;
-        levelUI.livesCount.text = $"목숨 : {currentLives}";
         if (currentLives > 0)
         {
+            currentLives--;
+            levelUI.livesCount.text = $"목숨 : {currentLives}";
             ChangeState(GameState.Die);
             RecordingManager.instance.StopPlayingRecord();
-            stageTimer = timeForLive;
         }
         else
         {
-            EndGame();
-            // levelUI.EnableGameOverUI();
+            // 부활횟수 없을때 뭔가 넣을까 나중에
         }
     }
 
@@ -91,13 +89,15 @@ public class GameManager : MonoBehaviour
 
     public void LevelClear()
     {
-        if (currentStageLevel > clearLevelIndex)
+        ChangeState(GameState.GameOver);
+        if (currentStageLevel >= clearLevelIndex)
         {
             clearLevelIndex = currentStageLevel + 1;
             PlayerPrefs.SetInt("ClearLevelIndex", clearLevelIndex);
+            
         }
-        levelUI.EnableClearUI();
-        ChangeState(GameState.GameOver);
+        Invoke("NextLevel", 3f);
+        // 레벨 클리어 메소드 추가하기!!!!!!!!!!!
     }
 
     public void RetryLevel()
@@ -126,12 +126,12 @@ public class GameManager : MonoBehaviour
     private void EndGame()
     {
         ChangeState(GameState.GameOver);
+        Invoke("RetryLevel", 2f);
     }
     
     private void ChangeState(GameState newState)
     {
         currentState = newState;
-        Time.timeScale = currentState == GameState.Paused ? 0 : 1;
     }
     
     public void OpenLevel(int level)

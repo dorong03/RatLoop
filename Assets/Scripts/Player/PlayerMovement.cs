@@ -33,12 +33,14 @@ public class PlayerMovement : MonoBehaviour
     private float footstepTimer;
     private bool wasGrounded;
     private bool isDead = false;
-
+    private bool isPlayer;
+    
     private void Awake()
     {
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _collider2D = GetComponent<BoxCollider2D>();
         _animator = GetComponent<Animator>();
+        isPlayer = gameObject.tag.Equals("Player");
     }
 
     private void FixedUpdate()
@@ -65,7 +67,10 @@ public class PlayerMovement : MonoBehaviour
 
         if (!wasGrounded && isGround && yVel <= 0.1f)
         {
-            SoundManager.instance.PlaySFX(SfxType.Land);
+            if (isPlayer)
+            {
+                SoundManager.instance.PlaySFX(SfxType.Land);    
+            }
         }
         wasGrounded = isGround;
 
@@ -90,7 +95,10 @@ public class PlayerMovement : MonoBehaviour
             footstepTimer -= Time.deltaTime;
             if (footstepTimer <= 0)
             {
-                SoundManager.instance.PlaySFX(SfxType.Walk);
+                if (isPlayer)
+                {
+                    SoundManager.instance.PlaySFX(SfxType.Walk);
+                }
                 footstepTimer = footstepRate;
             }
         }
@@ -115,12 +123,18 @@ public class PlayerMovement : MonoBehaviour
         if (isHanging)
         {
             CancelHanging();
-            SoundManager.instance.PlaySFX(SfxType.Jump);
+            if (isPlayer)
+            {
+                SoundManager.instance.PlaySFX(SfxType.Jump);    
+            }
         }
         
         else if (IsGrounded())
         {
-            SoundManager.instance.PlaySFX(SfxType.Jump);
+            if (isPlayer)
+            {
+                SoundManager.instance.PlaySFX(SfxType.Jump);    
+            }
             _rigidbody2D.linearVelocity = new Vector2(_rigidbody2D.linearVelocity.x, jumpForce);
         }
     }
@@ -142,14 +156,6 @@ public class PlayerMovement : MonoBehaviour
             {
                 HangingObject();
             }
-        }
-    }
-    
-    private void OnReset(InputValue value)
-    {
-        if (value.isPressed)
-        {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
 
