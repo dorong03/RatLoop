@@ -65,7 +65,7 @@ public class GameManager : MonoBehaviour
         else
         {
             EndGame();
-            levelUI.EnableGameOverUI();
+            // levelUI.EnableGameOverUI();
         }
     }
 

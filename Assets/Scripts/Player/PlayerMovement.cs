@@ -32,6 +32,7 @@ public class PlayerMovement : MonoBehaviour
     private bool isHanging = false;
     private float footstepTimer;
     private bool wasGrounded;
+    private bool isDead = false;
 
     private void Awake()
     {
@@ -42,18 +43,35 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (GameManager.instance.currentState == GameState.Die)
+        {
+            if (!isDead)
+            {
+                isDead = true;
+                _animator.SetTrigger("Die");
+            }
+            _rigidbody2D.linearVelocity = new Vector2(0, _rigidbody2D.linearVelocity.y);
+            return;
+        }
+
         if (GameManager.instance.currentState != GameState.Playing)
         {
             _rigidbody2D.linearVelocity = new Vector2(0, _rigidbody2D.linearVelocity.y);
             return;
         }
         
-        bool isGrounded = IsGrounded();
-        if (!wasGrounded && isGrounded && _rigidbody2D.linearVelocity.y <= 0.1f)
+        bool isGround = IsGrounded();
+        float yVel = _rigidbody2D.linearVelocity.y;
+
+        if (!wasGrounded && isGround && yVel <= 0.1f)
         {
             SoundManager.instance.PlaySFX(SfxType.Land);
         }
-        wasGrounded = isGrounded;
+        wasGrounded = isGround;
+
+        _animator.SetBool("isRun", inputVector.x != 0 && isGround);
+        _animator.SetBool("isGround", isGround);
+        _animator.SetFloat("yVelocity", yVel);
 
         if (isHanging)
         {
@@ -66,9 +84,8 @@ public class PlayerMovement : MonoBehaviour
         
         HandleRotation();
         _rigidbody2D.linearVelocity = new Vector2(inputVector.x * moveSpeed, _rigidbody2D.linearVelocity.y);
-        _animator.SetBool("isJump" , _rigidbody2D.linearVelocity.y != 0f);
 
-        if (isGrounded && inputVector.x != 0)
+        if (isGround && inputVector.x != 0)
         {
             footstepTimer -= Time.deltaTime;
             if (footstepTimer <= 0)
@@ -86,7 +103,6 @@ public class PlayerMovement : MonoBehaviour
     public void SetMoveInput(Vector2 input)
     {
         inputVector = input;
-        _animator.SetBool("isMove", inputVector.x != 0);
     }
 
     public void TryJump()
