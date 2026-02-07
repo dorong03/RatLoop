@@ -11,7 +11,7 @@ public class UpdateFpsUI : MonoBehaviour
 
     void Start()
     {
-        Application.targetFrameRate = 120;
+        Application.targetFrameRate = 60;
         fpsText = transform.GetComponent<Text>();
     }
     

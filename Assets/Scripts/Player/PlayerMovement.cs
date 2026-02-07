@@ -43,7 +43,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (GameManager.instance.currentState == GameState.Die)
+        if (GameManager.instance.currentState == GameState.GameOver)
         {
             if (!isDead)
             {
