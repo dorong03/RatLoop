@@ -37,8 +37,8 @@ public class LevelUI : MonoBehaviour
 
     public void InitLevelUI()
     {
-        timer.text = $"시간 : {Mathf.RoundToInt(GameManager.instance.timeForLive)}";
-        livesCount.text = $"목숨 : {GameManager.instance.currentLives.ToString()}";
+        timer.text = $"{Mathf.RoundToInt(GameManager.instance.timeForLive)}";
+        livesCount.text = $"X {GameManager.instance.currentLives.ToString()}";
     }
 
     private void OnPressPauseButton()

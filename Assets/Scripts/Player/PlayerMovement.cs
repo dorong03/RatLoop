@@ -34,6 +34,7 @@ public class PlayerMovement : MonoBehaviour
     private bool wasGrounded;
     private bool isDead = false;
     private bool isPlayer;
+    private bool isStageClear = false;
     
     private void Awake()
     {
@@ -53,6 +54,17 @@ public class PlayerMovement : MonoBehaviour
                 _animator.SetTrigger("Die");
             }
             _rigidbody2D.linearVelocity = new Vector2(0, _rigidbody2D.linearVelocity.y);
+            return;
+        }
+
+        if (GameManager.instance.currentState == GameState.Clear)
+        {
+            if (!isStageClear)
+            {
+                isStageClear = true;
+                _animator.SetTrigger("Eat");
+                _rigidbody2D.linearVelocity = Vector2.zero;
+            }
             return;
         }
 

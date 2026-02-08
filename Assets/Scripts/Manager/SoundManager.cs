@@ -17,14 +17,19 @@ public class SoundManager : MonoBehaviour
 
     [Header("오디오 소스")]
     [SerializeField] private AudioSource sfxSource;
+    [SerializeField] private AudioSource bgmSource; 
+
+    [Header("BGM 설정")]
+    [SerializeField] private AudioClip lobbyBgmClip;
+    [SerializeField] private AudioClip stageBgmClip;
+    [SerializeField, Range(0f, 1f)] private float bgmVolume = 0.5f;
 
     [Header("사운드 클립 등록")]
     [SerializeField] private List<SoundData> sfxClips;
     
-    // 빠른 검색을 위한 딕셔너리
     private Dictionary<SfxType, AudioClip> sfxDictionary = new Dictionary<SfxType, AudioClip>();
 
-    [Header("디버그 (인스펙터에서 테스트)")]
+    [Header("디버그")]
     [SerializeField] private SfxType testSoundType;
     [SerializeField] private bool playTest; 
 
@@ -50,9 +55,13 @@ public class SoundManager : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        PlayLobbyBGM();
+    }
+
     private void Update()
     {
-        // 인스펙터 디버그용 코드
         if (playTest)
         {
             playTest = false;
@@ -61,11 +70,33 @@ public class SoundManager : MonoBehaviour
         }
     }
 
+    public void PlayLobbyBGM()
+    {
+        ChangeBGM(lobbyBgmClip);
+    }
+
+    public void PlayStageBGM()
+    {
+        ChangeBGM(stageBgmClip);
+    }
+
+    private void ChangeBGM(AudioClip clip)
+    {
+        if (bgmSource == null || clip == null) return;
+        
+        if (bgmSource.clip == clip && bgmSource.isPlaying) return;
+
+        bgmSource.Stop();
+        bgmSource.clip = clip;
+        bgmSource.loop = true;
+        bgmSource.volume = bgmVolume;
+        bgmSource.Play();
+    }
+
     public void PlaySFX(SfxType type)
     {
         if (sfxDictionary.TryGetValue(type, out AudioClip clip))
         {
-            // 걷기 소리는 피치(음높이)를 살짝 랜덤하게 주면 더 자연스러움
             if (type == SfxType.Walk)
             {
                 sfxSource.pitch = Random.Range(0.9f, 1.1f);

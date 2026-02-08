@@ -46,6 +46,20 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void OnCameraDown(InputValue value)
+    {
+        if (GameManager.instance.currentState != GameState.Playing)
+        {
+            return;
+        }
+        var camEffect = Camera.main.GetComponent<CameraEffect>();
+    
+        if (camEffect != null)
+        {
+            camEffect.SetLookDown(value.isPressed);
+        }
+    }
+
     private void OnHang(InputValue value)
     {
         if (GameManager.instance.currentState == GameState.Playing)

@@ -133,7 +133,7 @@ GameObject:
   - component: {fileID: 9771711}
   - component: {fileID: 9771710}
   - component: {fileID: 9771709}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -592,7 +592,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CameraEffect
   cameraSpawnPoint: {fileID: 1105961120}
   smoothTime: 0.3
-  offset: {x: 0, y: 0, z: -10}
+  offset: {x: 0, y: 2, z: -10}
 --- !u!1 &1105961119
 GameObject:
   m_ObjectHideFlags: 0

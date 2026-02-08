@@ -8,13 +8,32 @@ public class CameraEffect : MonoBehaviour
 
     public float smoothTime = 0.3f;
     public Vector3 offset = new Vector3(0, 0, -10f);
+    
+    private float defaultYOffset;
+    [SerializeField] private float lookDownAmount = 4f;
+
     private Vector3 _velocity = Vector3.zero;
 
     private void Start()
     {
-        gameObject.transform.position = cameraSpawnPoint.position;
+        defaultYOffset = offset.y;
+        
+        if (cameraSpawnPoint != null)
+            gameObject.transform.position = cameraSpawnPoint.position;
     }
     
+    public void SetLookDown(bool isLookingDown)
+    {
+        if (isLookingDown)
+        {
+            offset.y = defaultYOffset - lookDownAmount;
+        }
+        else
+        {
+            offset.y = defaultYOffset;
+        }
+    }
+
     private void Update()
     {
         if (target == null)
