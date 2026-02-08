@@ -4,10 +4,16 @@ using UnityEngine;
 public class CameraEffect : MonoBehaviour
 {
     private Transform target;
+    [SerializeField] Transform cameraSpawnPoint;
 
     public float smoothTime = 0.3f;
     public Vector3 offset = new Vector3(0, 0, -10f);
     private Vector3 _velocity = Vector3.zero;
+
+    private void Start()
+    {
+        gameObject.transform.position = cameraSpawnPoint.position;
+    }
     
     private void Update()
     {
