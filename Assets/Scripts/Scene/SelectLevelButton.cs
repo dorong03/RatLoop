@@ -19,7 +19,7 @@ public class SelectLevelButton : MonoBehaviour
         levelText.text = level.ToString();
         _button.onClick.AddListener(OnClickLevelButton);
         isUnlocked = GameManager.instance.clearLevelIndex >= level;
-        if (GameManager.instance.clearLevelIndex.Equals(level))
+        if (level.Equals(1))
         {
             EventSystem.current.SetSelectedGameObject(_button.gameObject);
         }

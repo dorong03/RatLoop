@@ -141,7 +141,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   moveSpeed: 4
-  jumpForce: 10
+  jumpForce: 8.5
   poleForce: 3
   groundCheckCollider: {fileID: 5495617370377014515}
   hangWallCheckCollider: {fileID: 6481877445078531268}
@@ -151,8 +151,9 @@ MonoBehaviour:
   hangingWallLayer:
     serializedVersion: 2
     m_Bits: 512
+  hangingWallCollider: {fileID: 0}
+  hangingWallRigidBody: {fileID: 0}
   footstepRate: 0.3
-  ridingGhostRB: {fileID: 0}
 --- !u!114 &7321184312672384639
 MonoBehaviour:
   m_ObjectHideFlags: 0
