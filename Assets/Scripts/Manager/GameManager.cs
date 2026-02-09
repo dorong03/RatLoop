@@ -25,6 +25,7 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
+        PlayerPrefs.SetInt("ClearLevelIndex", 1);
         if (instance == null)
         {
             instance = this;

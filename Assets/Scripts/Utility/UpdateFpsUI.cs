@@ -11,21 +11,12 @@ public class UpdateFpsUI : MonoBehaviour
 
     void Start()
     {
-        Application.targetFrameRate = 60;
+        Application.targetFrameRate = 70;
         fpsText = transform.GetComponent<Text>();
     }
     
     void Update()
     {
-        frameCount++;
-        deltaTime += Time.unscaledDeltaTime;
-        if (deltaTime > 1)
-        {
-            fps = frameCount / deltaTime;
-            fpsText.text = $"fps : {Mathf.Round(fps)}";
 
-            frameCount = 0;
-            deltaTime = 0f;
-        }
     }
 }
