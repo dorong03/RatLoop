@@ -1,0 +1,217 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
+
+public enum GameState { Lobby, Preview, Playing, Pause, Die, Clear }
+
+public class GameManager : MonoBehaviour
+{
+    public static GameManager instance;
+    
+    public GameState gameState;
+
+    private Dictionary<int, LevelData> levelData = new Dictionary<int, LevelData>();
+    // 정렬된 데이터 반환하기
+    public List<LevelData> SortedLevelData => levelData.Values.OrderBy(x => x.levelID).ToList();
+        
+    public int maxClearLevelID;
+    
+    // 스테이지 내부 데이터들
+    public LevelData currentLevelData;
+    private int currentTimer;
+    private int currentReplayCount;
+
+    private float timer;
+    
+    // 시간 UI 업데이트 용
+    public event Action<int> OnTimeChanged;
+    // UI 업데이트 용
+    public event Action<int> OnReplayCountChanged;
+    // 들어갈때 초기 셋팅용
+    public event Action OnEnterLevel;
+    // 나갈때 셋팅용
+    public event Action OnExitLevel;
+    public event Action<bool> OnPressPause;
+
+    private void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+            LoadAllLevelData();
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+    }
+
+    private void Start()
+    {
+        Cursor.visible = false;
+        maxClearLevelID = PlayerPrefs.GetInt("MaxClearLevelID", 1);
+    }
+    
+    private void Update()
+    {
+        UpdateLevelTimer();
+
+        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            TogglePause();
+        }
+    }
+
+    
+    // 레벨 데이터폴더 안에 있는 모든 파일 로드해서 아이디 중복되는지 검사하기
+    private void LoadAllLevelData()
+    {
+        LevelData[] loadedData = Resources.LoadAll<LevelData>("LevelData");
+        foreach (var data in loadedData)
+        {
+            if (!levelData.ContainsKey(data.levelID))
+            {
+                levelData.Add(data.levelID, data);
+            }
+            else
+            {
+                Debug.Log("중복된 아이디 있음" + data.levelID);
+            }
+        }
+    }
+    
+    // ID 로 데이터 불러오기
+    public LevelData GetLevelData(int id)
+    {
+        if (levelData.ContainsKey(id))
+        {
+            return levelData[id];
+        }
+        Debug.Log($"{id} 는 없는 데이터임");
+        return null;
+    }
+
+    public void EnterLevel(LevelData levelData)
+    {
+        gameState = GameState.Preview;
+        Debug.Log("Level_" + levelData.levelID);
+        SceneManager.sceneLoaded += OnLevelLoaded;
+        SceneManager.LoadScene("Level_"+levelData.levelID);
+        
+        currentLevelData = levelData;
+        currentTimer = levelData.timeLimit;
+        currentReplayCount = levelData.maxReplyCount;
+        timer = 0;
+    }
+
+    public void OnLevelLoaded(Scene scene, LoadSceneMode mode)
+    {
+        SceneManager.sceneLoaded -= OnLevelLoaded;
+        
+        OnTimeChanged?.Invoke(currentTimer);
+        OnReplayCountChanged?.Invoke(currentReplayCount);
+        OnEnterLevel?.Invoke();
+        CameraEffect cameraEffect = Camera.main.GetComponent<CameraEffect>();
+        if (cameraEffect != null)
+        {
+            cameraEffect.PlayPreViewSequence(OnPreviewFinished);
+        }
+        else
+        {
+            OnPreviewFinished();
+        }
+    }
+
+    private void OnPreviewFinished()
+    {
+        gameState = GameState.Playing;
+    }
+
+    public void ExitLevel()
+    {
+        gameState = GameState.Lobby;
+        
+        currentLevelData = null;
+        currentTimer = 0;
+        currentReplayCount = 0;
+        timer = 0;
+        
+        OnExitLevel?.Invoke();
+    }
+
+    public void ClearLevel()
+    {
+        gameState = GameState.Clear;
+
+        if (currentLevelData.levelID >= maxClearLevelID)
+        {
+            if (currentLevelData.nextLevelData != null)
+            {
+                maxClearLevelID++;
+                PlayerPrefs.SetInt("MaxClearLevelID", maxClearLevelID);
+            }
+        }
+        // 클리어 애니메이션 재생해주시고
+        EnterLevel(currentLevelData.nextLevelData);
+    }
+
+    public void PlayerDie()
+    {
+        gameState = GameState.Die;
+        
+        // 플레이어 죽는 애니메이션 실행한 다음 현재 스테이지 LevelData 로 EnterLevel 하기
+        EnterLevel(currentLevelData);
+    }
+
+    public void Retry()
+    {
+        if (gameState == GameState.Playing)
+        {
+            if(currentReplayCount > 0)
+            {
+                currentReplayCount--;
+                SpawnManager.instance.StopRecordingAndReStart();
+            }
+        }
+    }
+
+    public void TogglePause()
+    {
+        if (gameState == GameState.Playing)
+        {
+            gameState = GameState.Pause;
+            Time.timeScale = 0;
+            OnPressPause?.Invoke(true);
+        } 
+        else if (gameState == GameState.Pause)
+        {
+            gameState = GameState.Playing;
+            Time.timeScale = 1;
+            OnPressPause?.Invoke(false);
+        }
+    }
+
+    private void UpdateLevelTimer()
+    {
+        if (gameState == GameState.Playing)
+        {
+            timer += Time.deltaTime;
+            if (timer >= 1)
+            {
+                currentTimer--;
+                timer -= 1f;
+                OnTimeChanged?.Invoke(currentTimer);
+            }
+
+            if (currentTimer <= 0)
+            {
+                PlayerDie();
+            }
+        }
+    }
+}
