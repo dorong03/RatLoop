@@ -42,7 +42,7 @@ public class PlayerController : MonoBehaviour
         {
             if (value.isPressed)
             {
-                GameManager.instance.Retry();
+                GameManager.instance.Replay();
             }
         }
     }

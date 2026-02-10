@@ -48,6 +48,9 @@ MonoBehaviour:
   livesText: {fileID: 4142321717954164494}
   timeText: {fileID: 784001134242485064}
   pausePanel: {fileID: 7521780356471096617}
+  ResumeButton: {fileID: 5900313407565897608}
+  ExitButton: {fileID: 4977390440677904011}
+  ReTryButton: {fileID: 834880540671135066}
 --- !u!1001 &3477656612761023509
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -56,6 +59,38 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 51096793853037672}
     m_Modifications:
+    - target: {fileID: 2454891146980959468, guid: a9db1da172f932f4bbcecad853218a22, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2454891146980959468, guid: a9db1da172f932f4bbcecad853218a22, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2454891146980959468, guid: a9db1da172f932f4bbcecad853218a22, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2454891146980959468, guid: a9db1da172f932f4bbcecad853218a22, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4046169448865673977, guid: a9db1da172f932f4bbcecad853218a22, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4046169448865673977, guid: a9db1da172f932f4bbcecad853218a22, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4046169448865673977, guid: a9db1da172f932f4bbcecad853218a22, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4046169448865673977, guid: a9db1da172f932f4bbcecad853218a22, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6575799500092977550, guid: a9db1da172f932f4bbcecad853218a22, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -140,6 +175,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: LevelUI
       objectReference: {fileID: 0}
+    - target: {fileID: 8600203771751163148, guid: a9db1da172f932f4bbcecad853218a22, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8864632446720021300, guid: a9db1da172f932f4bbcecad853218a22, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8864632446720021300, guid: a9db1da172f932f4bbcecad853218a22, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8864632446720021300, guid: a9db1da172f932f4bbcecad853218a22, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8864632446720021300, guid: a9db1da172f932f4bbcecad853218a22, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -156,6 +211,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Text
+--- !u!114 &834880540671135066 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4311362312104474959, guid: a9db1da172f932f4bbcecad853218a22, type: 3}
+  m_PrefabInstance: {fileID: 3477656612761023509}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!114 &4142321717954164494 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 666363301384651547, guid: a9db1da172f932f4bbcecad853218a22, type: 3}
@@ -167,6 +233,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Text
+--- !u!114 &4977390440677904011 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8453292232745728670, guid: a9db1da172f932f4bbcecad853218a22, type: 3}
+  m_PrefabInstance: {fileID: 3477656612761023509}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+--- !u!114 &5900313407565897608 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7034905793721281437, guid: a9db1da172f932f4bbcecad853218a22, type: 3}
+  m_PrefabInstance: {fileID: 3477656612761023509}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1 &7521780356471096617 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6350538516619866428, guid: a9db1da172f932f4bbcecad853218a22, type: 3}

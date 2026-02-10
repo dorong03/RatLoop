@@ -140,6 +140,8 @@ public class GameManager : MonoBehaviour
         currentTimer = 0;
         currentReplayCount = 0;
         timer = 0;
+
+        SceneManager.LoadScene("LevelSelction");
         
         OnExitLevel?.Invoke();
     }
@@ -170,6 +172,11 @@ public class GameManager : MonoBehaviour
 
     public void Retry()
     {
+        EnterLevel(currentLevelData);
+    }
+    
+    public void Replay()
+    {
         if (gameState == GameState.Playing)
         {
             if(currentReplayCount > 0)
@@ -182,7 +189,7 @@ public class GameManager : MonoBehaviour
 
     public void TogglePause()
     {
-        if (gameState == GameState.Playing)
+        if (gameState == GameState.Playing || gameState == GameState.Preview)
         {
             gameState = GameState.Pause;
             Time.timeScale = 0;
