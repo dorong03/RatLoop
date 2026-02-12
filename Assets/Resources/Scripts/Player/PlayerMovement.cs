@@ -17,8 +17,12 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float poleForce = 3f;
     
     [Header("감지 설정")]
-    [SerializeField] private BoxCollider2D groundCheckCollider;
-    [SerializeField] private BoxCollider2D hangWallCheckCollider;
+    [SerializeField] private Vector2 groundCheckSize = new Vector2(0.5f, 0.2f);
+    [SerializeField] private Vector2 groundCheckOffset = new Vector2(0f, -0.6f);
+    
+    [SerializeField] private Vector2 hangCheckSize = new Vector2(0.3f, 0.5f);
+    [SerializeField] private Vector2 hangCheckOffset = new Vector2(0.4f, 0.5f);
+    
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask hangingWallLayer;
 
@@ -40,7 +44,7 @@ public class PlayerMovement : MonoBehaviour
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _collider2D = GetComponent<BoxCollider2D>();
         _animator = GetComponent<Animator>();
-        isPlayer = gameObject.tag.Equals("Player");
+        isPlayer = gameObject.CompareTag("Player");
     }
 
     private void FixedUpdate()
@@ -52,13 +56,12 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
         
-        // 바닥 체크
-        bool isGround = IsGrounded();
+        bool isGrounded = IsGrounded(); 
+
         float yVel = _rigidbody2D.linearVelocity.y;
 
-        // 애니메이션 조건 설정
-        _animator.SetBool("isRun", inputVector.x != 0 && isGround);
-        _animator.SetBool("isGround", isGround);
+        _animator.SetBool("isRun", inputVector.x != 0 && isGrounded);
+        _animator.SetBool("isGround", isGrounded);
         _animator.SetFloat("yVelocity", yVel);
         
         // 메달릴때 이동
@@ -71,30 +74,10 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
         
-        // 보는 방향으로 돌리기( 매달린 상태에선 고정 )
         HandleRotation();
         
-        // 입력값 만큼 움직이기
+        // 이동 로직
         _rigidbody2D.linearVelocity = new Vector2(inputVector.x * moveSpeed, _rigidbody2D.linearVelocity.y);
-
-        // 사운드 나오는 부분 일단 주석해놓기 
-        
-        // if (isGround && inputVector.x != 0)
-        // {
-        //     footstepTimer -= Time.deltaTime;
-        //     if (footstepTimer <= 0)
-        //     {
-        //         if (isPlayer)
-        //         {
-        //             SoundManager.instance.PlaySFX(SfxType.Walk);
-        //         }
-        //         footstepTimer = footstepRate;
-        //     }
-        // }
-        // else
-        // {
-        //     footstepTimer = 0;
-        // }
     }
     
     public void SetMoveInput(Vector2 input)
@@ -141,15 +124,15 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
         
-        // 매달린 상태라면 취소
         if (isHanging)
         {
             CancelHanging();
         } 
-        // 아니라면 Collider 가 있는지 체크하고 붙기
         else 
         {
-            Collider2D hit = Physics2D.OverlapBox(hangWallCheckCollider.bounds.center, hangWallCheckCollider.size, 0, hangingWallLayer);
+            Vector2 checkPos = transform.TransformPoint(hangCheckOffset);
+            
+            Collider2D hit = Physics2D.OverlapBox(checkPos, hangCheckSize, 0, hangingWallLayer);
             if (hit != null)
             {
                 HangingObject();
@@ -167,8 +150,11 @@ public class PlayerMovement : MonoBehaviour
             hangingWallCollider = null;
         }
         transform.SetParent(null, true);
-        _rigidbody2D.linearVelocity = hangingWallRigidBody.linearVelocity * 4;
-        hangingWallRigidBody = null;
+        if (hangingWallRigidBody != null)
+        {
+            _rigidbody2D.linearVelocity = hangingWallRigidBody.linearVelocity * 4;
+            hangingWallRigidBody = null;
+        }
     }
 
     private void HangingObject()
@@ -195,7 +181,8 @@ public class PlayerMovement : MonoBehaviour
     
     private bool IsGrounded()
     {
-        return groundCheckCollider.IsTouchingLayers(groundLayer);
+        Vector2 checkPos = (Vector2)transform.position + groundCheckOffset;
+        return Physics2D.OverlapBox(checkPos, groundCheckSize, 0f, groundLayer);
     }
 
     private void HandleRotation()
@@ -208,5 +195,13 @@ public class PlayerMovement : MonoBehaviour
         {
             transform.rotation = Quaternion.Euler(0, 180, 0);
         }
+    }
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireCube((Vector2)transform.position + groundCheckOffset, groundCheckSize);
+        Gizmos.color = Color.cyan;
+        Vector2 hangPos = transform.TransformPoint(hangCheckOffset);
+        Gizmos.DrawWireCube(hangPos, hangCheckSize);
     }
 }

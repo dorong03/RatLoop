@@ -49,6 +49,8 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+        
+        Application.targetFrameRate = 60;
     }
 
     private void Start()
@@ -135,7 +137,8 @@ public class GameManager : MonoBehaviour
     public void ExitLevel()
     {
         gameState = GameState.Lobby;
-        
+
+        Time.timeScale = 1;
         currentLevelData = null;
         currentTimer = 0;
         currentReplayCount = 0;
