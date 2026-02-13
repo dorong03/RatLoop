@@ -141,7 +141,7 @@ MonoBehaviour:
   moveSpeed: 4
   jumpForce: 8.5
   poleForce: 3
-  groundCheckSize: {x: 1.2, y: 0.2}
+  groundCheckSize: {x: 1.18, y: 0.2}
   groundCheckOffset: {x: 0, y: -0.5}
   hangCheckSize: {x: 1.2, y: 0.81}
   hangCheckOffset: {x: 0, y: -0.2}
@@ -294,7 +294,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &8793401598569977826
 Transform:
   m_ObjectHideFlags: 0

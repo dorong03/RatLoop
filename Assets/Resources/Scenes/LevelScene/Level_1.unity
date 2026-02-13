@@ -5173,6 +5173,54 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 605171125080917740, guid: 021b91bfee59ac546b2a0d5ca2b87683, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 605171125080917740, guid: 021b91bfee59ac546b2a0d5ca2b87683, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 605171125080917740, guid: 021b91bfee59ac546b2a0d5ca2b87683, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 605171125080917740, guid: 021b91bfee59ac546b2a0d5ca2b87683, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1320285034244313337, guid: 021b91bfee59ac546b2a0d5ca2b87683, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1320285034244313337, guid: 021b91bfee59ac546b2a0d5ca2b87683, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1320285034244313337, guid: 021b91bfee59ac546b2a0d5ca2b87683, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1320285034244313337, guid: 021b91bfee59ac546b2a0d5ca2b87683, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5424197064635361057, guid: 021b91bfee59ac546b2a0d5ca2b87683, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5424197064635361057, guid: 021b91bfee59ac546b2a0d5ca2b87683, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5424197064635361057, guid: 021b91bfee59ac546b2a0d5ca2b87683, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5424197064635361057, guid: 021b91bfee59ac546b2a0d5ca2b87683, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6452561418906399231, guid: 021b91bfee59ac546b2a0d5ca2b87683, type: 3}
       propertyPath: m_Name
       value: UIManager
@@ -5421,7 +5469,7 @@ Transform:
   m_GameObject: {fileID: 1105961119}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -13.2, y: 0.58, z: 0}
+  m_LocalPosition: {x: -13.2, y: 2.36, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

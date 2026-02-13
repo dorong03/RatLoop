@@ -7,21 +7,15 @@ using UnityEngine.SceneManagement;
 public class SpawnManager : MonoBehaviour
 {
     public static SpawnManager instance;
-    
-    // 프리팹 설정
+
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private GameObject ghostPrefab;
-    
-    // 스폰 위치 설정
     [SerializeField] private Transform spawnPoint;
-    
-    // 플레이어 입력받은거 리스트
+
     private List<List<InputFrame>> allRecordedFrames;
-    // 현재 있는 고스트 리스트
     private List<ActiveGhost> activeGhostList;
-    // 리플레이 횟수
     private int currentReplayIndex;
-    
+
     private InputRecorder currentPlayerRecorder;
     private GameObject currentPlayer;
 
@@ -43,12 +37,11 @@ public class SpawnManager : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // 맵에 존재하는 고스트가 존재하지 않으면 Return
         if (activeGhostList.Count == 0)
         {
             return;
         }
-        
+
         for (int i = 0; i < activeGhostList.Count; i++)
         {
             ActiveGhost ghost = activeGhostList[i];
@@ -68,11 +61,45 @@ public class SpawnManager : MonoBehaviour
     {
         if (spawnPoint == null)
         {
-            Debug.LogError("spawnPoint 설정하기");
+            Debug.LogError("spawnPoint is null");
+            return;
         }
+
         currentPlayer = Instantiate(playerPrefab, spawnPoint.position, Quaternion.identity);
+        
+        AlignToGround(currentPlayer);
+
         currentPlayerRecorder = currentPlayer.GetComponent<InputRecorder>();
         currentPlayerRecorder.StartRecording();
+    }
+
+    private void AlignToGround(GameObject player)
+    {
+        Rigidbody2D _rigidbody = player.GetComponent<Rigidbody2D>();
+        if (_rigidbody != null)
+        {
+            _rigidbody.linearVelocity = Vector2.zero;
+            _rigidbody.angularVelocity = 0f;
+        }
+
+        Physics2D.SyncTransforms();
+
+        BoxCollider2D col = player.GetComponent<BoxCollider2D>();
+        float halfHeight = 0f;
+
+        if (col != null)
+        {
+            halfHeight = (col.size.y * player.transform.localScale.y) * 0.5f;
+            halfHeight -= col.offset.y;
+        }
+        
+        RaycastHit2D hit = Physics2D.Raycast(player.transform.position, Vector2.down, 10f, LayerMask.GetMask("Ground"));
+
+        if (hit.collider != null)
+        {
+            Vector3 finalPos = new Vector3(hit.point.x, hit.point.y + halfHeight, player.transform.position.z);
+            player.transform.position = finalPos;
+        }
     }
 
     public void StopRecordingAndReStart()
@@ -80,27 +107,36 @@ public class SpawnManager : MonoBehaviour
         currentPlayerRecorder.StopRecording();
         List<InputFrame> inputFrames = currentPlayerRecorder.GetInputFrames();
         allRecordedFrames.Add(inputFrames);
-        Destroy(currentPlayer);
+
         foreach (var ghost in activeGhostList)
         {
             Destroy(ghost.controller.gameObject);
         }
         activeGhostList.Clear();
-        SpawnPlayer();
+
+        currentPlayer.GetComponent<InputRecorder>().StartRecording();
+
         CameraEffect cameraEffect = FindFirstObjectByType<CameraEffect>();
-        cameraEffect.SetTarget(currentPlayer.transform);
+        if (cameraEffect != null)
+        {
+            cameraEffect.SetTarget(currentPlayer.transform);
+        }
+        
         currentReplayIndex = 0;
         SoundManager.instance.PlaySFX(SfxType.Replay);
-        for(int i = 0; i < 1; i++)
+
+        for (int i = 0; i < 1; i++)
         {
             foreach (var record in allRecordedFrames)
             {
                 GameObject ghost = Instantiate(ghostPrefab, spawnPoint.position, Quaternion.identity);
                 GhostController ghostController = ghost.GetComponent<GhostController>();
-                ActiveGhost addedGhost = new ActiveGhost();
-                addedGhost.controller = ghostController;
-                addedGhost.recordedFrames = record;
-                
+                ActiveGhost addedGhost = new ActiveGhost
+                {
+                    controller = ghostController,
+                    recordedFrames = record
+                };
+
                 activeGhostList.Add(addedGhost);
             }
         }
