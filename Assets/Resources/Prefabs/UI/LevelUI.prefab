@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4653677641626993281}
   - component: {fileID: 9154027782447411362}
   - component: {fileID: 8453292232745728670}
+  - component: {fileID: 447061651683248933}
   m_Layer: 5
   m_Name: Exit
   m_TagString: Untagged
@@ -133,6 +134,23 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &447061651683248933
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 581921403393022697}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13fa946357d6235429d21155c656ffd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSelectedEffect
+  selectedStateName: Selected
+  buttonSelectedAudioClip: {fileID: 8300000, guid: 3d2d9ce8b1aee194496aef3a91b2c834, type: 3}
+  minPitchRange: 0.4
+  maxPitchRange: 0.8
+  indicatorObject: {fileID: 0}
 --- !u!1 &1239584724105336888
 GameObject:
   m_ObjectHideFlags: 0
@@ -299,6 +317,7 @@ GameObject:
   - component: {fileID: 289032216194717987}
   - component: {fileID: 4675379547845901913}
   - component: {fileID: 7034905793721281437}
+  - component: {fileID: 754062764737720033}
   m_Layer: 5
   m_Name: Resume
   m_TagString: Untagged
@@ -377,7 +396,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
   m_Navigation:
-    m_Mode: 3
+    m_Mode: 1
     m_WrapAround: 0
     m_SelectOnUp: {fileID: 0}
     m_SelectOnDown: {fileID: 0}
@@ -420,6 +439,23 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &754062764737720033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2373335286361345569}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13fa946357d6235429d21155c656ffd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSelectedEffect
+  selectedStateName: Selected
+  buttonSelectedAudioClip: {fileID: 8300000, guid: 3d2d9ce8b1aee194496aef3a91b2c834, type: 3}
+  minPitchRange: 0.4
+  maxPitchRange: 0.8
+  indicatorObject: {fileID: 0}
 --- !u!1 &3274030838748859313
 GameObject:
   m_ObjectHideFlags: 0
@@ -1150,6 +1186,7 @@ GameObject:
   - component: {fileID: 952143658998337882}
   - component: {fileID: 8545628987191718553}
   - component: {fileID: 4311362312104474959}
+  - component: {fileID: 2327365756812851549}
   m_Layer: 5
   m_Name: Retry
   m_TagString: Untagged
@@ -1271,3 +1308,20 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &2327365756812851549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9177732386304534335}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13fa946357d6235429d21155c656ffd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSelectedEffect
+  selectedStateName: Selected
+  buttonSelectedAudioClip: {fileID: 8300000, guid: 3d2d9ce8b1aee194496aef3a91b2c834, type: 3}
+  minPitchRange: 0.4
+  maxPitchRange: 0.8
+  indicatorObject: {fileID: 0}

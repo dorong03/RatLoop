@@ -100,10 +100,12 @@ public class GameManager : MonoBehaviour
 
     public void EnterLevel(LevelData levelData)
     {
-        gameState = GameState.Preview;
         Debug.Log("Level_" + levelData.levelID);
         SceneManager.sceneLoaded += OnLevelLoaded;
         SceneManager.LoadScene("Level_"+levelData.levelID);
+     
+        Time.timeScale = 1f;
+        gameState = GameState.Preview;
         
         currentLevelData = levelData;
         currentTimer = levelData.timeLimit;
@@ -185,6 +187,7 @@ public class GameManager : MonoBehaviour
             if(currentReplayCount > 0)
             {
                 currentReplayCount--;
+                OnReplayCountChanged?.Invoke(currentReplayCount);
                 SpawnManager.instance.StopRecordingAndReStart();
             }
         }
@@ -192,7 +195,7 @@ public class GameManager : MonoBehaviour
 
     public void TogglePause()
     {
-        if (gameState == GameState.Playing || gameState == GameState.Preview)
+        if (gameState == GameState.Playing)
         {
             gameState = GameState.Pause;
             Time.timeScale = 0;

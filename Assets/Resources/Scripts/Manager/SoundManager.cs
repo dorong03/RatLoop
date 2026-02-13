@@ -101,6 +101,13 @@ public class SoundManager : MonoBehaviour
             Debug.Log($"인스펙터 창에서 사운드 클립 넣어주기 --> {type}");
         }
     }
+    
+    public void PlaySFX(AudioClip audioClip, float minPitch, float maxPitch)
+    {
+        sfxSource.pitch = Random.Range(minPitch, maxPitch);
+        sfxSource.volume = 1f;
+        sfxSource.PlayOneShot(audioClip);
+    }
 }
 
 [System.Serializable]

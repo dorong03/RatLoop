@@ -91,7 +91,7 @@ public class SpawnManager : MonoBehaviour
         cameraEffect.SetTarget(currentPlayer.transform);
         currentReplayIndex = 0;
         SoundManager.instance.PlaySFX(SfxType.Replay);
-        for(int i = 0; i < 100; i++)
+        for(int i = 0; i < 1; i++)
         {
             foreach (var record in allRecordedFrames)
             {
