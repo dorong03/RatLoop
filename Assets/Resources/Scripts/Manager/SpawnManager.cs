@@ -65,6 +65,13 @@ public class SpawnManager : MonoBehaviour
             return;
         }
 
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+
+        if (player != null)
+        {
+            Destroy(player);
+        }
+
         currentPlayer = Instantiate(playerPrefab, spawnPoint.position, Quaternion.identity);
         
         AlignToGround(currentPlayer);
@@ -113,9 +120,10 @@ public class SpawnManager : MonoBehaviour
             Destroy(ghost.controller.gameObject);
         }
         activeGhostList.Clear();
-
+        
+        SpawnPlayer();
         currentPlayer.GetComponent<InputRecorder>().StartRecording();
-
+        
         CameraEffect cameraEffect = FindFirstObjectByType<CameraEffect>();
         if (cameraEffect != null)
         {

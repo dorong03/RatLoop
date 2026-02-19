@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8039928902706395577}
   - component: {fileID: 6580144020370754174}
   - component: {fileID: 7708323734573527887}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Cheese
   m_TagString: Cheese
   m_Icon: {fileID: 0}
@@ -151,3 +151,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8ba17a771eb27744ab0d54f89b7ff5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GoalTrigger
+  bobHeight: 0.3
+  bobSpeed: 2.5
