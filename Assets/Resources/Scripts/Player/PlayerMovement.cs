@@ -63,6 +63,14 @@ public class PlayerMovement : MonoBehaviour
         _animator.SetBool("isRun", inputVector.x != 0 && isGrounded);
         _animator.SetBool("isGround", isGrounded);
         _animator.SetFloat("yVelocity", yVel);
+
+        if (isPlayer)
+        {
+            if (inputVector.x != 0 && isGrounded)
+            {
+                SoundManager.instance.PlaySFX(SfxType.Walk);
+            }
+        }
         
         // 메달릴때 이동
         if (isHanging)
@@ -97,11 +105,10 @@ public class PlayerMovement : MonoBehaviour
         {
             CancelHanging();
             // 플레이어면 점프 소리
-            
-            // if (isPlayer)
-            // {
-            //     SoundManager.instance.PlaySFX(SfxType.Jump);    
-            // }
+            if (isPlayer)
+            {
+                SoundManager.instance.PlaySFX(SfxType.Jump);    
+            }
         }
         
         // 땅이라면 점프하기
@@ -109,10 +116,10 @@ public class PlayerMovement : MonoBehaviour
         {
             // 플레이어면 점프 사운드
             
-            // if (isPlayer)
-            // {
-            //     SoundManager.instance.PlaySFX(SfxType.Jump);    
-            // }
+            if (isPlayer)
+            {
+                SoundManager.instance.PlaySFX(SfxType.Jump);    
+            }
             _rigidbody2D.linearVelocity = new Vector2(_rigidbody2D.linearVelocity.x, jumpForce);
         }
     }

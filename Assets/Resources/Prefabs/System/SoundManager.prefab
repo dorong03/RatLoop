@@ -188,9 +188,11 @@ MonoBehaviour:
   - type: 2
     clip: {fileID: 8300000, guid: 450834646a11e374dafa0dd89e6a750b, type: 3}
   - type: 3
-    clip: {fileID: 8300000, guid: 427d4942575d4dd48931517ab2c370c2, type: 3}
+    clip: {fileID: 8300000, guid: 836aad5856ab70d48af8ac7f3770dcc9, type: 3}
   - type: 4
     clip: {fileID: 8300000, guid: 294c5b4a6e3ed864793d57ed7ad47f43, type: 3}
+  - type: 5
+    clip: {fileID: 8300000, guid: bc84b29c0a1132f4cb4266d45fc83829, type: 3}
   - type: 5
     clip: {fileID: 8300000, guid: bc84b29c0a1132f4cb4266d45fc83829, type: 3}
 --- !u!82 &5081911921131066222

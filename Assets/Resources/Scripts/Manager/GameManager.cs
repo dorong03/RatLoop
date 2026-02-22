@@ -103,7 +103,9 @@ public class GameManager : MonoBehaviour
         Debug.Log("Level_" + levelData.levelID);
         SceneManager.sceneLoaded += OnLevelLoaded;
         SceneManager.LoadScene("Level_"+levelData.levelID);
-     
+        
+        SoundManager.instance.PlayStageBGM();
+        
         Time.timeScale = 1f;
         gameState = GameState.Preview;
         

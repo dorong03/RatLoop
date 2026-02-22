@@ -37,11 +37,6 @@ public class ButtonSelectedEffect : MonoBehaviour, ISelectHandler, IDeselectHand
             indicatorObject.SetActive(false);
         }
     }
-
-    public void FirstSelctedButton()
-    {
-        isFirstSelected = true;
-    }
     
     public void OnSelect(BaseEventData eventData)
     {
