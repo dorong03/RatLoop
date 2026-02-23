@@ -11,6 +11,9 @@ public class PlayerController : MonoBehaviour
     private bool jumpBuffer;
     private bool hangBuffer;
 
+    private bool _isLookingDown;
+    private bool _isLookingUp;
+
     private void Awake()
     {
         _playerMovement = GetComponent<PlayerMovement>();
@@ -49,16 +52,45 @@ public class PlayerController : MonoBehaviour
 
     private void OnCameraDown(InputValue value)
     {
-        if (GameManager.instance.gameState != GameState.Playing)
+        if (GameManager.instance.gameState != GameState.Playing) return;
+        
+        if (value.isPressed && _playerMovement.IsGroundedState && !_playerMovement.IsMoving)
         {
-            return;
+            _isLookingDown = true;
+            _isLookingUp = false;
         }
-        var camEffect = Camera.main.GetComponent<CameraEffect>();
+        else
+        {
+            _isLookingDown = false;
+        }
+        ApplyCameraLook();
+    }
     
+    private void OnCameraUp(InputValue value)
+    {
+        if (GameManager.instance.gameState != GameState.Playing) return;
+
+        if (value.isPressed && _playerMovement.IsGroundedState && !_playerMovement.IsMoving)
+        {
+            _isLookingUp = true;
+            _isLookingDown = false;
+        }
+        else
+        {
+            _isLookingUp = false;
+        }
+        ApplyCameraLook();
+    }
+
+    private void ApplyCameraLook()
+    {
+        CameraEffect camEffect = Camera.main.GetComponent<CameraEffect>();
         if (camEffect != null)
         {
-            camEffect.SetLookDown(value.isPressed);
+            camEffect.SetCameraLook(_isLookingUp, _isLookingDown);
         }
+        _playerMovement.SetLookAnimation("isLookDown", _isLookingDown);
+        _playerMovement.SetLookAnimation("isLookUp", _isLookingUp);
     }
 
     private void OnHang(InputValue value)
@@ -77,6 +109,16 @@ public class PlayerController : MonoBehaviour
         if (GameManager.instance.gameState != GameState.Playing)
         {
             return;
+        }
+        
+        if (_isLookingDown || _isLookingUp)
+        {
+            if (_playerMovement.IsMoving || !_playerMovement.IsGroundedState)
+            {
+                _isLookingDown = false;
+                _isLookingUp = false;
+                ApplyCameraLook();
+            }
         }
         
         // 플레이어 움직임 녹화

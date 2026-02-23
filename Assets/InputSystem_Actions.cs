@@ -136,6 +136,15 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""CameraUp"",
+                    ""type"": ""Value"",
+                    ""id"": ""5e173d4c-43c5-4ea7-b9e2-fe228d4812ea"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -186,7 +195,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""1c04ea5f-b012-41d1-a6f7-02e963b52893"",
-                    ""path"": ""<Keyboard>/upArrow"",
+                    ""path"": ""<Keyboard>/f"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Keyboard&Mouse"",
@@ -213,6 +222,17 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",
                     ""action"": ""CameraDown"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""718f409e-4c3a-4ed8-8209-a84172dc60ac"",
+                    ""path"": ""<Keyboard>/upArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""CameraUp"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -688,6 +708,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
         m_Player_Retry = m_Player.FindAction("Retry", throwIfNotFound: true);
         m_Player_CameraDown = m_Player.FindAction("CameraDown", throwIfNotFound: true);
+        m_Player_CameraUp = m_Player.FindAction("CameraUp", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -791,6 +812,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Jump;
     private readonly InputAction m_Player_Retry;
     private readonly InputAction m_Player_CameraDown;
+    private readonly InputAction m_Player_CameraUp;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -822,6 +844,10 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/CameraDown".
         /// </summary>
         public InputAction @CameraDown => m_Wrapper.m_Player_CameraDown;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/CameraUp".
+        /// </summary>
+        public InputAction @CameraUp => m_Wrapper.m_Player_CameraUp;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -863,6 +889,9 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @CameraDown.started += instance.OnCameraDown;
             @CameraDown.performed += instance.OnCameraDown;
             @CameraDown.canceled += instance.OnCameraDown;
+            @CameraUp.started += instance.OnCameraUp;
+            @CameraUp.performed += instance.OnCameraUp;
+            @CameraUp.canceled += instance.OnCameraUp;
         }
 
         /// <summary>
@@ -889,6 +918,9 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @CameraDown.started -= instance.OnCameraDown;
             @CameraDown.performed -= instance.OnCameraDown;
             @CameraDown.canceled -= instance.OnCameraDown;
+            @CameraUp.started -= instance.OnCameraUp;
+            @CameraUp.performed -= instance.OnCameraUp;
+            @CameraUp.canceled -= instance.OnCameraUp;
         }
 
         /// <summary>
@@ -1331,6 +1363,13 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnCameraDown(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "CameraUp" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnCameraUp(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.

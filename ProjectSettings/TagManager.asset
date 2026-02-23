@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Ground
   - Cheese
+  - Ghost
   layers:
   - Default
   - TransparentFX

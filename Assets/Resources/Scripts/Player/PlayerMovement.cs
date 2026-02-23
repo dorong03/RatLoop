@@ -1,4 +1,3 @@
-using System.Numerics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -29,15 +28,22 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Collider2D hangingWallCollider;
     [SerializeField] private Rigidbody2D hangingWallRigidBody;
     
-    // [Header("사운드 설정")]
-    // [SerializeField] private float footstepRate = 0.3f;
+    [Header("사운드 설정")]
+    [SerializeField] private float footstepRate = 0.3f;
+    
+    [Header("애니메이션 설정")]
+    [SerializeField] private float sleepClipTransTime = 5f;
+    [SerializeField] private float sleepEmojiSpawnRate = 3f;
+    [SerializeField] private GameObject sleepEmojiPrefab;
 
+    private float idleTimer = 0f;
     private Vector2 inputVector;
     private bool isHanging = false;
     private float footstepTimer;
-    // private bool isDead = false;
     private bool isPlayer;
-    // private bool isStageClear = false;
+
+    public bool IsGroundedState => IsGrounded();
+    public bool IsMoving => inputVector.x != 0;
     
     private void Awake()
     {
@@ -49,26 +55,63 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // Playing 이 아닐때 ( Clear 또는 Die ) 못 움직이게 하기
         if (GameManager.instance.gameState != GameState.Playing)
         {
+
             _rigidbody2D.linearVelocity = new Vector2(0, _rigidbody2D.linearVelocity.y);
             return;
         }
         
-        bool isGrounded = IsGrounded(); 
-
-        float yVel = _rigidbody2D.linearVelocity.y;
-
-        _animator.SetBool("isRun", inputVector.x != 0 && isGrounded);
+        bool isGrounded = IsGrounded();
+        float yVelocity = _rigidbody2D.linearVelocity.y;
+        
         _animator.SetBool("isGround", isGrounded);
-        _animator.SetFloat("yVelocity", yVel);
+        _animator.SetFloat("yVelocity", yVelocity);
 
+        if (isGrounded)
+        {
+           if (inputVector.x != 0)
+           {
+               _animator.SetBool("isRun", true);
+               _animator.SetBool("isSleeping", false);
+               idleTimer = 0f;
+           }
+           else if(!_animator.GetBool("isLookDown") || !_animator.GetBool("isLookUp"))
+           {
+               _animator.SetBool("isRun", false);
+               idleTimer += Time.fixedDeltaTime;
+               if (idleTimer >= sleepClipTransTime)
+               {
+                   _animator.SetBool("isSleeping", true);
+                   if ((idleTimer - sleepClipTransTime) > sleepEmojiSpawnRate)
+                   {
+                       Instantiate(sleepEmojiPrefab, transform.position + (transform.up * 0.1f) + (transform.right * 0.6f), Quaternion.identity);
+                       idleTimer -= sleepEmojiSpawnRate;
+                   }
+               }
+           }
+        }
+        else
+        {
+            _animator.SetBool("isRun", false);
+            _animator.SetBool("isSleeping", false);
+            idleTimer = 0f;
+        }
+        
         if (isPlayer)
         {
             if (inputVector.x != 0 && isGrounded)
             {
-                SoundManager.instance.PlaySFX(SfxType.Walk);
+                footstepTimer += Time.fixedDeltaTime;
+                if (footstepTimer >= footstepRate)
+                {
+                    SoundManager.instance.PlaySFX(SfxType.Walk);
+                    footstepTimer = 0f;
+                }
+            }
+            else
+            {
+                footstepTimer = footstepRate; 
             }
         }
         
@@ -87,6 +130,33 @@ public class PlayerMovement : MonoBehaviour
         // 이동 로직
         _rigidbody2D.linearVelocity = new Vector2(inputVector.x * moveSpeed, _rigidbody2D.linearVelocity.y);
     }
+
+    public void SetLookAnimation(string paramName, bool value)
+    {
+        if (IsMoving || !IsGroundedState)
+        {
+            _animator.SetBool("isLookDown", false);
+            _animator.SetBool("isLookUp", false);
+            return;
+        }
+
+        if (value)
+        {
+            if (paramName == "isLookDown")
+            {
+                _animator.SetBool("isLookUp", false);
+                idleTimer = 0f;
+            }
+
+            if (paramName == "isLookUp")
+            {
+                _animator.SetBool("isLookDown", false);
+                idleTimer = 0f;
+            }
+        }
+
+        _animator.SetBool(paramName, value);
+    }
     
     public void SetMoveInput(Vector2 input)
     {
@@ -95,55 +165,32 @@ public class PlayerMovement : MonoBehaviour
 
     public void TryJump()
     {
-        if (GameManager.instance.gameState != GameState.Playing)
-        {
-            return;
-        }
+        if (GameManager.instance.gameState != GameState.Playing) return;
 
         // 매달린 상태에선 취소하기
         if (isHanging)
         {
             CancelHanging();
-            // 플레이어면 점프 소리
-            if (isPlayer)
-            {
-                SoundManager.instance.PlaySFX(SfxType.Jump);    
-            }
+            if (isPlayer) SoundManager.instance.PlaySFX(SfxType.Jump);    
         }
-        
         // 땅이라면 점프하기
         else if (IsGrounded())
         {
-            // 플레이어면 점프 사운드
-            
-            if (isPlayer)
-            {
-                SoundManager.instance.PlaySFX(SfxType.Jump);    
-            }
+            if (isPlayer) SoundManager.instance.PlaySFX(SfxType.Jump);    
             _rigidbody2D.linearVelocity = new Vector2(_rigidbody2D.linearVelocity.x, jumpForce);
         }
     }
 
     public void TryHang()
     {
-        if (GameManager.instance.gameState != GameState.Playing)
-        {
-            return;
-        }
+        if (GameManager.instance.gameState != GameState.Playing) return;
         
-        if (isHanging)
-        {
-            CancelHanging();
-        } 
+        if (isHanging) CancelHanging();
         else 
         {
             Vector2 checkPos = transform.TransformPoint(hangCheckOffset);
-            
             Collider2D hit = Physics2D.OverlapBox(checkPos, hangCheckSize, 0, hangingWallLayer);
-            if (hit != null)
-            {
-                HangingObject();
-            }
+            if (hit != null) HangingObject();
         }
     }
 
@@ -180,7 +227,6 @@ public class PlayerMovement : MonoBehaviour
             Physics2D.IgnoreCollision(_collider2D, hangingWallCollider, true);
 
             transform.position = new Vector2(hit.point.x, transform.position.y);
-            
             gameObject.transform.SetParent(hit.transform, true);
             transform.localRotation = Quaternion.identity;
         }
@@ -194,15 +240,10 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleRotation()
     {
-        if (inputVector.x > 0)
-        {
-            transform.rotation = Quaternion.Euler(0, 0, 0);
-        }
-        else if (inputVector.x < 0)
-        {
-            transform.rotation = Quaternion.Euler(0, 180, 0);
-        }
+        if (inputVector.x > 0) transform.rotation = Quaternion.Euler(0, 0, 0);
+        else if (inputVector.x < 0) transform.rotation = Quaternion.Euler(0, 180, 0);
     }
+
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.green;

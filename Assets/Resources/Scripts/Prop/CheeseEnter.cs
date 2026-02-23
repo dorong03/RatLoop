@@ -29,9 +29,8 @@ public class GoalTrigger : MonoBehaviour
         {
             if (!isTriggered)
             {
-                SoundManager.instance.PlaySFX(SfxType.Cheese);
-                GameManager.instance.ClearLevel();
                 isTriggered = true;
+                GameManager.instance.ClearLevel();
             }
         }
     }

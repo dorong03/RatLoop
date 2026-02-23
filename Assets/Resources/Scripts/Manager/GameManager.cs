@@ -56,7 +56,8 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         Cursor.visible = false;
-        maxClearLevelID = PlayerPrefs.GetInt("MaxClearLevelID", 1);
+        PlayerPrefs.GetInt("MaxClearLevelID", 6);
+        maxClearLevelID = PlayerPrefs.GetInt("MaxClearLevelID", 6);
     }
     
     private void Update()
@@ -149,11 +150,11 @@ public class GameManager : MonoBehaviour
         timer = 0;
 
         SceneManager.LoadScene("LevelSelction");
-        
+        SoundManager.instance.PlayStageBGM();
         OnExitLevel?.Invoke();
     }
 
-    public void ClearLevel()
+    public async void ClearLevel()
     {
         gameState = GameState.Clear;
 
@@ -165,8 +166,22 @@ public class GameManager : MonoBehaviour
                 PlayerPrefs.SetInt("MaxClearLevelID", maxClearLevelID);
             }
         }
-        // 클리어 애니메이션 재생해주시고
-        EnterLevel(currentLevelData.nextLevelData);
+        SoundManager.instance.PlaySFX(SfxType.Cheese);
+        if (GameObject.FindGameObjectWithTag("Player").TryGetComponent(out Animator anim))
+        {
+            anim.SetTrigger("Eat");
+        }
+
+        await System.Threading.Tasks.Task.Delay(2000);
+
+        if (currentLevelData.nextLevelData == null)
+        {
+            ExitLevel();
+        }
+        else
+        {
+            EnterLevel(currentLevelData.nextLevelData);
+        }
     }
 
     public void PlayerDie()

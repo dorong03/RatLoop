@@ -33,7 +33,7 @@ Transform:
   m_GameObject: {fileID: 306704792185372058}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.44, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -87,9 +87,9 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 3
+  m_SortingOrder: 4
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 3797421006285777406, guid: 56667cee0ad347b4e98e35e520efa044, type: 3}
+  m_Sprite: {fileID: 8271730618534065979, guid: 3994f202971bb7b40949ddc94ef4fd0e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -153,6 +153,10 @@ MonoBehaviour:
     m_Bits: 512
   hangingWallCollider: {fileID: 0}
   hangingWallRigidBody: {fileID: 0}
+  footstepRate: 0.3
+  sleepClipTransTime: 5
+  sleepEmojiSpawnRate: 3
+  sleepEmojiPrefab: {fileID: 3792189731970215545, guid: 1f6434b3634f84945be1a9427ddc43ac, type: 3}
 --- !u!114 &7321184312672384639
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -217,7 +221,7 @@ Animator:
   m_GameObject: {fileID: 306704792185372058}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 2d7f1d9ef37bcd34da74318c207cb6ac, type: 2}
+  m_Controller: {fileID: 9100000, guid: da85e8d22f6d34d4894572485c8c5996, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0

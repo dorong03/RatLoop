@@ -4,12 +4,15 @@ using UnityEngine;
 
 public class CameraEffect : MonoBehaviour
 {
+    private Camera _camara;
+    
     private Transform target;
     
-    // 카메라 따라가는 속도 조절
     [SerializeField] float smoothTime = 0.3f;
-    // 아래키로 화면 내릴 수 있는 수치
+    
     [SerializeField] private float lookDownAmount = 4f;
+    [SerializeField] private float lookUpAmount = 4f;
+    
     // 오프셋
     [SerializeField] private Vector3 offset = new Vector3(0, 0, -10f);
     
@@ -20,6 +23,7 @@ public class CameraEffect : MonoBehaviour
     {
         defaultYOffset = offset.y;
         target = GameObject.FindGameObjectWithTag("Player").transform;
+        _camara = gameObject.GetComponent<Camera>();
     }
     
     private void LateUpdate()
@@ -37,12 +41,14 @@ public class CameraEffect : MonoBehaviour
     {
         this.target = target;
     }
-    
-    
-    // 아래보는 키 눌렀을때 왔다 갔다
-    public void SetLookDown(bool isLookingDown)
+
+    public void SetCameraLook(bool isUp, bool isDown)
     {
-        if (isLookingDown)
+        if (isUp)
+        {
+            offset.y = defaultYOffset + lookUpAmount;
+        }
+        else if (isDown)
         {
             offset.y = defaultYOffset - lookDownAmount;
         }
@@ -50,6 +56,11 @@ public class CameraEffect : MonoBehaviour
         {
             offset.y = defaultYOffset;
         }
+    }
+
+    public void ZoomUpPlayer(float zoomAmout)
+    {
+        _camara.fieldOfView = zoomAmout;
     }
 
     public void PlayPreViewSequence(Action onComplete)

@@ -85,8 +85,8 @@ public class SoundManager : MonoBehaviour
         {
             if (type == SfxType.Walk)
             {
-                sfxSource.pitch = Random.Range(0.9f, 1.1f);
-                sfxSource.volume = 0.2f;
+                sfxSource.pitch = Random.Range(0.8f, 1.2f);
+                sfxSource.volume = 0.7f;
             }
             else
             {
