@@ -19,10 +19,9 @@ public class PlayerController : MonoBehaviour
         _playerMovement = GetComponent<PlayerMovement>();
         _inputRecorder = GetComponent<InputRecorder>();
     }
-
+    
     private void OnMove(InputValue value)
     {
-        if (GameManager.instance.gameState == GameState.Playing)
         {
             moveInputBuffer = value.Get<Vector2>();
         }
@@ -109,6 +108,11 @@ public class PlayerController : MonoBehaviour
         if (GameManager.instance.gameState != GameState.Playing)
         {
             return;
+        }
+
+        if (GameManager.instance.gameState == GameState.Pause)
+        {
+            moveInputBuffer = Vector2.zero;
         }
         
         if (_isLookingDown || _isLookingUp)

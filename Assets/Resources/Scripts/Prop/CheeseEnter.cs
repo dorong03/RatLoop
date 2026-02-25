@@ -1,3 +1,4 @@
+using Unity.Mathematics.Geometry;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -30,6 +31,8 @@ public class GoalTrigger : MonoBehaviour
             if (!isTriggered)
             {
                 isTriggered = true;
+                CameraEffect cam = Camera.main.GetComponent<CameraEffect>();
+                cam.ZoomUpPlayer(1.5f, 0.5f);
                 GameManager.instance.ClearLevel();
             }
         }
