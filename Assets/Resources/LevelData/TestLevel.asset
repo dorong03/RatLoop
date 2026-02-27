@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5087a0fc59fa2114bb1b856716323530, type: 3}
   m_Name: TestLevel
   m_EditorClassIdentifier: Assembly-CSharp::LevelData
-  levelID: 6
+  levelID: 999
   timeLimit: 9999
   maxReplyCount: 9999
   nextLevelData: {fileID: 0}

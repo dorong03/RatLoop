@@ -3,7 +3,7 @@ using UnityEngine;
 public class parallaxSprite : MonoBehaviour
 {
     // 배경 사진 넘어가는 속도
-    [SerializeField, Range(0f, 1f)] private float parallaxEffect;
+    [SerializeField, Range(-1f, 1f)] private float parallaxEffect;
     
     private Camera cam;
     private float length;
