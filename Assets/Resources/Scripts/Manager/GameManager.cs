@@ -170,6 +170,7 @@ public class GameManager : MonoBehaviour
         if (GameObject.FindGameObjectWithTag("Player").TryGetComponent(out Animator anim))
         {
             anim.SetTrigger("Eat");
+            DataCollector.instance.RecordClear();
         }
 
         await System.Threading.Tasks.Task.Delay(2000);
@@ -190,11 +191,13 @@ public class GameManager : MonoBehaviour
         
         // 플레이어 죽는 애니메이션 실행한 다음 현재 스테이지 LevelData 로 EnterLevel 하기
         EnterLevel(currentLevelData);
+        DataCollector.instance.RecordDeath();
     }
 
     public void Retry()
     {
         EnterLevel(currentLevelData);
+        DataCollector.instance.RecordRetry();
     }
     
     public void Replay()
@@ -206,6 +209,7 @@ public class GameManager : MonoBehaviour
                 currentReplayCount--;
                 OnReplayCountChanged?.Invoke(currentReplayCount);
                 SpawnManager.instance.StopRecordingAndReStart();
+                DataCollector.instance.RecordReplay();
             }
         }
     }

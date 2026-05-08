@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 7448993072294237469}
   - component: {fileID: 183793364272278349}
+  - component: {fileID: 7810423968646349750}
+  - component: {fileID: 2366818878331760190}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -47,3 +49,27 @@ MonoBehaviour:
   gameState: 0
   maxClearLevelID: 0
   currentLevelData: {fileID: 0}
+--- !u!114 &7810423968646349750
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 203513633535214273}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63174915c1c634151a3c0bf62021da19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DataCollector
+--- !u!114 &2366818878331760190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 203513633535214273}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 623668d760e3946c4a88d87f861e6d84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DataSaver

@@ -176,7 +176,12 @@ public class PlayerMovement : MonoBehaviour
         // 땅이라면 점프하기
         else if (IsGrounded())
         {
-            if (isPlayer) SoundManager.instance.PlaySFX(SfxType.Jump);    
+            if (isPlayer)
+            {
+                // 플레이어일때만 추가하기
+                DataCollector.instance.RecordJump();
+                SoundManager.instance.PlaySFX(SfxType.Jump);
+            }    
             _rigidbody2D.linearVelocity = new Vector2(_rigidbody2D.linearVelocity.x, jumpForce);
         }
     }
