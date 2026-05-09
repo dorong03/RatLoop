@@ -216,7 +216,12 @@ public class GameManager : MonoBehaviour
 
     public void TogglePause()
     {
-        if (gameState == GameState.Playing)
+        if (gameState == GameState.Preview)
+        {
+            CameraEffect cameraEffect = Camera.main.GetComponent<CameraEffect>();
+            cameraEffect.StopPreviewSequence(OnPreviewFinished);
+        }
+        else if (gameState == GameState.Playing)
         {
             gameState = GameState.Pause;
             Time.timeScale = 0;

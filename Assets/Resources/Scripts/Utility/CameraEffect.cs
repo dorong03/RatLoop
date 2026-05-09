@@ -8,6 +8,8 @@ public class CameraEffect : MonoBehaviour
 {
     private Camera _camera;
     private PixelPerfectCamera _ppc;
+
+    private Coroutine _previewCoroutine;
     
     private Transform target;
     
@@ -89,7 +91,17 @@ public class CameraEffect : MonoBehaviour
 
     public void PlayPreViewSequence(Action onComplete)
     {
-        StartCoroutine(PreviewSequence(onComplete));
+        if (_previewCoroutine != null) return;
+        _previewCoroutine = StartCoroutine(PreviewSequence(onComplete));
+    }
+
+    public void StopPreviewSequence(Action onComplete)
+    {
+        if (_previewCoroutine == null) return;
+        StopCoroutine(_previewCoroutine);
+        Transform player = GameObject.FindGameObjectWithTag("Player")?.transform;
+        SetTarget(player);
+        onComplete?.Invoke();
     }
     
     public IEnumerator PreviewSequence(Action onComplete)
