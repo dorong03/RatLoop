@@ -217,12 +217,16 @@ public class AIController : MonoBehaviour
 
     private bool IsGrounded()
     {
-        if (_rigidbody2D.linearVelocity.y > 0.05f)
-        {
-            return false;
-        }
-
         Vector2 checkPos = (Vector2)transform.position + groundCheckOffset;
-        return Physics2D.OverlapBox(checkPos, groundCheckSize, 0f, groundLayer);
+        bool onGround = Physics2D.OverlapBox(checkPos, groundCheckSize, 0f, groundLayer);
+
+        if (onGround)
+        {
+            return true;
+        }
+        
+        if (_rigidbody2D.linearVelocity.y > 0.05f) return false;
+
+        return false;
     }
 }
