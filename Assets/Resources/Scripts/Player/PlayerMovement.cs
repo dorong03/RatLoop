@@ -241,7 +241,7 @@ public class PlayerMovement : MonoBehaviour
     {
         Vector2 checkPos = (Vector2)transform.position + groundCheckOffset;
         return Physics2D.OverlapBox(checkPos, groundCheckSize, 0f, groundLayer);
-    }
+    } 
 
     private void HandleRotation()
     {
