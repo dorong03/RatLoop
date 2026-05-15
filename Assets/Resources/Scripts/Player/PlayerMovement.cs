@@ -65,6 +65,16 @@ public class PlayerMovement : MonoBehaviour
         bool isGrounded = IsGrounded();
         float yVelocity = _rigidbody2D.linearVelocity.y;
         
+        // 메달릴때 이동
+        if (isHanging)
+        {
+            if (inputVector.x != 0)
+            {
+                hangingWallRigidBody.AddForce(Vector2.right * (inputVector.x * poleForce));
+            }
+            return;
+        }
+        
         _animator.SetBool("isGround", isGrounded);
         _animator.SetFloat("yVelocity", yVelocity);
 
@@ -113,16 +123,6 @@ public class PlayerMovement : MonoBehaviour
             {
                 footstepTimer = footstepRate; 
             }
-        }
-        
-        // 메달릴때 이동
-        if (isHanging)
-        {
-            if (inputVector.x != 0)
-            {
-                hangingWallRigidBody.AddForce(Vector2.right * inputVector.x * poleForce);
-            }
-            return;
         }
         
         HandleRotation();

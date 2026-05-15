@@ -140,7 +140,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   moveSpeed: 4
   jumpForce: 8.5
-  poleForce: 3
+  poleForce: 7
   groundCheckSize: {x: 0.95, y: 0.14}
   groundCheckOffset: {x: 0, y: -0.5}
   hangCheckSize: {x: 1.2, y: 0.81}
