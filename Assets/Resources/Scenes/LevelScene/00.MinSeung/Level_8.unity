@@ -718,7 +718,7 @@ GameObject:
   - component: {fileID: 9771709}
   m_Layer: 3
   m_Name: Ground
-  m_TagString: Untagged
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2493,7 +2493,7 @@ CompositeCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_GeometryType: 0
+  m_GeometryType: 1
   m_GenerationType: 0
   m_EdgeRadius: 0
   m_ColliderPaths:
@@ -2606,63 +2606,6 @@ TilemapCollider2D:
   m_MaximumTileChangeCount: 1000
   m_ExtrusionFactor: 0
   m_UseDelaunayMesh: 0
---- !u!1001 &24054380
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 1938024154}
-    m_Modifications:
-    - target: {fileID: 301985566009357442, guid: 7fb6a70d8f446d04aaa7816497d6acef, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -22.83
-      objectReference: {fileID: 0}
-    - target: {fileID: 301985566009357442, guid: 7fb6a70d8f446d04aaa7816497d6acef, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -2.2078292
-      objectReference: {fileID: 0}
-    - target: {fileID: 301985566009357442, guid: 7fb6a70d8f446d04aaa7816497d6acef, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 301985566009357442, guid: 7fb6a70d8f446d04aaa7816497d6acef, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 301985566009357442, guid: 7fb6a70d8f446d04aaa7816497d6acef, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 301985566009357442, guid: 7fb6a70d8f446d04aaa7816497d6acef, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 301985566009357442, guid: 7fb6a70d8f446d04aaa7816497d6acef, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 301985566009357442, guid: 7fb6a70d8f446d04aaa7816497d6acef, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 301985566009357442, guid: 7fb6a70d8f446d04aaa7816497d6acef, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 301985566009357442, guid: 7fb6a70d8f446d04aaa7816497d6acef, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8266930110130702034, guid: 7fb6a70d8f446d04aaa7816497d6acef, type: 3}
-      propertyPath: m_Name
-      value: WaterBottle
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 7fb6a70d8f446d04aaa7816497d6acef, type: 3}
 --- !u!1001 &149399505
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2911,7 +2854,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 4.090909
+  orthographic size: 4.21875
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -3493,11 +3436,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0a27a521c22c36347aa587fca3dcc298, type: 3}
---- !u!4 &1740723255 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 301985566009357442, guid: 7fb6a70d8f446d04aaa7816497d6acef, type: 3}
-  m_PrefabInstance: {fileID: 24054380}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1844775518
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3633,7 +3571,6 @@ Transform:
   - {fileID: 1344178285}
   - {fileID: 2034072533}
   - {fileID: 1232430258}
-  - {fileID: 1740723255}
   - {fileID: 1020410219}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
