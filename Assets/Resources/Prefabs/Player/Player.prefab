@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &253144396305871871
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5203771588254166236}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5203771588254166236
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 253144396305871871}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.2, y: -0.49, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7588602306031819191}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &306704792185372058
 GameObject:
   m_ObjectHideFlags: 0
@@ -17,6 +48,8 @@ GameObject:
   - component: {fileID: 6451460663909217518}
   - component: {fileID: 676705953958797541}
   - component: {fileID: 5940037227206504794}
+  - component: {fileID: 5177041539374526041}
+  - component: {fileID: -5331194488879904892}
   m_Layer: 6
   m_Name: Player
   m_TagString: Player
@@ -38,6 +71,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8793401598569977826}
+  - {fileID: 5203771588254166236}
+  - {fileID: 6199224584821244328}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &5865782865291851627
@@ -279,6 +314,45 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 0.62}
   m_EdgeRadius: 0
+--- !u!114 &5177041539374526041
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 306704792185372058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e40090195dd23a842ad36c7709d67a42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WaterSplash
+  droplets:
+  - {fileID: 2619775133721439535, guid: 343ebf83ba64eb0429b8203d929ec22e, type: 3}
+  - {fileID: 4479462169983311708, guid: 52bc60cf9e6954247959fc72cbea5df1, type: 3}
+  - {fileID: 3533317993570914233, guid: 1eb767d0089702f458d6d9acd927012e, type: 3}
+  dropCount: 10
+  splashForce: 4
+  destroyTime: 1
+--- !u!114 &-5331194488879904892
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 306704792185372058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d2e3dce39f09074f846f6013788912e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AutoDustVFX
+  dustPrefab: {fileID: 6274574769692794041, guid: 86f1b5fdc5ee7744ab8632662404c751, type: 3}
+  jumpDustPos: {fileID: 6199224584821244328}
+  landDustPos: {fileID: 5203771588254166236}
+  groundTags:
+  - Ground
+  dustCount: 4
+  spreadForce: 3
+  destroyTime: 0.5
 --- !u!1 &2362415575250178529
 GameObject:
   m_ObjectHideFlags: 0
@@ -465,3 +539,34 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!1 &7786069170169623823
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6199224584821244328}
+  m_Layer: 0
+  m_Name: GameObject (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6199224584821244328
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7786069170169623823}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.15, y: -0.49, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7588602306031819191}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
