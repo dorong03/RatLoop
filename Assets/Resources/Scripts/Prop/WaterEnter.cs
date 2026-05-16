@@ -7,7 +7,6 @@ public class WaterEnter : MonoBehaviour
     
     private async void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log(other.gameObject.name);
         if (other.tag == "Player")
         {
             isPlayerEnterWater = true;
@@ -31,7 +30,7 @@ public class WaterEnter : MonoBehaviour
     {
         if(other.tag.Equals("Player") || other.tag.Equals("Ghost"))
         {
-            other.GetComponent<PlayerMovement>().enabled = true;
+            // other.GetComponent<PlayerMovement>().enabled = true;
             if (other.tag.Equals("Player"))
             {
                 isPlayerEnterWater = false;

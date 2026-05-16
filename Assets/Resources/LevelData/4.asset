@@ -15,4 +15,4 @@ MonoBehaviour:
   levelID: 4
   timeLimit: 30
   maxReplyCount: 1
-  nextLevelData: {fileID: 11400000, guid: f822b2285baa86c46b8753d0c2d9292c, type: 2}
+  nextLevelData: {fileID: 11400000, guid: db8422406e4af3a47bd59c26606b80ee, type: 2}

@@ -7,28 +7,19 @@ EditorBuildSettings:
   m_Scenes:
   - enabled: 1
     path: Assets/Resources/Scenes/GameScene/Title.unity
-    guid: 1bf6ded80832a1f418b558e23a2c3bcd
+    guid: d00fb467f2b2041be8242f93d91486f5
   - enabled: 1
     path: Assets/Resources/Scenes/GameScene/LevelSelction.unity
     guid: bec08e84ebed4d246b980f3181db14fe
   - enabled: 1
-    path: Assets/Resources/Scenes/LevelScene/Level_1.unity
-    guid: 7997bb0575c48794a881f2d919dddf35
-  - enabled: 1
-    path: Assets/Resources/Scenes/LevelScene/Level_2.unity
-    guid: f937c723bbfa6724e877fc82e0489f6d
-  - enabled: 1
-    path: Assets/Resources/Scenes/LevelScene/Level_3.unity
+    path: Assets/Resources/Scenes/LevelScene/00.MinSeung/Level_4.unity
     guid: 08b526bc378b9994e99e680f56f6d275
   - enabled: 1
-    path: Assets/Resources/Scenes/LevelScene/Level_4.unity
+    path: Assets/Resources/Scenes/LevelScene/00.MinSeung/Level_5.unity
     guid: d5b28b0c862711f4c8dcbb289840b622
   - enabled: 1
-    path: Assets/Resources/Scenes/LevelScene/Level_5.unity
+    path: Assets/Resources/Scenes/LevelScene/00.MinSeung/Level_8.unity
     guid: f80b5842018c649409b7daf92f9ad5e3
-  - enabled: 1
-    path: Assets/Resources/Scenes/LevelScene/Level_6.unity
-    guid: 54110524c06ac3a469be11a75f3872fb
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

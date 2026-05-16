@@ -17,8 +17,6 @@ public class DataSaver : MonoBehaviour
             savePath = Path.Combine(Application.persistentDataPath, "PlayData");
             if (!Directory.Exists(savePath))
                 Directory.CreateDirectory(savePath);
-
-            Debug.Log("저장 경로: " + savePath);
         }
         else
         {

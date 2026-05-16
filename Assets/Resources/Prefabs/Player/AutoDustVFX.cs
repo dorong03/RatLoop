@@ -22,7 +22,7 @@ public class AutoDustVFX : MonoBehaviour
     {
         if (lastYVelocity <= 0.1f && rb.linearVelocity.y > 1.5f)
         {
-            CreateDust(jumpDustPos);
+            CreateDust(ref jumpDustPos);
         }
 
         lastYVelocity = rb.linearVelocity.y;
@@ -34,13 +34,13 @@ public class AutoDustVFX : MonoBehaviour
         {
             if (collision.gameObject.CompareTag(tag))
             {
-                CreateDust(landDustPos);
+                CreateDust(ref landDustPos);
                 break;
             }
         }
     }
 
-    void CreateDust(Transform spawnPos)
+    void CreateDust(ref Transform spawnPos)
     {
         for (int i = 0; i < dustCount; i++)
         {

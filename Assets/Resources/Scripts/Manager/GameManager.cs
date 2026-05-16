@@ -56,8 +56,8 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         Cursor.visible = false;
-        PlayerPrefs.GetInt("MaxClearLevelID", 6);
-        maxClearLevelID = PlayerPrefs.GetInt("MaxClearLevelID", 6);
+        PlayerPrefs.SetInt("MaxClearLevelID", 4);
+        maxClearLevelID = PlayerPrefs.GetInt("MaxClearLevelID", 4);
     }
     
     private void Update()
@@ -105,8 +105,6 @@ public class GameManager : MonoBehaviour
         SceneManager.sceneLoaded += OnLevelLoaded;
         SceneManager.LoadScene("Level_"+levelData.levelID);
         
-        SoundManager.instance.PlayStageBGM();
-        
         Time.timeScale = 1f;
         gameState = GameState.Preview;
         
@@ -120,10 +118,14 @@ public class GameManager : MonoBehaviour
     {
         SceneManager.sceneLoaded -= OnLevelLoaded;
         
+        SoundManager.instance.PlayStageBGM();
+        
         OnTimeChanged?.Invoke(currentTimer);
         OnReplayCountChanged?.Invoke(currentReplayCount);
         OnEnterLevel?.Invoke();
+        
         CameraEffect cameraEffect = Camera.main.GetComponent<CameraEffect>();
+        
         if (cameraEffect != null)
         {
             cameraEffect.PlayPreViewSequence(OnPreviewFinished);
@@ -150,7 +152,7 @@ public class GameManager : MonoBehaviour
         timer = 0;
 
         SceneManager.LoadScene("LevelSelction");
-        SoundManager.instance.PlayStageBGM();
+        SoundManager.instance.PlayLobbyBGM();
         OnExitLevel?.Invoke();
     }
 
@@ -162,7 +164,7 @@ public class GameManager : MonoBehaviour
         {
             if (currentLevelData.nextLevelData != null)
             {
-                maxClearLevelID++;
+                maxClearLevelID = currentLevelData.nextLevelData.levelID;
                 PlayerPrefs.SetInt("MaxClearLevelID", maxClearLevelID);
             }
         }
