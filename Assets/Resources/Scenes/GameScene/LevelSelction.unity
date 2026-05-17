@@ -515,6 +515,7 @@ GameObject:
   - component: {fileID: 405589771}
   - component: {fileID: 405589773}
   - component: {fileID: 405589772}
+  - component: {fileID: 405589774}
   m_Layer: 5
   m_Name: Indicator
   m_TagString: Untagged
@@ -538,7 +539,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 152}
+  m_AnchoredPosition: {x: 0, y: 217}
   m_SizeDelta: {x: 118.75, y: 168.75}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &405589772
@@ -579,6 +580,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 405589770}
   m_CullTransparentMesh: 1
+--- !u!114 &405589774
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 405589770}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79d7b3a1924d6462f85b40c3d6a686d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MouseIndicator
 --- !u!1001 &418157121
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1717,6 +1730,7 @@ MonoBehaviour:
   - {fileID: 760255005}
   - {fileID: 498330418}
   mouseCursor: {fileID: 1780060492}
+  mouseIndicator: {fileID: 405589770}
   moveDuration: 0.38
   jumpHeight: 45
   jumpCount: 3

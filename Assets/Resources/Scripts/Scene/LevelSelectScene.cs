@@ -8,8 +8,9 @@ public class LevelSelectScene : MonoBehaviour
     [Header("Manual Slots")]
     [SerializeField] private SelectLevelButton[] levelSlots;
 
-    [Header("Mouse Cursor")]
+    [Header("Mouse Cursor")] 
     [SerializeField] private RectTransform mouseCursor;
+    [SerializeField] private GameObject mouseIndicator;
     [SerializeField] private float moveDuration = 0.35f;
     [SerializeField] private float jumpHeight = 45f;
     [SerializeField] private int jumpCount = 3;
@@ -127,6 +128,10 @@ public class LevelSelectScene : MonoBehaviour
 
         selectedIndex = nextIndex;
         bool mouseDir = direction == 1 ? true : false;
+        if (mouseIndicator != null)
+        {
+            mouseIndicator.SetActive(false);
+        }
         StartMouseMove(GetMouseTargetPosition(selectedIndex), mouseDir);
         SelectCurrentSlot();
     }
@@ -212,6 +217,7 @@ public class LevelSelectScene : MonoBehaviour
         {
             isMoving = false;
             mouseCursor.position = moveEndPosition;
+            mouseIndicator.SetActive(true);
         }
     }
 

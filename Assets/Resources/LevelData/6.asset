@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5087a0fc59fa2114bb1b856716323530, type: 3}
-  m_Name: 5
+  m_Name: 6
   m_EditorClassIdentifier: Assembly-CSharp::LevelData
-  levelID: 5
-  timeLimit: 30
+  levelID: 6
+  timeLimit: 50
   maxReplyCount: 1
-  nextLevelData: {fileID: 11400000, guid: 4446c77ce85074487aca49e3c9e1278d, type: 2}
+  nextLevelData: {fileID: 11400000, guid: f822b2285baa86c46b8753d0c2d9292c, type: 2}
