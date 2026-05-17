@@ -56,8 +56,8 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         Cursor.visible = false;
-        PlayerPrefs.SetInt("MaxClearLevelID", 8);
-        maxClearLevelID = PlayerPrefs.GetInt("MaxClearLevelID", 8);
+        PlayerPrefs.SetInt("MaxClearLevelID", 1);
+        maxClearLevelID = PlayerPrefs.GetInt("MaxClearLevelID", 1);
     }
     
     private void Update()

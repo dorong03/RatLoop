@@ -10,6 +10,7 @@ public class WaterEnter : MonoBehaviour
         if (other.tag == "Player")
         {
             isPlayerEnterWater = true;
+            other.GetComponent<Rigidbody2D>().linearVelocity = new Vector3(0, other.GetComponent<Rigidbody2D>().linearVelocity.y, 0);
             other.GetComponent<PlayerMovement>().enabled = false;
 
             await Awaitable.WaitForSecondsAsync(3f);
@@ -20,6 +21,7 @@ public class WaterEnter : MonoBehaviour
         } 
         else if (other.tag == "Ghost")
         {
+            other.GetComponent<Rigidbody2D>().linearVelocity = new Vector3(0, other.GetComponent<Rigidbody2D>().linearVelocity.y, 0);
             other.GetComponent<PlayerMovement>().enabled = false;
             other.GetComponent<GhostController>().enabled = false;
             other.GetComponent<Animator>().SetTrigger("Die");
