@@ -38,6 +38,7 @@ public class DataCollector : MonoBehaviour
     {
         if (GameManager.instance != null)
         {
+            CommitAttempt();
             GameManager.instance.OnEnterLevel -= OnEnterLevel;
             GameManager.instance.OnExitLevel -= OnExitLevel;
         }
