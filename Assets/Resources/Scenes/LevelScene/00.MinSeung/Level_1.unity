@@ -2382,7 +2382,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 4.21875
+  orthographic size: 5.0520835
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -3062,6 +3062,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Cheese
       objectReference: {fileID: 0}
+    - target: {fileID: 7708323734573527887, guid: 89d1343a9ab90d448b8aa2bdba1fb6d1, type: 3}
+      propertyPath: clearEffectPrefab
+      value: 
+      objectReference: {fileID: 6505711824364109816, guid: 95134fb5beda2b247bb92a54d7e0af87, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
