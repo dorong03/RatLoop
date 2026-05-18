@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/Resources/Scenes/GameScene/Title.unity
     guid: d00fb467f2b2041be8242f93d91486f5
   - enabled: 1
-    path: Assets/Resources/Scenes/GameScene/LevelSelction.unity
+    path: Assets/Resources/Scenes/GameScene/LevelSelection.unity
     guid: bec08e84ebed4d246b980f3181db14fe
   - enabled: 1
     path: Assets/Resources/Scenes/LevelScene/00.MinSeung/Level_1.unity
@@ -30,11 +30,11 @@ EditorBuildSettings:
     path: Assets/Resources/Scenes/LevelScene/00.MinSeung/Level_6.unity
     guid: b8a869872314f4f688c5e7712932cc52
   - enabled: 1
-    path: Assets/Resources/Scenes/LevelScene/00.MinSeung/Level_8.unity
-    guid: 80186de16e7844247a87433c091241cf
-  - enabled: 1
     path: Assets/Resources/Scenes/LevelScene/00.MinSeung/Level_7.unity
     guid: f80b5842018c649409b7daf92f9ad5e3
+  - enabled: 1
+    path: Assets/Resources/Scenes/LevelScene/00.MinSeung/Level_8.unity
+    guid: 80186de16e7844247a87433c091241cf
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

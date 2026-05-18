@@ -129,6 +129,15 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
+                    ""name"": ""Replay"",
+                    ""type"": ""Button"",
+                    ""id"": ""dd4cd159-cafa-4991-bd2c-2a12e894e1f4"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
                     ""name"": ""CameraDown"",
                     ""type"": ""Value"",
                     ""id"": ""e0671e05-e10c-4f1a-a00c-a906025479e6"",
@@ -211,6 +220,17 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Retry"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""337117de-aa69-4bdb-88b3-f28065a6bf51"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": ""Press"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Replay"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -707,6 +727,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         m_Player_Hang = m_Player.FindAction("Hang", throwIfNotFound: true);
         m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
         m_Player_Retry = m_Player.FindAction("Retry", throwIfNotFound: true);
+        m_Player_Replay = m_Player.FindAction("Replay", throwIfNotFound: true);
         m_Player_CameraDown = m_Player.FindAction("CameraDown", throwIfNotFound: true);
         m_Player_CameraUp = m_Player.FindAction("CameraUp", throwIfNotFound: true);
         // UI
@@ -811,6 +832,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Hang;
     private readonly InputAction m_Player_Jump;
     private readonly InputAction m_Player_Retry;
+    private readonly InputAction m_Player_Replay;
     private readonly InputAction m_Player_CameraDown;
     private readonly InputAction m_Player_CameraUp;
     /// <summary>
@@ -840,6 +862,10 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/Retry".
         /// </summary>
         public InputAction @Retry => m_Wrapper.m_Player_Retry;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/Replay".
+        /// </summary>
+        public InputAction @Replay => m_Wrapper.m_Player_Replay;
         /// <summary>
         /// Provides access to the underlying input action "Player/CameraDown".
         /// </summary>
@@ -886,6 +912,9 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @Retry.started += instance.OnRetry;
             @Retry.performed += instance.OnRetry;
             @Retry.canceled += instance.OnRetry;
+            @Replay.started += instance.OnReplay;
+            @Replay.performed += instance.OnReplay;
+            @Replay.canceled += instance.OnReplay;
             @CameraDown.started += instance.OnCameraDown;
             @CameraDown.performed += instance.OnCameraDown;
             @CameraDown.canceled += instance.OnCameraDown;
@@ -915,6 +944,9 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @Retry.started -= instance.OnRetry;
             @Retry.performed -= instance.OnRetry;
             @Retry.canceled -= instance.OnRetry;
+            @Replay.started -= instance.OnReplay;
+            @Replay.performed -= instance.OnReplay;
+            @Replay.canceled -= instance.OnReplay;
             @CameraDown.started -= instance.OnCameraDown;
             @CameraDown.performed -= instance.OnCameraDown;
             @CameraDown.canceled -= instance.OnCameraDown;
@@ -1356,6 +1388,13 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnRetry(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Replay" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnReplay(InputAction.CallbackContext context);
         /// <summary>
         /// Method invoked when associated input action "CameraDown" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>

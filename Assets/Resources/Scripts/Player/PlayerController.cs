@@ -38,13 +38,24 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void OnRetry(InputValue value)
+    private void OnReplay(InputValue value)
     {
         if (GameManager.instance.gameState == GameState.Playing)
         {
             if (value.isPressed)
             {
                 GameManager.instance.Replay();
+            }
+        }
+    }
+    
+    private void OnRetry(InputValue value)
+    {
+        if (GameManager.instance.gameState == GameState.Playing)
+        {
+            if (value.isPressed)
+            {
+                GameManager.instance.Retry();
             }
         }
     }

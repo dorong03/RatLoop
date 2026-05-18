@@ -43,6 +43,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "Replay",
+                    "type": "Button",
+                    "id": "dd4cd159-cafa-4991-bd2c-2a12e894e1f4",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "CameraDown",
                     "type": "Value",
                     "id": "e0671e05-e10c-4f1a-a00c-a906025479e6",
@@ -125,6 +134,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Retry",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "337117de-aa69-4bdb-88b3-f28065a6bf51",
+                    "path": "<Keyboard>/q",
+                    "interactions": "Press",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Replay",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

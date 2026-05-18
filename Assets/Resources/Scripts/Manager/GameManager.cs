@@ -151,7 +151,7 @@ public class GameManager : MonoBehaviour
         currentReplayCount = 0;
         timer = 0;
 
-        SceneManager.LoadScene("LevelSelction");
+        SceneManager.LoadScene("LevelSelection");
         SoundManager.instance.PlayLobbyBGM();
         OnExitLevel?.Invoke();
     }
