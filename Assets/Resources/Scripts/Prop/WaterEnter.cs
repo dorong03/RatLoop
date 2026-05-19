@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class WaterEnter : MonoBehaviour
 {
+    private static readonly HashSet<int> playedWaterEnterSfxIds = new HashSet<int>();
     private bool isPlayerEnterWater = false;
     
     private async void OnTriggerEnter2D(Collider2D other)
@@ -12,7 +14,7 @@ public class WaterEnter : MonoBehaviour
             isPlayerEnterWater = true;
             other.GetComponent<Rigidbody2D>().linearVelocity = new Vector3(0, other.GetComponent<Rigidbody2D>().linearVelocity.y, 0);
             other.GetComponent<PlayerMovement>().enabled = false;
-
+            PlayWaterEnterSfxOnce(other);
             await Awaitable.WaitForSecondsAsync(3f);
             if (isPlayerEnterWater)
             {
@@ -25,6 +27,19 @@ public class WaterEnter : MonoBehaviour
             other.GetComponent<PlayerMovement>().enabled = false;
             other.GetComponent<GhostController>().enabled = false;
             other.GetComponent<Animator>().SetTrigger("Die");
+            PlayWaterEnterSfxOnce(other);
+        }
+    }
+
+    private void PlayWaterEnterSfxOnce(Collider2D other)
+    {
+        int objectId = other.attachedRigidbody != null
+            ? other.attachedRigidbody.gameObject.GetInstanceID()
+            : other.transform.root.gameObject.GetInstanceID();
+
+        if (playedWaterEnterSfxIds.Add(objectId))
+        {
+            SoundManager.instance.PlaySFX(SfxType.WaterEnter);
         }
     }
 

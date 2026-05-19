@@ -57,6 +57,12 @@ public class LevelSelectScene : MonoBehaviour
 
     private int FindInitialSelectedIndex()
     {
+        int lastEnteredIndex = FindLastEnteredSlotIndex();
+        if (lastEnteredIndex >= 0)
+        {
+            return lastEnteredIndex;
+        }
+
         int bestIndex = -1;
         int bestLevelID = int.MinValue;
         int maxClearLevelID = GameManager.instance.maxClearLevelID;
@@ -87,6 +93,29 @@ public class LevelSelectScene : MonoBehaviour
         }
 
         return FindNextPlayableSlotIndex(0, 1);
+    }
+
+    private int FindLastEnteredSlotIndex()
+    {
+        int lastEnteredId = GameManager.instance.LastEnteredId;
+        int maxClearLevelID = GameManager.instance.maxClearLevelID;
+
+        if (lastEnteredId <= 0 || lastEnteredId > maxClearLevelID || levelSlots == null)
+        {
+            return -1;
+        }
+
+        for (int i = 0; i < levelSlots.Length; i++)
+        {
+            LevelData data = GetLevelData(i);
+            SelectLevelButton slot = GetSlot(i);
+            if (data != null && data.levelID == lastEnteredId && slot != null && slot.IsUnlocked)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     private void HandleInput()
@@ -123,6 +152,7 @@ public class LevelSelectScene : MonoBehaviour
         int nextIndex = FindNextPlayableSlotIndex(selectedIndex + direction, direction);
         if (nextIndex < 0 || nextIndex == selectedIndex)
         {
+            SoundManager.instance.PlaySFX(SfxType.StageError);
             return;
         }
 

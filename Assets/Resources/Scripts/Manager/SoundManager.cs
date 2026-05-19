@@ -8,7 +8,9 @@ public enum SfxType
     Land,
     Cheese,
     Die,
-    Replay
+    Replay,
+    StageError,
+    WaterEnter
 }
 
 public class SoundManager : MonoBehaviour
@@ -78,7 +80,7 @@ public class SoundManager : MonoBehaviour
         bgmSource.volume = bgmVolume;
         bgmSource.Play();
     }
-
+    
     public void PlaySFX(SfxType type)
     {
         if (sfxDictionary.TryGetValue(type, out AudioClip clip))

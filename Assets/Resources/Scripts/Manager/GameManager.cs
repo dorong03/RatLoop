@@ -24,6 +24,9 @@ public class GameManager : MonoBehaviour
     private int currentTimer;
     private int currentReplayCount;
 
+    private int lastEnteredId = 0;
+    public int LastEnteredId => lastEnteredId;
+
     private float timer;
     
     // 시간 UI 업데이트 용
@@ -101,6 +104,7 @@ public class GameManager : MonoBehaviour
 
     public void EnterLevel(LevelData levelData)
     {
+        lastEnteredId = levelData.levelID;
         SceneManager.sceneLoaded += OnLevelLoaded;
         SceneManager.LoadScene("Level_"+levelData.levelID);
         
@@ -176,14 +180,16 @@ public class GameManager : MonoBehaviour
 
         await System.Threading.Tasks.Task.Delay(2000);
 
-        if (currentLevelData.nextLevelData == null)
-        {
-            ExitLevel();
-        }
-        else
-        {
-            EnterLevel(currentLevelData.nextLevelData);
-        }
+        // if (currentLevelData.nextLevelData == null)
+        // {
+        //     ExitLevel();
+        // }
+        // else
+        // {
+        //     EnterLevel(currentLevelData.nextLevelData);
+        // }
+        
+        ExitLevel();
     }
 
     public void PlayerDie()
