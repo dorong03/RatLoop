@@ -2924,7 +2924,7 @@ PrefabInstance:
     - target: {fileID: 6957969075186779195, guid: 6d88e36e5aeb442faba6e7395cc82981, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: 0585be45cea76d54c85dc5819e7040a0, type: 3}
+      objectReference: {fileID: 21300000, guid: 180e2d6cb6b066449a3475a52c65cbd8, type: 3}
     - target: {fileID: 7959695954682629718, guid: 6d88e36e5aeb442faba6e7395cc82981, type: 3}
       propertyPath: m_Name
       value: Tutorial Info

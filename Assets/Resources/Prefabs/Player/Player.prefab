@@ -347,7 +347,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d2e3dce39f09074f846f6013788912e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoDustVFX
-  dustPrefab: {fileID: 6274574769692794041, guid: 86f1b5fdc5ee7744ab8632662404c751, type: 3}
+  dustPrefab: {fileID: 6274574769692794041, guid: 7201ae4bb0f0441b6a16808a9b354214, type: 3}
   jumpDustPos: {fileID: 6199224584821244328}
   landDustPos: {fileID: 5203771588254166236}
   groundTags:
