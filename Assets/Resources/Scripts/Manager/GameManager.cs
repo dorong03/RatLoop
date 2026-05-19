@@ -101,7 +101,6 @@ public class GameManager : MonoBehaviour
 
     public void EnterLevel(LevelData levelData)
     {
-        Debug.Log("Level_" + levelData.levelID);
         SceneManager.sceneLoaded += OnLevelLoaded;
         SceneManager.LoadScene("Level_"+levelData.levelID);
         
