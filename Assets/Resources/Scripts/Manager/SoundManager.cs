@@ -10,7 +10,9 @@ public enum SfxType
     Die,
     Replay,
     StageError,
-    WaterEnter
+    WaterEnter,
+    TitleButtonChange,
+    ButtonSelected
 }
 
 public class SoundManager : MonoBehaviour

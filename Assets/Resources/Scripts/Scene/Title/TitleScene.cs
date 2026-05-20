@@ -20,6 +20,7 @@ public class TitleScene : MonoBehaviour
             Keyboard.current.wKey.wasPressedThisFrame)
         {
             selectedStart = true;
+            SoundManager.instance.PlaySFX(SfxType.TitleButtonChange);
             UpdateUI();
         }
 
@@ -27,6 +28,7 @@ public class TitleScene : MonoBehaviour
             Keyboard.current.sKey.wasPressedThisFrame)
         {
             selectedStart = false;
+            SoundManager.instance.PlaySFX(SfxType.TitleButtonChange);
             UpdateUI();
         }
 
@@ -35,10 +37,12 @@ public class TitleScene : MonoBehaviour
         {
             if (selectedStart)
             {
+                SoundManager.instance.PlaySFX(SfxType.ButtonSelected);
                 OnClickStart();
             }
             else
             {
+                SoundManager.instance.PlaySFX(SfxType.ButtonSelected);
                 OnClickExit();
             }
         }
