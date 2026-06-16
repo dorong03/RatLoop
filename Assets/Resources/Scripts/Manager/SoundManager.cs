@@ -98,6 +98,7 @@ public class SoundManager : MonoBehaviour
                 sfxSource.pitch = 1f;
             }
             
+            if(bgmSource.clip == clip)
             sfxSource.PlayOneShot(clip);
         }
         else
