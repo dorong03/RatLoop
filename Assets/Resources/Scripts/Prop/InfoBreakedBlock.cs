@@ -24,6 +24,8 @@ public class InfoBreakedBlock : MonoBehaviour
     [SerializeField] private float breakShrinkScale = 0.2f;
     [SerializeField] private bool destroyAfterBreak = true;
 
+    [SerializeField] private bool isActive = false;
+    
     private Collider2D blockCollider;
     private SpriteRenderer[] spriteRenderers;
     private Color[] originalColors;
@@ -42,7 +44,13 @@ public class InfoBreakedBlock : MonoBehaviour
     private void Awake()
     {
         blockCollider = GetComponent<Collider2D>();
-        spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+
+        if (!isActive)
+        {
+            blockCollider.isTrigger = true;
+        }
+
+    spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
         originalColors = new Color[spriteRenderers.Length];
 
         for (int i = 0; i < spriteRenderers.Length; i++)
