@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections; 
 
 public class WaterSplash : MonoBehaviour
 {
@@ -6,13 +7,22 @@ public class WaterSplash : MonoBehaviour
     [SerializeField] private int dropCount = 5;
     [SerializeField] private float splashForce = 4f;
     [SerializeField] private float destroyTime = 1f;
+    private bool isSplashing = false;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag("Water"))
+        if (collision.CompareTag("Water") && !isSplashing)
         {
-            CreateSplash();
+            StartCoroutine(SplashRoutine());
         }
+    }
+
+    private IEnumerator SplashRoutine()
+    {
+        isSplashing = true; 
+        CreateSplash();
+        yield return new WaitForSeconds(4f);
+        isSplashing = false; 
     }
 
     private void CreateSplash()
@@ -22,6 +32,7 @@ public class WaterSplash : MonoBehaviour
             int randomIndex = Random.Range(0, droplets.Length);
             GameObject drop = Instantiate(droplets[randomIndex], transform.position, Quaternion.identity);
             Rigidbody2D rb = drop.GetComponent<Rigidbody2D>();
+
             if (rb != null)
             {
                 float randomX = Random.Range(-1f, 1f);
