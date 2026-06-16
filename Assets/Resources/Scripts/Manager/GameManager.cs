@@ -26,7 +26,9 @@ public class GameManager : MonoBehaviour
 
     private int lastEnteredId = 0;
     public int LastEnteredId => lastEnteredId;
-
+    
+    [SerializeField] private bool isCamereEffectShowed = false;
+    
     private float timer;
     
     // 시간 UI 업데이트 용
@@ -110,7 +112,7 @@ public class GameManager : MonoBehaviour
         
         Time.timeScale = 1f;
         gameState = GameState.Preview;
-        
+     
         currentLevelData = levelData;
         currentTimer = levelData.timeLimit;
         currentReplayCount = levelData.maxReplyCount;
@@ -129,9 +131,10 @@ public class GameManager : MonoBehaviour
         
         CameraEffect cameraEffect = Camera.main.GetComponent<CameraEffect>();
         
-        if (cameraEffect != null)
+        if (cameraEffect != null && !isCamereEffectShowed)
         {
             cameraEffect.PlayPreViewSequence(OnPreviewFinished);
+            isCamereEffectShowed = true;
         }
         else
         {
@@ -153,7 +156,8 @@ public class GameManager : MonoBehaviour
         currentTimer = 0;
         currentReplayCount = 0;
         timer = 0;
-
+        isCamereEffectShowed = false;
+        
         SceneManager.LoadScene("LevelSelection");
         SoundManager.instance.PlayLobbyBGM();
         OnExitLevel?.Invoke();
