@@ -85,8 +85,20 @@ public class SoundManager : MonoBehaviour
     
     public void PlaySFX(SfxType type)
     {
+        if (sfxSource == null)
+        {
+            Debug.LogWarning("SoundManager에 SFX AudioSource가 연결되어 있지 않습니다.");
+            return;
+        }
+
         if (sfxDictionary.TryGetValue(type, out AudioClip clip))
         {
+            if (clip == null)
+            {
+                Debug.LogWarning($"인스펙터 창에서 사운드 클립 넣어주기 --> {type}");
+                return;
+            }
+
             if (type == SfxType.Walk)
             {
                 sfxSource.pitch = Random.Range(0.8f, 1.2f);
@@ -98,17 +110,18 @@ public class SoundManager : MonoBehaviour
                 sfxSource.pitch = 1f;
             }
             
-            if(bgmSource.clip == clip)
             sfxSource.PlayOneShot(clip);
         }
         else
         {
-            Debug.Log($"인스펙터 창에서 사운드 클립 넣어주기 --> {type}");
+            Debug.LogWarning($"인스펙터 창에서 사운드 클립 넣어주기 --> {type}");
         }
     }
     
     public void PlaySFX(AudioClip audioClip, float minPitch, float maxPitch)
     {
+        if (sfxSource == null || audioClip == null) return;
+
         sfxSource.pitch = Random.Range(minPitch, maxPitch);
         sfxSource.volume = 1f;
         sfxSource.PlayOneShot(audioClip);

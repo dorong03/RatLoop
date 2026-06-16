@@ -197,6 +197,10 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: ce90bfe85166b41cd8c1827f103fb426, type: 3}
   - type: 6
     clip: {fileID: 8300000, guid: ddeabb91c53e24d9aa9a6501740fdd5a, type: 3}
+  - type: 8
+    clip: {fileID: 8300000, guid: 3d2d9ce8b1aee194496aef3a91b2c834, type: 3}
+  - type: 9
+    clip: {fileID: 8300000, guid: 450834646a11e374dafa0dd89e6a750b, type: 3}
 --- !u!82 &5081911921131066222
 AudioSource:
   m_ObjectHideFlags: 0
