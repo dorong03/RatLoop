@@ -3349,6 +3349,10 @@ PrefabInstance:
       value: SoundManager
       objectReference: {fileID: 0}
     - target: {fileID: 8261036224103784775, guid: 4491711cdda4d9e40899a5adcaba53b2, type: 3}
+      propertyPath: bgmVolume
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8261036224103784775, guid: 4491711cdda4d9e40899a5adcaba53b2, type: 3}
       propertyPath: sfxClips.Array.size
       value: 10
       objectReference: {fileID: 0}

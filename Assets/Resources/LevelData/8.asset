@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LevelData
   levelID: 8
   timeLimit: 60
-  maxReplyCount: 1
+  maxReplyCount: 2
   nextLevelData: {fileID: 0}
