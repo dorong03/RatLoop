@@ -1,13 +1,14 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 
 public class TitleScene : MonoBehaviour
 {
     [SerializeField] private GameObject startImage;
     [SerializeField] private GameObject exitImage;
+    [SerializeField] private UIAnimation animationUI;
 
     private bool selectedStart = true;
+    private bool isLoading = false;
 
     private void Start()
     {
@@ -16,6 +17,9 @@ public class TitleScene : MonoBehaviour
 
     private void Update()
     {
+        if (isLoading)
+            return;
+
         if (Keyboard.current.upArrowKey.wasPressedThisFrame ||
             Keyboard.current.wKey.wasPressedThisFrame)
         {
@@ -35,14 +39,15 @@ public class TitleScene : MonoBehaviour
         if (Keyboard.current.enterKey.wasPressedThisFrame ||
             Keyboard.current.spaceKey.wasPressedThisFrame)
         {
+            SoundManager.instance.PlaySFX(SfxType.ButtonSelected);
+
             if (selectedStart)
             {
-                SoundManager.instance.PlaySFX(SfxType.ButtonSelected);
-                OnClickStart();
+                isLoading = true;
+                animationUI.PlayAnimation("LevelSelection");
             }
             else
             {
-                SoundManager.instance.PlaySFX(SfxType.ButtonSelected);
                 OnClickExit();
             }
         }
@@ -52,11 +57,6 @@ public class TitleScene : MonoBehaviour
     {
         startImage.SetActive(selectedStart);
         exitImage.SetActive(!selectedStart);
-    }
-
-    public void OnClickStart()
-    {
-        SceneManager.LoadScene("LevelSelection");
     }
 
     public void OnClickExit()
