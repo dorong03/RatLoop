@@ -38,6 +38,7 @@ public class WaterEnter : MonoBehaviour
             PlayWaterEnterSfxOnce(other);
 
             await Awaitable.WaitForSecondsAsync(3f);
+            if (this == null) return;
             if (isPlayerEnterWater && currentTime.Equals(waterEnterTime))
             {
                 GameManager.instance.PlayerDie();
@@ -58,6 +59,7 @@ public class WaterEnter : MonoBehaviour
     {
         if (other.tag.Equals(PlayerTag))
         {
+            if (!gameObject.activeInHierarchy) return;
             exitGraceCoroutine = StartCoroutine(ExitGraceRoutine(other));
         }
     }
