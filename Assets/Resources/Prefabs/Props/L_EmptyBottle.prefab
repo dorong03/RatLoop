@@ -81,7 +81,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 9871890e74427254289047700f1595c3, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 0cc8c014097859f47ad8950f67615f8d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -100,9 +100,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 301985566009357442}
-  - component: {fileID: 8804241210071494145}
+  - component: {fileID: 3463427468868971412}
   m_Layer: 3
-  m_Name: WaterBottle
+  m_Name: L_EmptyBottle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -125,7 +125,7 @@ Transform:
   - {fileID: 7312502842212486922}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!50 &8804241210071494145
+--- !u!50 &3463427468868971412
 Rigidbody2D:
   serializedVersion: 5
   m_ObjectHideFlags: 0
@@ -138,9 +138,9 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 2.5
-  m_LinearDamping: 1.19
+  m_LinearDamping: 1.61
   m_AngularDamping: 1.39
-  m_GravityScale: 1.15
+  m_GravityScale: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
