@@ -233,14 +233,10 @@ public class GameManager : MonoBehaviour
         }
         else if (gameState == GameState.Playing)
         {
-            gameState = GameState.Pause;
-            Time.timeScale = 0;
             OnPressPause?.Invoke(true);
         } 
         else if (gameState == GameState.Pause)
         {
-            gameState = GameState.Playing;
-            Time.timeScale = 1;
             OnPressPause?.Invoke(false);
         }
     }

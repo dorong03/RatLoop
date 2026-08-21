@@ -1,4 +1,4 @@
-using Unity.VisualScripting;
+﻿using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -27,7 +27,8 @@ public class ButtonSelectedEffect : MonoBehaviour, ISelectHandler, IDeselectHand
     
     public void OnEnable()
     {
-        if (EventSystem.current.firstSelectedGameObject.Equals(gameObject))
+        EventSystem eventSystem = EventSystem.current;
+        if (eventSystem != null && gameObject.Equals(eventSystem.firstSelectedGameObject))
         {
             isFirstSelected = true;
         }
