@@ -76,3 +76,17 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
+
+# OS 생성 파일
+.DS_Store
+Thumbs.db
+
+# JetBrains Rider / IntelliJ IDE 설정
+.idea/
+
+# Mono 크래시 리포트
+mono_crash.*.json
+
+# Visual Studio 업그레이드 로그 및 백업
+UpgradeLog*.htm
+/[Bb]ackup/
