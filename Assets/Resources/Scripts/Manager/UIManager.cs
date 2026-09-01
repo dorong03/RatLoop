@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
@@ -12,6 +13,7 @@ public class UIManager : MonoBehaviour
     
     [SerializeField] private GameObject pausePanel;
     [SerializeField] private GameObject infoPanel;
+    [SerializeField] private GameObject finalClearPanel;
     [SerializeField] private Button ResumeButton;
     [SerializeField] private Button ExitButton;
     [SerializeField] private Button ReTryButton;
@@ -45,12 +47,18 @@ public class UIManager : MonoBehaviour
         {
             infoPanel.SetActive(false);
         }
-            
+
+        if (finalClearPanel != null)
+        {
+            finalClearPanel.SetActive(false);
+        }
+
         GameManager.instance.OnReplayCountChanged += UpdateLivesText;
         GameManager.instance.OnTimeChanged += UpdateTimeText;
         GameManager.instance.OnEnterLevel += ShowLevelUI;
         GameManager.instance.OnExitLevel += HideLevelUI;
         GameManager.instance.OnPressPause += OnPressPause;
+        GameManager.instance.OnFinalLevelClear += ShowFinalClearPanel;
         
         ResumeButton.onClick.AddListener(GameManager.instance.TogglePause);
         ExitButton.onClick.AddListener(GameManager.instance.ExitLevel);
@@ -65,6 +73,7 @@ public class UIManager : MonoBehaviour
         GameManager.instance.OnEnterLevel -= ShowLevelUI;
         GameManager.instance.OnExitLevel -= HideLevelUI;
         GameManager.instance.OnPressPause -= OnPressPause;
+        GameManager.instance.OnFinalLevelClear -= ShowFinalClearPanel;
     }
 
     private void UpdateLivesText(int lives)
@@ -85,13 +94,23 @@ public class UIManager : MonoBehaviour
             return;
         }
 
+        GameObject topPanel = panelStack.Peek();
+
+        // 엔딩 패널은 버튼 없이 엔터/ESC로만 닫고 스테이지 선택 화면으로 돌아간다.
+        // TODO : 학교 전시용 빌드라 임시로 Update에서 Keyboard를 직접 읽는다.
+        //        전시 후 InputAction 기반으로 옮길 것.
+        if (topPanel == finalClearPanel && IsConfirmOrCancelPressed())
+        {
+            GameManager.instance.ExitLevel();
+            return;
+        }
+
         EventSystem eventSystem = EventSystem.current;
         if (eventSystem == null)
         {
             return;
         }
 
-        GameObject topPanel = panelStack.Peek();
         GameObject selected = eventSystem.currentSelectedGameObject;
         if (selected == null || !selected.activeInHierarchy || !selected.transform.IsChildOf(topPanel.transform))
         {
@@ -124,6 +143,32 @@ public class UIManager : MonoBehaviour
         {
             OpenPanel(infoPanel);
         }
+    }
+
+    private void ShowFinalClearPanel()
+    {
+        if (finalClearPanel != null)
+        {
+            OpenPanel(finalClearPanel);
+        }
+        else
+        {
+            // 패널이 연결되지 않았더라도 게임이 멈추지 않도록 바로 나간다.
+            GameManager.instance.ExitLevel();
+        }
+    }
+
+    private bool IsConfirmOrCancelPressed()
+    {
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard == null)
+        {
+            return false;
+        }
+
+        return keyboard.enterKey.wasPressedThisFrame ||
+               keyboard.numpadEnterKey.wasPressedThisFrame ||
+               keyboard.escapeKey.wasPressedThisFrame;
     }
 
     private void OpenPanel(GameObject panel)
@@ -246,6 +291,11 @@ public class UIManager : MonoBehaviour
         if (infoPanel != null)
         {
             infoPanel.SetActive(false);
+        }
+
+        if (finalClearPanel != null)
+        {
+            finalClearPanel.SetActive(false);
         }
 
         SetSelected(null);

@@ -40,6 +40,8 @@ public class GameManager : MonoBehaviour
     // 나갈때 셋팅용
     public event Action OnExitLevel;
     public event Action<bool> OnPressPause;
+    // 마지막 스테이지 클리어 시 UI 알림용
+    public event Action OnFinalLevelClear;
 
     private void Awake()
     {
@@ -183,16 +185,14 @@ public class GameManager : MonoBehaviour
 
         await System.Threading.Tasks.Task.Delay(2000);
 
-        // if (currentLevelData.nextLevelData == null)
-        // {
-        //     ExitLevel();
-        // }
-        // else
-        // {
-        //     EnterLevel(currentLevelData.nextLevelData);
-        // }
-        
-        ExitLevel();
+        if (currentLevelData.nextLevelData == null)
+        {
+            OnFinalLevelClear?.Invoke();
+        }
+        else
+        {
+            ExitLevel();
+        }
     }
 
     public void PlayerDie()
