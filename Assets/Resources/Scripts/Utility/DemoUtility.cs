@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
@@ -8,13 +8,25 @@ public class DemoUtility : MonoBehaviour
     {
         if (Keyboard.current.lKey.wasPressedThisFrame)
         {
-            if (GameManager.instance.currentLevelData != null)
+            GameManager gm = GameManager.instance;
+
+            if (gm.currentLevelData != null &&
+                gm.currentLevelData.nextLevelData != null)
             {
-                LevelData currentLevelData = GameManager.instance.currentLevelData;
-                if (currentLevelData.nextLevelData != null)
+                var nextLevel = gm.currentLevelData.nextLevelData;
+
+                // 이동할 스테이지까지 해금
+                if (nextLevel.levelID > gm.maxClearLevelID)
                 {
-                    GameManager.instance.EnterLevel(currentLevelData.nextLevelData);
+                    gm.maxClearLevelID = nextLevel.levelID;
+
+                    // 게임을 껐다 켜도 해금 상태 유지
+                    PlayerPrefs.SetInt("MaxClearLevelID", gm.maxClearLevelID);
+                    PlayerPrefs.Save();
                 }
+
+                // 다음 스테이지로 이동
+                gm.EnterLevel(nextLevel);
             }
         }
 
@@ -25,7 +37,8 @@ public class DemoUtility : MonoBehaviour
             Destroy(SoundManager.instance.gameObject);
             Destroy(DataCollector.instance.gameObject);
             Destroy(DataSaver.instance.gameObject);
-
+            Time.timeScale = 1f;
+            PlayerPrefs.DeleteKey("MaxClearLevelID");
             SceneManager.LoadScene(0);
         }
     }

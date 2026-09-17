@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -42,6 +42,8 @@ public class GameManager : MonoBehaviour
     public event Action<bool> OnPressPause;
     // 마지막 스테이지 클리어 시 UI 알림용
     public event Action OnFinalLevelClear;
+
+
 
     private void Awake()
     {
@@ -188,6 +190,8 @@ public class GameManager : MonoBehaviour
         if (currentLevelData.nextLevelData == null)
         {
             OnFinalLevelClear?.Invoke();
+            // 초기화를 하면 되겠네 어떻게해? 몰라 난 모르지만? 일단 PlayerPref <- 초기화 시키고 다시 타이틀 씬읋 열면 되자 않을까
+            PlayerPrefs.DeleteKey("MaxClearLevelID");
         }
         else
         {
@@ -240,7 +244,7 @@ public class GameManager : MonoBehaviour
             OnPressPause?.Invoke(false);
         }
     }
-
+    
     private void UpdateLevelTimer()
     {
         if (gameState == GameState.Playing)

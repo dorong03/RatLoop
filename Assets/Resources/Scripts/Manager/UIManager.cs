@@ -1,7 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Net.Sockets;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
@@ -18,6 +21,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button ExitButton;
     [SerializeField] private Button ReTryButton;
     [SerializeField] private Button InfoButton;
+
+    private float time;
 
     private Stack<GameObject> panelStack = new();
     private Stack<GameObject> previousSelectedStack = new();
@@ -38,6 +43,7 @@ public class UIManager : MonoBehaviour
     
     private void Start()
     {
+        time = 300f;
         if (pausePanel != null)
         {
             pausePanel.SetActive(false);
@@ -52,7 +58,6 @@ public class UIManager : MonoBehaviour
         {
             finalClearPanel.SetActive(false);
         }
-
         GameManager.instance.OnReplayCountChanged += UpdateLivesText;
         GameManager.instance.OnTimeChanged += UpdateTimeText;
         GameManager.instance.OnEnterLevel += ShowLevelUI;
@@ -89,6 +94,28 @@ public class UIManager : MonoBehaviour
     // 패널이 열려있는 동안에는 항상 최상단 패널 안의 버튼이 선택된 상태를 유지한다. (키보드 전용 조작)
     private void Update()
     {
+        //학교 전시용 플레이어의 입력이 5분동안 없을 경우 게임이 초기화 되는 코드
+        if (Keyboard.current.anyKey.isPressed)
+        {
+            time = 300f;
+        }
+        else
+        {
+            time -= Time.unscaledDeltaTime;
+            if (time <= 0f)
+            {
+                Destroy(GameManager.instance.gameObject);
+                Destroy(UIManager.instance.gameObject);
+                Destroy(SoundManager.instance.gameObject);
+                Destroy(DataCollector.instance.gameObject);
+                Destroy(DataSaver.instance.gameObject);
+                Time.timeScale = 1f;
+                ActiveResetBotton();
+                SceneManager.LoadScene(0);
+            }
+        }
+
+
         if (panelStack.Count == 0)
         {
             return;
@@ -299,5 +326,9 @@ public class UIManager : MonoBehaviour
         }
 
         SetSelected(null);
+    }
+    private void ActiveResetBotton()
+    {
+        PlayerPrefs.DeleteKey("MaxClearLevelID");
     }
 }
