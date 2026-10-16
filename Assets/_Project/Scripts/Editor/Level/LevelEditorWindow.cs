@@ -120,6 +120,8 @@ public partial class LevelEditorWindow : EditorWindow
                 tilemap.RefreshAllTiles();
             }
         }
+        // 종류 설정(프리팹 원본)을 바꾼 것을 실행 취소한 경우 파일에도 반영한다.
+        AssetDatabase.SaveAssets();
         MarkReportDirty();
         Repaint();
         SceneView.RepaintAll();
@@ -290,11 +292,25 @@ public partial class LevelEditorWindow : EditorWindow
                 if (GUILayout.Button("열기", GUILayout.Width(48), GUILayout.Height(26))) { LevelEditorTools.OpenLevel(lv); GUIUtility.ExitGUI(); }
             }
             if (index >= 0 && GUILayout.Button("빼기", GUILayout.Width(48), GUILayout.Height(26)) &&
-                EditorUtility.DisplayDialog("레벨 빼기", $"{index + 1}번 레벨을 목록에서 뺄까요?\n레벨 파일은 지워지지 않습니다.", "빼기", "취소"))
+                EditorUtility.DisplayDialog("레벨 빼기", $"{index + 1}번 레벨을 목록에서 뺄까요?\n레벨 파일은 지워지지 않고 '목록에 없는 레벨'로 남습니다.", "빼기", "취소"))
             {
                 LevelEditorTools.RemoveFromList(index);
                 GUIUtility.ExitGUI();
             }
+
+            GUI.backgroundColor = new Color(1f, 0.6f, 0.6f);
+            if (lv != null && GUILayout.Button("삭제", GUILayout.Width(48), GUILayout.Height(26)) &&
+                EditorUtility.DisplayDialog("레벨 삭제",
+                    $"'{lv.DisplayName}' ({lv.name}) 레벨을 삭제할까요?\n\n" +
+                    "레벨 목록에서도 빠지고 파일은 컴퓨터의 휴지통으로 옮겨집니다.\n" +
+                    "실수로 지웠다면 휴지통에서 되살리거나 Git 에서 복구할 수 있습니다.",
+                    "삭제", "취소"))
+            {
+                GUI.backgroundColor = Color.white;
+                LevelEditorTools.DeleteLevel(lv);
+                GUIUtility.ExitGUI();
+            }
+            GUI.backgroundColor = Color.white;
         }
     }
 
@@ -531,26 +547,25 @@ public partial class LevelEditorWindow : EditorWindow
                 EditorGUILayout.LabelField(CategoryLabel(prop.Category), EditorStyles.miniLabel, GUILayout.Width(60));
             }
 
+            if (PlannerFieldUtility.HasFields(prop.GetType(), PlannerFieldUtility.Scope.Shared))
+            {
+                DrawTypeSettings(prop, PlannerFieldUtility.IsEditingType(prop)
+                    ? "같은 종류 전체에 적용 (모든 레벨)"
+                    : "설정");
+            }
+
+            EditorGUILayout.Space(4);
+            EditorGUILayout.LabelField("이 자리에만 적용", EditorStyles.miniBoldLabel);
             var so = new SerializedObject(prop);
             so.Update();
-            if (PlannerFieldUtility.GetPlannerProperties(so).Count > 0)
+            if (PlannerFieldUtility.HasFields(prop.GetType(), PlannerFieldUtility.Scope.PerInstance))
             {
-                EditorGUI.BeginChangeCheck();
-                PlannerFieldUtility.DrawPlannerFields(so);
-                if (EditorGUI.EndChangeCheck())
+                if (PlannerFieldUtility.DrawPlannerFields(so, PlannerFieldUtility.Scope.PerInstance))
                 {
                     MarkReportDirty();
                 }
             }
             so.ApplyModifiedProperties();
-
-            if (PrefabUtility.IsPartOfPrefabInstance(prop) && PlannerFieldUtility.HasPrefabOverrides(so))
-            {
-                if (GUILayout.Button("기본값으로 되돌리기"))
-                {
-                    PlannerFieldUtility.RevertToPrefabDefaults(so);
-                }
-            }
 
             DrawPositionFields(prop.transform);
 
@@ -578,6 +593,30 @@ public partial class LevelEditorWindow : EditorWindow
                     Undo.DestroyObjectImmediate(prop.gameObject);
                     MarkReportDirty();
                     GUIUtility.ExitGUI();
+                }
+            }
+        }
+    }
+
+    // 종류 공통 설정: 프리팹 원본을 고치므로 이 프롭을 쓰는 모든 레벨에 함께 적용된다.
+    private void DrawTypeSettings(Component instanceOrPrefab, string title)
+    {
+        EditorGUILayout.LabelField(title, EditorStyles.miniBoldLabel);
+        using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+        {
+            if (PlannerFieldUtility.DrawSharedFields(instanceOrPrefab))
+            {
+                MarkReportDirty();
+            }
+
+            List<string> overrides = PlannerFieldUtility.GetSharedOverrides(instanceOrPrefab);
+            if (overrides.Count > 0)
+            {
+                EditorGUILayout.HelpBox($"이 자리의 프롭만 값이 다릅니다: {string.Join(", ", overrides)}\n같은 종류는 같은 값을 쓰도록 맞추는 것을 권장합니다.", MessageType.Warning);
+                if (GUILayout.Button("종류 설정으로 맞추기"))
+                {
+                    PlannerFieldUtility.RevertSharedOverrides(instanceOrPrefab);
+                    MarkReportDirty();
                 }
             }
         }
@@ -779,6 +818,12 @@ public partial class LevelEditorWindow : EditorWindow
                 if (!string.IsNullOrEmpty(selectedProp.description))
                 {
                     EditorGUILayout.LabelField(selectedProp.description, EditorStyles.wordWrappedMiniLabel);
+                }
+                LevelProp typeProp = selectedProp.Prop;
+                if (typeProp != null && PlannerFieldUtility.HasFields(typeProp.GetType(), PlannerFieldUtility.Scope.Shared))
+                {
+                    EditorGUILayout.Space(2);
+                    DrawTypeSettings(typeProp, "이 종류의 설정 (이미 놓은 것과 모든 레벨에 함께 적용)");
                 }
             }
         }

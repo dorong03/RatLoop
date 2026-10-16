@@ -7,7 +7,7 @@ public class RopeProp : LevelProp
 {
     private const string LinkPrefix = "Link_";
 
-    [PlannerField("마디 수", 0)]
+    [PlannerField("마디 수", 0, PerInstance = true)]
     [SerializeField, Range(1, 30)] private int segmentCount = 6;
 
     [PlannerField("마디 무게", 1)]
@@ -56,8 +56,26 @@ public class RopeProp : LevelProp
         }
     }
 
+    // 프리팹 원본(파일)은 씬에 있지 않아서 그 안에 마디를 만들 수 없다. 레벨이나 씬에 놓인 로프만 만든다.
+    private bool IsAsset
+    {
+        get
+        {
+#if UNITY_EDITOR
+            return UnityEditor.EditorUtility.IsPersistent(gameObject);
+#else
+            return false;
+#endif
+        }
+    }
+
     private void Rebuild()
     {
+        if (IsAsset)
+        {
+            return;
+        }
+
         ClearLinks();
         if (linkPrefab == null || segmentRoot == null)
         {
@@ -119,7 +137,7 @@ public class RopeProp : LevelProp
 
     private void ClearLinks()
     {
-        if (segmentRoot == null)
+        if (segmentRoot == null || IsAsset)
         {
             return;
         }

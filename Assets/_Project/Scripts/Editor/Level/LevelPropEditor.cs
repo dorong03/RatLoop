@@ -3,9 +3,10 @@ using UnityEditor;
 using UnityEngine;
 
 // 모든 LevelProp 의 인스펙터.
-// 위쪽에는 기획자 설정([PlannerField])만, 나머지는 접힌 "개발자 설정" 안에 보여준다.
+//  - 종류 공통 설정: 프리팹(종류)에 저장. 레벨에 놓인 개체를 골라도 프리팹 원본을 고친다.
+//  - 이 자리 설정: 물 크기, 로프 길이처럼 놓은 자리마다 다른 값.
+//  - 개발자 설정: [PlannerField] 가 없는 나머지 값 (접혀 있음)
 [CustomEditor(typeof(LevelProp), true)]
-[CanEditMultipleObjects]
 public class LevelPropEditor : Editor
 {
     private static bool showDeveloperSettings;
@@ -20,28 +21,35 @@ public class LevelPropEditor : Editor
 
     public override void OnInspectorGUI()
     {
-        serializedObject.Update();
+        var prop = (LevelProp)target;
+        bool editingType = PlannerFieldUtility.IsEditingType(prop);
 
-        EditorGUILayout.LabelField("기획자 설정", EditorStyles.boldLabel);
-        using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+        if (PlannerFieldUtility.HasFields(prop.GetType(), PlannerFieldUtility.Scope.Shared))
         {
-            if (PlannerFieldUtility.GetPlannerProperties(serializedObject).Count == 0)
+            EditorGUILayout.LabelField(editingType ? "종류 공통 설정 (모든 레벨의 같은 프롭에 적용)" : "기획자 설정", EditorStyles.boldLabel);
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                EditorGUILayout.LabelField("조절할 값이 없습니다.", EditorStyles.miniLabel);
-            }
-            else
-            {
-                PlannerFieldUtility.DrawPlannerFields(serializedObject);
-            }
+                PlannerFieldUtility.DrawSharedFields(prop);
 
-            if (!serializedObject.isEditingMultipleObjects &&
-                PrefabUtility.IsPartOfPrefabInstance(target) &&
-                PlannerFieldUtility.HasPrefabOverrides(serializedObject))
-            {
-                if (GUILayout.Button("기본값으로 되돌리기"))
+                List<string> overrides = PlannerFieldUtility.GetSharedOverrides(prop);
+                if (overrides.Count > 0)
                 {
-                    PlannerFieldUtility.RevertToPrefabDefaults(serializedObject);
+                    EditorGUILayout.HelpBox($"이 자리의 프롭만 값이 다릅니다: {string.Join(", ", overrides)}", MessageType.Warning);
+                    if (GUILayout.Button("종류 설정으로 맞추기"))
+                    {
+                        PlannerFieldUtility.RevertSharedOverrides(prop);
+                    }
                 }
+            }
+        }
+
+        serializedObject.Update();
+        if (PlannerFieldUtility.HasFields(prop.GetType(), PlannerFieldUtility.Scope.PerInstance))
+        {
+            EditorGUILayout.LabelField("이 자리 설정", EditorStyles.boldLabel);
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                PlannerFieldUtility.DrawPlannerFields(serializedObject, PlannerFieldUtility.Scope.PerInstance);
             }
         }
 
@@ -54,7 +62,7 @@ public class LevelPropEditor : Editor
             using (new EditorGUI.IndentLevelScope())
             {
                 DrawPropertiesExcluding(serializedObject, excludedFromDeveloper);
-                EditorGUILayout.LabelField("카탈로그 ID", ((LevelProp)target).CatalogId ?? "-");
+                EditorGUILayout.LabelField("카탈로그 ID", prop.CatalogId ?? "-");
             }
         }
 
@@ -63,11 +71,6 @@ public class LevelPropEditor : Editor
 
     private void DrawValidation()
     {
-        if (serializedObject.isEditingMultipleObjects)
-        {
-            return;
-        }
-
         var report = new PropValidationReport();
         ((LevelProp)target).Validate(report);
         foreach (PropValidationReport.Entry e in report.Entries)

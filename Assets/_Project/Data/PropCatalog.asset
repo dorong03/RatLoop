@@ -222,11 +222,18 @@ MonoBehaviour:
       \uB4E4\uC5B4 \uC788\uB2E4"
     hiddenInPalette: 1
   - id: invisible_wall
-    displayName: "\uD22C\uBA85\uBCBD"
+    displayName: "\uD22C\uBA85\uBCBD (\uCE90\uB9AD\uD130\uB9CC \uB9C9\uAE30)"
     prefab: {fileID: 8933821892972846989, guid: e92612a60a1fec9478bd5294d68f2011, type: 3}
     icon: {fileID: 0}
     description: "\uB208\uC5D0 \uBCF4\uC774\uC9C0 \uC54A\uB294 \uBCBD. \uD50C\uB808\uC774\uC5B4\uC640
-      \uACE0\uC2A4\uD2B8\uAC00 \uC9C0\uB098\uAC00\uC9C0 \uBABB\uD55C\uB2E4. \uD06C\uAE30\uB294
-      \uCE78 \uC218\uB85C \uC815\uD558\uACE0, \"\uBB3C\uCCB4\uB3C4 \uB9C9\uAE30\"\uB97C
-      \uCF1C\uBA74 \uBC15\uC2A4\uC640 \uACF5\uB3C4 \uB9C9\uB294\uB2E4."
+      \uACE0\uC2A4\uD2B8\uB9CC \uB9C9\uACE0, \uBC15\uC2A4\uC640 \uACF5 \uAC19\uC740
+      \uBB3C\uCCB4\uB294 \uD1B5\uACFC\uD55C\uB2E4."
+    hiddenInPalette: 0
+  - id: invisible_wall_block
+    displayName: "\uD22C\uBA85\uBCBD (\uBB3C\uCCB4\uB3C4 \uB9C9\uAE30)"
+    prefab: {fileID: 3009197275471715384, guid: 1c4c727feae273b459b8959ec583e12f, type: 3}
+    icon: {fileID: 0}
+    description: "\uB208\uC5D0 \uBCF4\uC774\uC9C0 \uC54A\uB294 \uBCBD. \uD50C\uB808\uC774\uC5B4,
+      \uACE0\uC2A4\uD2B8, \uBC15\uC2A4\uC640 \uACF5 \uAC19\uC740 \uBB3C\uCCB4\uAE4C\uC9C0
+      \uBAA8\uB450 \uB9C9\uB294\uB2E4."
     hiddenInPalette: 0

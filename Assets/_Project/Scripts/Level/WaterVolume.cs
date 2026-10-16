@@ -24,10 +24,10 @@ public class WaterVolume : LevelProp, IAreaProp
         public TileBase Get(int row, int column) => tiles != null && tiles.Length == 9 ? tiles[row * 3 + column] : null;
     }
 
-    [PlannerField("가로 칸 수", 0)]
+    [PlannerField("가로 칸 수", 0, PerInstance = true)]
     [SerializeField, Range(1, 64)] private int width = 5;
 
-    [PlannerField("세로 칸 수", 1)]
+    [PlannerField("세로 칸 수", 1, PerInstance = true)]
     [SerializeField, Range(1, 32)] private int height = 3;
 
     [PlannerField("부력", 2)]
@@ -50,7 +50,7 @@ public class WaterVolume : LevelProp, IAreaProp
     [Tooltip("0 이면 빠져도 죽지 않는다.")]
     [SerializeField, Range(0f, 10f)] private float drownTime = 3f;
 
-    [PlannerField("타일 자동 배치", 8)]
+    [PlannerField("타일 자동 배치", 8, PerInstance = true)]
     [Tooltip("끄면 크기를 바꿔도 물 타일을 다시 깔지 않는다. (직접 그린 물 그림을 보존할 때)")]
     [SerializeField] private bool autoTiles = true;
 

@@ -105,6 +105,12 @@ public class LevelRoot : MonoBehaviour
             }
 
 #if UNITY_EDITOR
+            string differs = SharedOverrides(prop);
+            if (differs != null)
+            {
+                report.Warning($"{prop.name}: 이 자리의 프롭만 종류 설정과 값이 다릅니다 ({differs}). 같은 종류는 같은 값을 쓰도록 '종류 설정으로 맞추기'를 눌러주세요.", prop);
+            }
+
             if (catalog != null && !(prop is SpawnPoint))
             {
                 GameObject source = UnityEditor.PrefabUtility.GetCorrespondingObjectFromOriginalSource(prop.gameObject);
@@ -118,6 +124,48 @@ public class LevelRoot : MonoBehaviour
 
         CheckPhysicsOverlaps(report);
     }
+
+#if UNITY_EDITOR
+    // 종류 공통 값([PlannerField] 중 PerInstance 가 아닌 것)을 이 개체에서만 따로 바꿨으면 그 이름들을 돌려준다.
+    private static string SharedOverrides(LevelProp prop)
+    {
+        if (!UnityEditor.PrefabUtility.IsPartOfPrefabInstance(prop))
+        {
+            return null;
+        }
+        Object source = UnityEditor.PrefabUtility.GetCorrespondingObjectFromSource(prop);
+        UnityEditor.PropertyModification[] mods = UnityEditor.PrefabUtility.GetPropertyModifications(prop.gameObject);
+        if (source == null || mods == null)
+        {
+            return null;
+        }
+
+        var names = new List<string>();
+        const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Instance |
+                                                    System.Reflection.BindingFlags.Public |
+                                                    System.Reflection.BindingFlags.NonPublic;
+        for (System.Type t = prop.GetType(); t != null && t != typeof(MonoBehaviour); t = t.BaseType)
+        {
+            foreach (System.Reflection.FieldInfo field in t.GetFields(flags | System.Reflection.BindingFlags.DeclaredOnly))
+            {
+                var attr = (PlannerFieldAttribute)System.Attribute.GetCustomAttribute(field, typeof(PlannerFieldAttribute));
+                if (attr == null || attr.PerInstance)
+                {
+                    continue;
+                }
+                foreach (UnityEditor.PropertyModification m in mods)
+                {
+                    if (m.target == source && (m.propertyPath == field.Name || m.propertyPath.StartsWith(field.Name + ".")))
+                    {
+                        names.Add(attr.Label);
+                        break;
+                    }
+                }
+            }
+        }
+        return names.Count > 0 ? string.Join(", ", names) : null;
+    }
+#endif
 
     private static bool HasGroundBelow(Tilemap ground, Vector3 worldPosition, float distance)
     {

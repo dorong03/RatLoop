@@ -314,6 +314,40 @@ public static class LevelEditorTools
         AssetDatabase.SaveAssetIfDirty(list);
     }
 
+    // 레벨을 지운다. 목록에서 빼고 파일은 컴퓨터 휴지통으로 옮긴다. (되살릴 수 있게)
+    public static bool DeleteLevel(LevelRoot levelPrefab)
+    {
+        if (levelPrefab == null)
+        {
+            return false;
+        }
+
+        string path = AssetDatabase.GetAssetPath(levelPrefab);
+        if (CurrentLevelPath == path)
+        {
+            StageUtility.GoToMainStage();
+        }
+
+        LevelList list = LevelList;
+        if (list != null)
+        {
+            for (int i = list.Count - 1; i >= 0; i--)
+            {
+                if (list.Get(i) == levelPrefab)
+                {
+                    RemoveFromList(i);
+                }
+            }
+        }
+
+        bool ok = AssetDatabase.MoveAssetToTrash(path);
+        if (!ok)
+        {
+            Debug.LogError("레벨을 삭제하지 못했습니다: " + path);
+        }
+        return ok;
+    }
+
     // ------------------------------------------------------------ 테스트 플레이
 
     public static void TestPlay()

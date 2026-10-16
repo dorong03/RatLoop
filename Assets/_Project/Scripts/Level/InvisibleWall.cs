@@ -7,10 +7,10 @@ using UnityEngine;
 [RequireComponent(typeof(BoxCollider2D))]
 public class InvisibleWall : LevelProp, IAreaProp
 {
-    [PlannerField("가로 칸 수", 0)]
+    [PlannerField("가로 칸 수", 0, PerInstance = true)]
     [SerializeField, Range(1, 64)] private int width = 1;
 
-    [PlannerField("세로 칸 수", 1)]
+    [PlannerField("세로 칸 수", 1, PerInstance = true)]
     [SerializeField, Range(1, 64)] private int height = 4;
 
     [PlannerField("물체도 막기", 2)]
