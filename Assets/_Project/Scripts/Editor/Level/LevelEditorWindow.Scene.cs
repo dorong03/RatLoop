@@ -450,13 +450,17 @@ public partial class LevelEditorWindow
     }
 
     private readonly Dictionary<GameObject, List<GhostSprite>> ghostCache = new Dictionary<GameObject, List<GhostSprite>>();
+    // 미리보기를 만들 때의 프리팹 크기. 종류의 크기를 바꾸면 미리보기를 다시 만든다.
+    private readonly Dictionary<GameObject, Vector3> ghostScale = new Dictionary<GameObject, Vector3>();
 
     private List<GhostSprite> GetGhost(GameObject prefab)
     {
-        if (ghostCache.TryGetValue(prefab, out var cached))
+        if (ghostCache.TryGetValue(prefab, out var cached)
+            && ghostScale.TryGetValue(prefab, out Vector3 scale) && scale == prefab.transform.localScale)
         {
             return cached;
         }
+        ghostScale[prefab] = prefab.transform.localScale;
 
         var list = new List<GhostSprite>();
         Matrix4x4 rootToLocal = prefab.transform.worldToLocalMatrix;

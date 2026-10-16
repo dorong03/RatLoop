@@ -652,7 +652,8 @@ public partial class LevelEditorWindow : EditorWindow
         {
             if (PlannerFieldUtility.DrawSharedFields(instanceOrPrefab))
             {
-                // 크기처럼 오브젝트에 직접 반영되는 값은 이미 놓은 같은 프롭에도 바로 맞춘다.
+                // 크기처럼 오브젝트에 직접 반영되는 값은 미리보기와 이미 놓은 같은 프롭에도 바로 맞춘다.
+                ghostCache.Clear();
                 LevelRoot level = LevelEditorTools.CurrentLevel;
                 if (level != null)
                 {

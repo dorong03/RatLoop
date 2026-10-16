@@ -153,7 +153,8 @@ public static class PlannerFieldUtility
         if (changed)
         {
             so.ApplyModifiedProperties();
-            if (source != instance)
+            // 레벨에 놓은 것을 고쳤든 팔레트에서 프리팹을 직접 고쳤든, 원본의 크기 같은 파생 값까지 맞춰 저장한다.
+            if (source != instance || EditorUtility.IsPersistent(source))
             {
                 SaveTypeSource(source);
             }
