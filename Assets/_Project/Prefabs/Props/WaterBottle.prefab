@@ -101,6 +101,7 @@ GameObject:
   m_Component:
   - component: {fileID: 301985566009357442}
   - component: {fileID: 8804241210071494145}
+  - component: {fileID: 3626339434679021323}
   m_Layer: 3
   m_Name: WaterBottle
   m_TagString: Untagged
@@ -152,6 +153,27 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &3626339434679021323
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8266930110130702034}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c351c57d1f8893d4491e93255f1a6a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PhysicsProp
+  catalogId: bottle_water
+  mass: 2.5
+  gravityScale: 1.15
+  linearDamping: 1.19
+  angularDamping: 1.39
+  friction: 0.4
+  bounciness: 0
+  freezeRotation: 0
+  floatFactor: 1
 --- !u!1 &8914435354015782613
 GameObject:
   m_ObjectHideFlags: 0

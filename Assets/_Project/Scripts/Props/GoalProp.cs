@@ -1,16 +1,17 @@
 using System.Collections;
-using Unity.Mathematics.Geometry;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-public class GoalTrigger : MonoBehaviour
+// 치즈. 플레이어가 닿으면 레벨 클리어. 레벨에 정확히 하나 있어야 한다.
+public class GoalProp : LevelProp
 {
     private bool isTriggered = false;
     private Vector3 _startPos;
 
     [Header("둥둥 떠다니기 설정")]
-    [SerializeField] private float bobHeight = 0.3f;
-    [SerializeField] private float bobSpeed = 2.5f;
+    [PlannerField("떠다니는 높이", 0)]
+    [SerializeField, Range(0f, 2f)] private float bobHeight = 0.3f;
+    [PlannerField("떠다니는 속도", 1)]
+    [SerializeField, Range(0f, 10f)] private float bobSpeed = 2.5f;
 
     [Header("클리어 애니메이션 이펙트")]
     [SerializeField] private GameObject effectAnimPrefab;
@@ -19,9 +20,22 @@ public class GoalTrigger : MonoBehaviour
     [Header("입 위치 설정")]
     [SerializeField] private string mouthObjectName = "MouthPoint";
 
+    public override PropCategory Category => PropCategory.Goal;
+    protected override string SortingLayerName => SortingLayers.Props;
+    protected override string PhysicsLayerName => PhysicsLayers.Cheese;
+
     private void Start()
     {
         _startPos = transform.position;
+    }
+
+    public override void Validate(PropValidationReport report)
+    {
+        Collider2D col = GetComponent<Collider2D>();
+        if (col == null || !col.isTrigger)
+        {
+            report.Error("치즈에 트리거 콜라이더가 없어 먹을 수 없습니다.", this);
+        }
     }
 
     private void Update()

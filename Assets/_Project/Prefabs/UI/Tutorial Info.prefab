@@ -151,6 +151,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6482d538a16294389bc0fc3b4bc922fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  catalogId: info_block
   breakHitCount: 3
   minUpwardVelocity: 0
   bottomHitTolerance: 0.08

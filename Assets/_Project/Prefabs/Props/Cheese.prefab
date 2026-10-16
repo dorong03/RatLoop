@@ -151,6 +151,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8ba17a771eb27744ab0d54f89b7ff5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GoalTrigger
+  catalogId: cheese
   bobHeight: 0.3
   bobSpeed: 2.5
   effectAnimPrefab: {fileID: 2560217001973826583, guid: 278579c1a913b624c9836714ff7ca58e, type: 3}

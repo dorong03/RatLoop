@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 7586708061025654513}
   - component: {fileID: 4080662253330627059}
   - component: {fileID: 6359284262412698608}
+  - component: {fileID: 56508680198185854}
   m_Layer: 3
   m_Name: Tissue
   m_TagString: Untagged
@@ -188,3 +189,24 @@ MonoBehaviour:
   trailRenderer: {fileID: 0}
   maxUnrollDistance: 5
   minRollScale: 0.3
+--- !u!114 &56508680198185854
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5411365239829090961}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c351c57d1f8893d4491e93255f1a6a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PhysicsProp
+  catalogId: tissue
+  mass: 1
+  gravityScale: 1
+  linearDamping: 0
+  angularDamping: 3
+  friction: 0.4
+  bounciness: 0
+  freezeRotation: 0
+  floatFactor: 1

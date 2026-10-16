@@ -270,6 +270,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8313723748428329357}
   - component: {fileID: 5638452561300680983}
+  - component: {fileID: 8589923466397915651}
   m_Layer: 3
   m_Name: Book Green
   m_TagString: Untagged
@@ -321,6 +322,27 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &8589923466397915651
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6095427791691596321}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c351c57d1f8893d4491e93255f1a6a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PhysicsProp
+  catalogId: book_green
+  mass: 9
+  gravityScale: 3.3
+  linearDamping: 3
+  angularDamping: 1.74
+  friction: 0.4
+  bounciness: 0
+  freezeRotation: 0
+  floatFactor: 1
 --- !u!1 &7513788635875947730
 GameObject:
   m_ObjectHideFlags: 0

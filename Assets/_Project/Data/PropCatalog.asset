@@ -1,0 +1,223 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44d022f9feffa52479ef76a89c807e1b, type: 3}
+  m_Name: PropCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::PropCatalog
+  entries:
+  - id: ball_1
+    displayName: "\uACF5 1"
+    prefab: {fileID: 4017885071026998619, guid: aa4b992f3ee7c2144b5a86593a85e172, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: ball_2
+    displayName: "\uACF5 2 (\uBB34\uAC70\uC6C0)"
+    prefab: {fileID: 4017885071026998619, guid: c2852254949170548a9781b92510ea64, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: ball_3
+    displayName: "\uACF5 3"
+    prefab: {fileID: 4017885071026998619, guid: b28a843a0249ad54fbe011065fa93d54, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: ball_4
+    displayName: "\uACF5 4 (\uBB34\uAC70\uC6C0)"
+    prefab: {fileID: 4017885071026998619, guid: f173463f7977f7c4aa7c3b023bb4256c, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: ball_5
+    displayName: "\uACF5 5 (\uBB34\uAC70\uC6C0)"
+    prefab: {fileID: 4017885071026998619, guid: 178b2d48447100c40a36a5fdb81c0531, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: ball_6
+    displayName: "\uACF5 6 (\uBB34\uAC70\uC6C0)"
+    prefab: {fileID: 4017885071026998619, guid: ad07d85179b28bd4b962565f22ec3f1e, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: ball_7
+    displayName: "\uACF5 7 (\uBB34\uAC70\uC6C0)"
+    prefab: {fileID: 4017885071026998619, guid: 1c0d035b745a9b34c8e02922217cb95f, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: book_gray
+    displayName: "\uCC45 (\uD68C\uC0C9)"
+    prefab: {fileID: 6095427791691596321, guid: 440942634a910473282ded3f9e4b8350, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: book_green
+    displayName: "\uCC45 (\uCD08\uB85D)"
+    prefab: {fileID: 6095427791691596321, guid: 7620ad53387fb42498b6722f0d880a6d, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: book_orange
+    displayName: "\uCC45 (\uC8FC\uD669)"
+    prefab: {fileID: 6095427791691596321, guid: ba8e1835543bd4a249faa44e59036520, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: book_pink
+    displayName: "\uCC45 (\uBD84\uD64D)"
+    prefab: {fileID: 6095427791691596321, guid: c560f49e714ec477084ad9375fd7b06a, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: book_purple
+    displayName: "\uCC45 (\uBCF4\uB77C)"
+    prefab: {fileID: 6095427791691596321, guid: 57f45e8d247ef4c88bbb32d9469a8441, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: book_red
+    displayName: "\uCC45 (\uBE68\uAC15)"
+    prefab: {fileID: 6095427791691596321, guid: 8a3952743466147fca781a568fed075d, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: book_skyblue
+    displayName: "\uCC45 (\uD558\uB298)"
+    prefab: {fileID: 6095427791691596321, guid: c3e2c18fb446e4f329e4fe10bb621e4c, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: book_yellow
+    displayName: "\uCC45 (\uB178\uB791)"
+    prefab: {fileID: 6095427791691596321, guid: 6841e405ff4fa440ba8b37300abe8f1c, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: box_1
+    displayName: "\uC1FC\uD551 \uBC15\uC2A4"
+    prefab: {fileID: 2859706750180037266, guid: 0ff36777e0b72734ba4daae379a71a08, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: box_2
+    displayName: "\uBC15\uC2A4 2"
+    prefab: {fileID: 2859706750180037266, guid: 31c43591b361ff649beefbf072a892a7, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: box_3
+    displayName: "\uBC15\uC2A4 3"
+    prefab: {fileID: 2859706750180037266, guid: ec9db94134a5eb04daafa51b41702a9b, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: box_4
+    displayName: "\uBC15\uC2A4 4"
+    prefab: {fileID: 2859706750180037266, guid: 27336cfb9d175b0409d88f8cf0e7951f, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: box_5
+    displayName: "\uBC15\uC2A4"
+    prefab: {fileID: 2859706750180037266, guid: f3b4f9b0035455e4e81e0e3685e54845, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: box_6
+    displayName: "\uD0DD\uBC30 \uBC15\uC2A4"
+    prefab: {fileID: 2859706750180037266, guid: 218889f36cb8a1c42828e7044df820d9, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: bottle_empty_large
+    displayName: "\uBE48 \uBCD1 (\uD070)"
+    prefab: {fileID: 8266930110130702034, guid: 70d54686b42919a4cad2dbf39f339033, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: bottle_empty_small
+    displayName: "\uBE48 \uBCD1 (\uC791\uC740)"
+    prefab: {fileID: 8266930110130702034, guid: d33e61af4db4dcb49ac5c001d48ae43c, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: bottle_water
+    displayName: "\uBB3C\uBCD1"
+    prefab: {fileID: 8266930110130702034, guid: 7fb6a70d8f446d04aaa7816497d6acef, type: 3}
+    icon: {fileID: 0}
+    description: 
+    hiddenInPalette: 0
+  - id: tissue
+    displayName: "\uD734\uC9C0 (\uC2E4\uD5D8 \uC911)"
+    prefab: {fileID: 5411365239829090961, guid: dfa299c03f496461c961af1c75d393de, type: 3}
+    icon: {fileID: 0}
+    description: "\uAD74\uB7EC\uAC00\uBA74 \uD480\uB9AC\uB294 \uD734\uC9C0. \uC544\uC9C1
+      \uC644\uC131\uB418\uC9C0 \uC54A\uC558\uB2E4."
+    hiddenInPalette: 0
+  - id: bus_blue
+    displayName: "\uBC84\uC2A4 (\uD30C\uB791)"
+    prefab: {fileID: 1254372488254001003, guid: e0ad8b39ac505b44491ce178a1f1cfc7, type: 3}
+    icon: {fileID: 0}
+    description: "\uBC1F\uC744 \uC218 \uC788\uB294 \uACE0\uC815 \uBC1C\uD310"
+    hiddenInPalette: 0
+  - id: bus_gray
+    displayName: "\uBC84\uC2A4 (\uD68C\uC0C9)"
+    prefab: {fileID: 1254372488254001003, guid: cae6498bade8f1f469161ece5988ae63, type: 3}
+    icon: {fileID: 0}
+    description: "\uBC1F\uC744 \uC218 \uC788\uB294 \uACE0\uC815 \uBC1C\uD310"
+    hiddenInPalette: 0
+  - id: bus_red
+    displayName: "\uBC84\uC2A4 (\uBE68\uAC15)"
+    prefab: {fileID: 1254372488254001003, guid: d8ed0e0445ea40643b40ba19b3d513f7, type: 3}
+    icon: {fileID: 0}
+    description: "\uBC1F\uC744 \uC218 \uC788\uB294 \uACE0\uC815 \uBC1C\uD310"
+    hiddenInPalette: 0
+  - id: water_pack
+    displayName: "\uC0DD\uC218 \uBB36\uC74C"
+    prefab: {fileID: 5560752560630555366, guid: 3163abe7a6de943428e8b249a8210d70, type: 3}
+    icon: {fileID: 0}
+    description: "\uBC1F\uC744 \uC218 \uC788\uB294 \uACE0\uC815 \uBC1C\uD310"
+    hiddenInPalette: 0
+  - id: decor_wall_clock
+    displayName: "\uBCBD\uC2DC\uACC4 (\uC7A5\uC2DD)"
+    prefab: {fileID: 4609362887362061678, guid: 69e99524c87131a4685967a87d1df68c, type: 3}
+    icon: {fileID: 0}
+    description: "\uBD80\uB52A\uD788\uC9C0 \uC54A\uB294 \uC7A5\uC2DD"
+    hiddenInPalette: 0
+  - id: rope_chain
+    displayName: "\uCCB4\uC778 \uB85C\uD504"
+    prefab: {fileID: 72053292553036492, guid: dfb80c2da93a7a044a4165bd78a12c68, type: 3}
+    icon: {fileID: 0}
+    description: "E \uD0A4\uB85C \uB9E4\uB2EC\uB9B4 \uC218 \uC788\uB2E4"
+    hiddenInPalette: 0
+  - id: water
+    displayName: "\uBB3C"
+    prefab: {fileID: 4779457640514489826, guid: 7ddc4c7da4961844aaee462d24bb00b4, type: 3}
+    icon: {fileID: 0}
+    description: "\uD06C\uAE30\uB97C \uC815\uD558\uBA74 \uADF8\uB9BC\uACFC \uD310\uC815\uC774
+      \uAC19\uC774 \uB9DE\uCDB0\uC9C4\uB2E4"
+    hiddenInPalette: 0
+  - id: info_block
+    displayName: "\uC548\uB0B4 \uBE14\uB85D"
+    prefab: {fileID: 7959695954682629718, guid: 6d88e36e5aeb442faba6e7395cc82981, type: 3}
+    icon: {fileID: 0}
+    description: "\uBD80\uC220 \uC218 \uC788\uAC8C \uCF1C\uBA74 \uC544\uB798\uC5D0\uC11C
+      \uCCD0\uC11C \uBD80\uC21C\uB2E4"
+    hiddenInPalette: 0
+  - id: cheese
+    displayName: "\uCE58\uC988"
+    prefab: {fileID: 1723293409309942786, guid: 89d1343a9ab90d448b8aa2bdba1fb6d1, type: 3}
+    icon: {fileID: 0}
+    description: "\uB808\uBCA8\uC5D0 \uD558\uB098. \uB808\uBCA8 \uD15C\uD50C\uB9BF\uC5D0
+      \uB4E4\uC5B4 \uC788\uB2E4"
+    hiddenInPalette: 1

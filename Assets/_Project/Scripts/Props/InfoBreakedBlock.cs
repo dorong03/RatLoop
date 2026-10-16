@@ -1,10 +1,12 @@
 using UnityEngine;
 using System.Collections;
 
-public class InfoBreakedBlock : MonoBehaviour
+// 튜토리얼 안내판. 부술 수 있게 켜면 아래에서 머리로 쳐서 부순다.
+public class InfoBreakedBlock : LevelProp
 {
     [Header("Hit Settings")]
-    [SerializeField] private int breakHitCount = 3;
+    [PlannerField("부서지기까지 타격 수", 1)]
+    [SerializeField, Range(1, 10)] private int breakHitCount = 3;
     [SerializeField] private float minUpwardVelocity = 0.5f;
     [SerializeField] private float bottomHitTolerance = 0.08f;
     [SerializeField] private string hitterTag = "Player";
@@ -24,8 +26,14 @@ public class InfoBreakedBlock : MonoBehaviour
     [SerializeField] private float breakShrinkScale = 0.2f;
     [SerializeField] private bool destroyAfterBreak = true;
 
+    // 꺼져 있으면 트리거가 되어 지나갈 수 있는 안내판으로만 동작한다.
+    [PlannerField("부술 수 있음", 0)]
     [SerializeField] private bool isActive = false;
-    
+
+    public override PropCategory Category => PropCategory.Gimmick;
+    protected override string SortingLayerName => SortingLayers.Props;
+    protected override string PhysicsLayerName => PhysicsLayers.Wall;
+
     private Collider2D blockCollider;
     private SpriteRenderer[] spriteRenderers;
     private Color[] originalColors;
@@ -36,13 +44,15 @@ public class InfoBreakedBlock : MonoBehaviour
     private bool isBroken;
     private Vector3 lastHitterWorldPosition;
 
-    private void OnValidate()
+    protected override void OnValidate()
     {
+        base.OnValidate();
         breakHitCount = Mathf.Max(1, breakHitCount);
     }
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         blockCollider = GetComponent<Collider2D>();
 
         if (!isActive)

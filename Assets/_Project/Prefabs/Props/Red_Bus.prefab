@@ -100,6 +100,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2153293435741686868}
+  - component: {fileID: 7892357681503840728}
   m_Layer: 3
   m_Name: Red_Bus
   m_TagString: Untagged
@@ -124,6 +125,19 @@ Transform:
   - {fileID: 4093298318185607103}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7892357681503840728
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1254372488254001003}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ccf6e68e2dcaa9c4e85f65fcf1f5c5be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StaticProp
+  catalogId: bus_red
 --- !u!1 &1366416663143552849
 GameObject:
   m_ObjectHideFlags: 0
