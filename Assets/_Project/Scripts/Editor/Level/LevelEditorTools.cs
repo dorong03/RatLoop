@@ -185,6 +185,80 @@ public static class LevelEditorTools
         return report;
     }
 
+    // ------------------------------------------------------------ 프롭 카탈로그
+
+    // 개발자가 만든 기믹 프리팹을 팔레트에 올린다. (Project 창에서 프리팹 우클릭 > RatLoop > 프롭 카탈로그에 추가)
+    [MenuItem("Assets/RatLoop/프롭 카탈로그에 추가")]
+    private static void AddSelectedPrefabsToCatalog()
+    {
+        PropCatalog catalog = Catalog;
+        var added = new List<string>();
+        foreach (Object obj in Selection.objects)
+        {
+            var prefab = obj as GameObject;
+            if (prefab == null || !prefab.TryGetComponent(out LevelProp prop) || catalog.FindByPrefab(prefab) != null)
+            {
+                continue;
+            }
+
+            string id = string.IsNullOrEmpty(prop.CatalogId) ? "prop_" + TileSheetImporter.MakeSafeName(prefab.name).ToLowerInvariant() : prop.CatalogId;
+            while (catalog.Find(id) != null)
+            {
+                id += "_2";
+            }
+
+            // 프리팹에도 같은 ID 를 기록해 둔다. (세이프티 체크가 카탈로그와 프리팹을 맞춰 본다)
+            string path = AssetDatabase.GetAssetPath(prefab);
+            GameObject contents = PrefabUtility.LoadPrefabContents(path);
+            contents.GetComponent<LevelProp>().CatalogId = id;
+            PrefabUtility.SaveAsPrefabAsset(contents, path);
+            PrefabUtility.UnloadPrefabContents(contents);
+
+            AddCatalogEntry(id, prefab.name, AssetDatabase.LoadAssetAtPath<GameObject>(path), "");
+            added.Add(prefab.name);
+        }
+
+        EditorUtility.DisplayDialog("프롭 카탈로그",
+            added.Count > 0 ? $"{added.Count}개를 추가했습니다.\n{string.Join(", ", added)}\n\n팔레트에 보일 이름과 설명은 PropCatalog 에셋에서 바꿀 수 있습니다."
+                            : "추가할 프리팹이 없습니다. LevelProp 이 붙어 있고 아직 카탈로그에 없는 프리팹을 골라주세요.", "확인");
+    }
+
+    [MenuItem("Assets/RatLoop/프롭 카탈로그에 추가", true)]
+    private static bool AddSelectedPrefabsToCatalogValidate()
+    {
+        foreach (Object obj in Selection.objects)
+        {
+            if (obj is GameObject go && go.GetComponent<LevelProp>() != null)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void AddCatalogEntry(string id, string displayName, GameObject prefab, string description)
+    {
+        PropCatalog catalog = Catalog;
+        if (catalog == null || prefab == null)
+        {
+            return;
+        }
+
+        var so = new SerializedObject(catalog);
+        SerializedProperty entries = so.FindProperty("entries");
+        entries.InsertArrayElementAtIndex(entries.arraySize);
+        SerializedProperty e = entries.GetArrayElementAtIndex(entries.arraySize - 1);
+        e.FindPropertyRelative("id").stringValue = id;
+        e.FindPropertyRelative("displayName").stringValue = displayName;
+        e.FindPropertyRelative("prefab").objectReferenceValue = prefab;
+        e.FindPropertyRelative("icon").objectReferenceValue = null;
+        e.FindPropertyRelative("description").stringValue = description ?? "";
+        e.FindPropertyRelative("hiddenInPalette").boolValue = false;
+        so.ApplyModifiedProperties();
+        EditorUtility.SetDirty(catalog);
+        AssetDatabase.SaveAssetIfDirty(catalog);
+    }
+
     // ------------------------------------------------------------ 레벨 목록
 
     public static void AddToList(LevelRoot levelPrefab)

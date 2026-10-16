@@ -44,6 +44,8 @@ public partial class LevelEditorWindow : EditorWindow
     [SerializeField] private int snapIndex = 1;
     [SerializeField] private bool settingsOpen;
     [SerializeField] private bool eraser;
+    [SerializeField] private bool showGrid = true;
+    [SerializeField] private int tileCellSize = TileSheetImporter.DefaultCellSize;
 
     private readonly TilePaletteView palette = new TilePaletteView();
     private PropCatalog.Entry selectedProp;
@@ -88,6 +90,14 @@ public partial class LevelEditorWindow : EditorWindow
         Undo.undoRedoPerformed -= OnUndoRedo;
         PrefabStage.prefabStageOpened -= OnStageChanged;
         PrefabStage.prefabStageClosing -= OnStageChanged;
+    }
+
+    // 프로젝트에 타일이나 프롭이 추가되면 팔레트와 미리보기를 다시 만든다.
+    private void OnProjectChange()
+    {
+        palette.Refresh();
+        ghostCache.Clear();
+        Repaint();
     }
 
     private void OnStageChanged(PrefabStage stage)
@@ -376,6 +386,13 @@ public partial class LevelEditorWindow : EditorWindow
                 SetMode(Mode.Check);
             }
             GUI.backgroundColor = Color.white;
+
+            bool grid = GUILayout.Toggle(showGrid, "격자", EditorStyles.miniButton, GUILayout.Width(44), GUILayout.Height(20));
+            if (grid != showGrid)
+            {
+                showGrid = grid;
+                SceneView.RepaintAll();
+            }
         }
 
         string summary = $"레벨 설정   ·   제한 {level.TimeLimit}초   ·   리플레이 {level.MaxReplayCount}회   ·   카메라 {(level.Zoom == LevelRoot.CameraZoom.Wide ? "넓게" : "보통")}";
@@ -646,7 +663,7 @@ public partial class LevelEditorWindow : EditorWindow
 
         using (new EditorGUI.DisabledScope(eraser))
         {
-            float height = Mathf.Clamp(position.height - 400f, 180f, 640f);
+            float height = Mathf.Clamp(position.height - 440f, 180f, 640f);
             if (palette.Draw(height))
             {
                 eraser = false;
@@ -656,6 +673,26 @@ public partial class LevelEditorWindow : EditorWindow
             {
                 palette.ClearSelection();
                 SceneView.RepaintAll();
+            }
+        }
+
+        EditorGUILayout.Space(8);
+        using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
+        {
+            GUILayout.Label("새 타일 이미지", EditorStyles.miniBoldLabel, GUILayout.Width(80));
+            GUILayout.Label("칸 크기", EditorStyles.miniLabel, GUILayout.Width(40));
+            tileCellSize = Mathf.Clamp(EditorGUILayout.IntField(tileCellSize, GUILayout.Width(36)), 4, 256);
+            GUILayout.Label("px", EditorStyles.miniLabel, GUILayout.Width(18));
+            if (GUILayout.Button("PNG 추가..."))
+            {
+                string path = EditorUtility.OpenFilePanel("타일 이미지 (PNG)", "", "png");
+                if (!string.IsNullOrEmpty(path))
+                {
+                    int count = TileSheetImporter.ImportFromDisk(path, tileCellSize);
+                    palette.Refresh();
+                    ShowNotification(new GUIContent($"타일 {count}개를 추가했습니다"));
+                }
+                GUIUtility.ExitGUI();
             }
         }
     }
@@ -671,7 +708,14 @@ public partial class LevelEditorWindow : EditorWindow
             return;
         }
 
-        propSearch = GUILayout.TextField(propSearch, EditorStyles.toolbarSearchField);
+        using (new EditorGUILayout.HorizontalScope())
+        {
+            propSearch = GUILayout.TextField(propSearch, EditorStyles.toolbarSearchField);
+            if (GUILayout.Button("+ 새 프롭 만들기", EditorStyles.miniButton, GUILayout.Width(100)))
+            {
+                NewPropWindow.Open(SelectCatalogEntry);
+            }
+        }
         int columnsForChips = Mathf.Max(2, Mathf.FloorToInt((position.width - 20f) / 64f));
         var labels = new string[PropFilters.Length];
         for (int i = 0; i < labels.Length; i++)
@@ -738,6 +782,22 @@ public partial class LevelEditorWindow : EditorWindow
                 }
             }
         }
+    }
+
+    // 새로 만든 프롭을 팔레트에서 바로 고른 상태로 만든다.
+    private void SelectCatalogEntry(string id)
+    {
+        PropCatalog catalog = LevelEditorTools.Catalog;
+        selectedProp = catalog != null ? catalog.Find(id) : null;
+        propFilterIndex = 0;
+        propSearch = "";
+        ghostCache.Clear();
+        if (LevelEditorTools.CurrentLevel != null)
+        {
+            mode = Mode.Props;
+        }
+        ShowNotification(new GUIContent("프롭을 만들었습니다. 씬 화면을 클릭해 놓아보세요"));
+        Repaint();
     }
 
     private void DrawPropCell(PropCatalog.Entry e, float cell)

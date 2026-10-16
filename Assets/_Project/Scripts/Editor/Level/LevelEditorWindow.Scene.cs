@@ -38,6 +38,7 @@ public partial class LevelEditorWindow
         }
 
         SceneTool tool = CurrentTool;
+        DrawGrid(view, level);
         DrawBanner(view, tool);
         DrawPointMarkers(level, tool == SceneTool.None);
 
@@ -419,25 +420,200 @@ public partial class LevelEditorWindow
             new[] { min, new Vector3(max.x, min.y), max, new Vector3(min.x, max.y) }, fill, outline);
     }
 
+    // ---------------------------------------------------------------- 프롭 미리보기 (흐린 그림)
+
+    private struct GhostSprite
+    {
+        public Sprite sprite;
+        public Matrix4x4 matrix; // 프롭 루트 기준 위치/크기
+        public bool flipX;
+        public bool flipY;
+        public int order;
+    }
+
+    private readonly Dictionary<GameObject, List<GhostSprite>> ghostCache = new Dictionary<GameObject, List<GhostSprite>>();
+
+    private List<GhostSprite> GetGhost(GameObject prefab)
+    {
+        if (ghostCache.TryGetValue(prefab, out var cached))
+        {
+            return cached;
+        }
+
+        var list = new List<GhostSprite>();
+        Matrix4x4 rootToLocal = prefab.transform.worldToLocalMatrix;
+        // 프리팹 에셋의 루트 위치는 0 이 아닐 수 있으므로, 루트 기준 상대 위치만 쓰고 크기와 회전은 루트 것을 적용한다.
+        Matrix4x4 rootTrs = Matrix4x4.TRS(Vector3.zero, prefab.transform.rotation, prefab.transform.localScale);
+        foreach (SpriteRenderer sr in prefab.GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            if (sr.sprite == null || !sr.enabled)
+            {
+                continue;
+            }
+            list.Add(new GhostSprite
+            {
+                sprite = sr.sprite,
+                matrix = rootTrs * rootToLocal * sr.transform.localToWorldMatrix,
+                flipX = sr.flipX,
+                flipY = sr.flipY,
+                order = sr.sortingOrder
+            });
+        }
+
+        AddRopeGhost(prefab, list, rootTrs, rootToLocal);
+        list.Sort((x, y) => x.order.CompareTo(y.order));
+        ghostCache[prefab] = list;
+        return list;
+    }
+
+    // 로프는 프리팹 안에 마디가 없어서, 마디 프리팹을 마디 수만큼 이어서 미리보기를 만든다.
+    private static void AddRopeGhost(GameObject prefab, List<GhostSprite> list, Matrix4x4 rootTrs, Matrix4x4 rootToLocal)
+    {
+        var rope = prefab.GetComponent<RopeProp>();
+        if (rope == null)
+        {
+            return;
+        }
+
+        var so = new SerializedObject(rope);
+        var link = so.FindProperty("linkPrefab").objectReferenceValue as GameObject;
+        var segmentRoot = so.FindProperty("segmentRoot").objectReferenceValue as Transform;
+        int count = so.FindProperty("segmentCount").intValue;
+        float spacing = so.FindProperty("segmentSpacing").floatValue;
+        if (link == null || segmentRoot == null)
+        {
+            return;
+        }
+
+        Matrix4x4 segmentMatrix = rootTrs * rootToLocal * segmentRoot.localToWorldMatrix;
+        Matrix4x4 linkToLocal = link.transform.worldToLocalMatrix;
+        foreach (SpriteRenderer sr in link.GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            if (sr.sprite == null)
+            {
+                continue;
+            }
+            Matrix4x4 inLink = linkToLocal * sr.transform.localToWorldMatrix;
+            for (int i = 0; i < count; i++)
+            {
+                list.Add(new GhostSprite
+                {
+                    sprite = sr.sprite,
+                    matrix = segmentMatrix * Matrix4x4.Translate(new Vector3(0f, -spacing * i, 0f)) * inLink,
+                    flipX = sr.flipX,
+                    flipY = sr.flipY,
+                    order = sr.sortingOrder
+                });
+            }
+        }
+    }
+
     private void DrawPropPreview(Vector3 world)
     {
-        if (selectedProp == null)
+        if (selectedProp == null || selectedProp.prefab == null)
         {
             return;
         }
 
         Vector3 pos = PlacementPosition(selectedProp, world);
-        if (selectedProp.prefab != null && selectedProp.prefab.GetComponent<IAreaProp>() != null)
+        IAreaProp area = selectedProp.prefab.GetComponent<IAreaProp>();
+        if (area != null)
         {
-            Vector2Int size = selectedProp.prefab.GetComponent<IAreaProp>().AreaSize;
+            // 물, 투명벽: 차지할 칸 영역을 흐리게 칠해서 보여준다.
+            Vector2Int size = area.AreaSize;
+            bool wall = selectedProp.Category == PropCategory.Barrier;
+            Color fill = wall ? new Color(0.7f, 0.4f, 1f, 0.3f) : new Color(0.3f, 0.7f, 1f, 0.3f);
             Handles.DrawSolidRectangleWithOutline(
                 new[] { pos, pos + new Vector3(size.x, 0f), pos + new Vector3(size.x, size.y), pos + new Vector3(0f, size.y) },
-                new Color(0.3f, 0.7f, 1f, 0.15f), Color.cyan);
+                fill, new Color(fill.r, fill.g, fill.b, 1f));
             return;
         }
 
-        Handles.color = Color.cyan;
-        Handles.DrawWireDisc(pos, Vector3.forward, 0.25f);
-        Handles.Label(pos + Vector3.up * 0.6f, selectedProp.displayName, EditorStyles.boldLabel);
+        // 놓일 모습 그대로 반투명하게 보여준다. 로프는 마디까지 이어서 보여준다.
+        Handles.BeginGUI();
+        foreach (GhostSprite g in GetGhost(selectedProp.prefab))
+        {
+            DrawGhostSprite(g, pos);
+        }
+        Handles.EndGUI();
+
+        Handles.color = new Color(0.3f, 0.9f, 1f, 0.9f);
+        Handles.DrawLine(pos + Vector3.left * 0.15f, pos + Vector3.right * 0.15f);
+        Handles.DrawLine(pos + Vector3.down * 0.15f, pos + Vector3.up * 0.15f);
+        Handles.Label(pos + Vector3.up * 0.3f, selectedProp.displayName, EditorStyles.miniBoldLabel);
+    }
+
+    private static void DrawGhostSprite(GhostSprite g, Vector3 position)
+    {
+        Bounds b = g.sprite.bounds;
+        Matrix4x4 m = Matrix4x4.Translate(position) * g.matrix;
+        Vector3 c0 = m.MultiplyPoint3x4(new Vector3(b.min.x, b.min.y, 0f));
+        Vector3 c1 = m.MultiplyPoint3x4(new Vector3(b.max.x, b.max.y, 0f));
+        Vector3 c2 = m.MultiplyPoint3x4(new Vector3(b.min.x, b.max.y, 0f));
+        Vector3 c3 = m.MultiplyPoint3x4(new Vector3(b.max.x, b.min.y, 0f));
+        float minX = Mathf.Min(Mathf.Min(c0.x, c1.x), Mathf.Min(c2.x, c3.x));
+        float maxX = Mathf.Max(Mathf.Max(c0.x, c1.x), Mathf.Max(c2.x, c3.x));
+        float minY = Mathf.Min(Mathf.Min(c0.y, c1.y), Mathf.Min(c2.y, c3.y));
+        float maxY = Mathf.Max(Mathf.Max(c0.y, c1.y), Mathf.Max(c2.y, c3.y));
+
+        Vector2 a = HandleUtility.WorldToGUIPoint(new Vector3(minX, minY, 0f));
+        Vector2 d = HandleUtility.WorldToGUIPoint(new Vector3(maxX, maxY, 0f));
+        var rect = new Rect(Mathf.Min(a.x, d.x), Mathf.Min(a.y, d.y), Mathf.Abs(d.x - a.x), Mathf.Abs(a.y - d.y));
+        TilePaletteView.DrawSprite(rect, g.sprite, 0.6f, g.flipX, g.flipY);
+    }
+
+    // ---------------------------------------------------------------- 격자
+
+    // 타일 칸이 나뉜 것을 보여주는 격자. 5칸마다 조금 더 진하게 그린다.
+    private void DrawGrid(SceneView view, LevelRoot level)
+    {
+        if (!showGrid || Event.current.type != EventType.Repaint)
+        {
+            return;
+        }
+        if (mode != Mode.Tiles && mode != Mode.Props && mode != Mode.Points)
+        {
+            return;
+        }
+
+        var grid = level.GetComponentInChildren<Grid>(true);
+        Vector2 cell = grid != null ? new Vector2(grid.cellSize.x, grid.cellSize.y) : Vector2.one;
+        if (cell.x <= 0f || cell.y <= 0f)
+        {
+            return;
+        }
+
+        Vector3 topLeft = HandleUtility.GUIPointToWorldRay(new Vector2(0f, 0f)).origin;
+        Vector3 bottomRight = HandleUtility.GUIPointToWorldRay(new Vector2(view.position.width, view.position.height)).origin;
+        float minX = Mathf.Min(topLeft.x, bottomRight.x), maxX = Mathf.Max(topLeft.x, bottomRight.x);
+        float minY = Mathf.Min(topLeft.y, bottomRight.y), maxY = Mathf.Max(topLeft.y, bottomRight.y);
+
+        int x0 = Mathf.FloorToInt(minX / cell.x), x1 = Mathf.CeilToInt(maxX / cell.x);
+        int y0 = Mathf.FloorToInt(minY / cell.y), y1 = Mathf.CeilToInt(maxY / cell.y);
+        // 너무 멀리서 볼 때는 선이 화면을 덮지 않게 줄인다.
+        float pixelsPerCell = view.position.width / Mathf.Max(0.01f, (maxX - minX) / cell.x);
+        if (pixelsPerCell < 3f)
+        {
+            return;
+        }
+        bool drawMinor = pixelsPerCell >= 9f;
+
+        var oldZTest = Handles.zTest;
+        Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
+        for (int x = x0; x <= x1; x++)
+        {
+            bool major = x % 5 == 0;
+            if (!major && !drawMinor) continue;
+            Handles.color = major ? new Color(1f, 1f, 1f, 0.22f) : new Color(1f, 1f, 1f, 0.09f);
+            Handles.DrawLine(new Vector3(x * cell.x, y0 * cell.y, 0f), new Vector3(x * cell.x, y1 * cell.y, 0f));
+        }
+        for (int y = y0; y <= y1; y++)
+        {
+            bool major = y % 5 == 0;
+            if (!major && !drawMinor) continue;
+            Handles.color = major ? new Color(1f, 1f, 1f, 0.22f) : new Color(1f, 1f, 1f, 0.09f);
+            Handles.DrawLine(new Vector3(x0 * cell.x, y * cell.y, 0f), new Vector3(x1 * cell.x, y * cell.y, 0f));
+        }
+        Handles.zTest = oldZTest;
     }
 }

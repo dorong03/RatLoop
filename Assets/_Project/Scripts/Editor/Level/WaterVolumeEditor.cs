@@ -8,6 +8,6 @@ public class WaterVolumeEditor : LevelPropEditor
 {
     private void OnSceneGUI()
     {
-        AreaHandles.Draw((WaterVolume)target, serializedObject, (WaterVolume)target, new Color(0.3f, 0.8f, 1f), "물");
+        AreaHandles.Draw((WaterVolume)target, (WaterVolume)target, new Color(0.3f, 0.8f, 1f), "물");
     }
 }

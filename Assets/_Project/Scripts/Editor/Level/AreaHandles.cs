@@ -5,7 +5,7 @@ using UnityEngine;
 // 오른쪽 손잡이는 가로, 위쪽 손잡이는 세로, 오른쪽 위 손잡이는 둘 다 바꾼다.
 public static class AreaHandles
 {
-    public static void Draw(Component target, SerializedObject serializedObject, IAreaProp area, Color color, string label)
+    public static void Draw(Component target, IAreaProp area, Color color, string label)
     {
         Vector2Int size = area.AreaSize;
         Vector3 origin = target.transform.position;
@@ -26,10 +26,12 @@ public static class AreaHandles
             int height = Mathf.Max(1, Mathf.RoundToInt(Mathf.Max(newTop.y, newCorner.y) - origin.y));
             if (width != size.x || height != size.y)
             {
-                serializedObject.Update();
-                serializedObject.FindProperty("width").intValue = width;
-                serializedObject.FindProperty("height").intValue = height;
-                serializedObject.ApplyModifiedProperties();
+                // OnSceneGUI 안에서는 Editor.serializedObject 를 쓸 수 없어서 새로 만든다.
+                var so = new SerializedObject(target);
+                so.Update();
+                so.FindProperty("width").intValue = width;
+                so.FindProperty("height").intValue = height;
+                so.ApplyModifiedProperties();
                 if (target is LevelProp prop)
                 {
                     prop.ApplySettings();

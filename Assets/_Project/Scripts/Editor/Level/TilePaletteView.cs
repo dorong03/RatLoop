@@ -295,7 +295,7 @@ public class TilePaletteView
         }
     }
 
-    public static void DrawSprite(Rect rect, Sprite sprite, float alpha = 1f)
+    public static void DrawSprite(Rect rect, Sprite sprite, float alpha = 1f, bool flipX = false, bool flipY = false)
     {
         if (sprite == null || sprite.texture == null)
         {
@@ -305,6 +305,16 @@ public class TilePaletteView
         Texture2D tex = sprite.texture;
         Rect tr = sprite.textureRect;
         var uv = new Rect(tr.x / tex.width, tr.y / tex.height, tr.width / tex.width, tr.height / tex.height);
+        if (flipX)
+        {
+            uv.x += uv.width;
+            uv.width = -uv.width;
+        }
+        if (flipY)
+        {
+            uv.y += uv.height;
+            uv.height = -uv.height;
+        }
         Color old = GUI.color;
         GUI.color = new Color(1f, 1f, 1f, alpha);
         GUI.DrawTextureWithTexCoords(rect, tex, uv);

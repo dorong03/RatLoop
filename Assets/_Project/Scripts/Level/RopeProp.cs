@@ -1,7 +1,7 @@
 using UnityEngine;
 
 // 매달릴 수 있는 로프(체인). 마디 수만 정하면 마디를 자동으로 만들고 HingeJoint2D 로 잇는다.
-// 에디터에서는 저장되지 않는 미리보기 마디를 보여주고, 게임 시작 시 실제 마디를 만든다.
+// 에디터(프리팹 편집 화면 포함)에서는 저장되지 않는 미리보기 마디를 보여주고, 게임 시작 시 실제 마디를 만든다.
 [ExecuteAlways]
 public class RopeProp : LevelProp
 {
@@ -56,24 +56,10 @@ public class RopeProp : LevelProp
         }
     }
 
-    private bool CanBuildPreview()
-    {
-#if UNITY_EDITOR
-        // 프리팹 편집 화면이나 저장용 미리보기 씬에서는 만들지 않는다. (프리팹에 저장되면 안 되므로)
-        if (!Application.isPlaying &&
-            (gameObject.scene.IsValid() == false ||
-             UnityEditor.SceneManagement.EditorSceneManager.IsPreviewScene(gameObject.scene)))
-        {
-            return false;
-        }
-#endif
-        return true;
-    }
-
     private void Rebuild()
     {
         ClearLinks();
-        if (linkPrefab == null || segmentRoot == null || !CanBuildPreview())
+        if (linkPrefab == null || segmentRoot == null)
         {
             return;
         }
@@ -88,6 +74,7 @@ public class RopeProp : LevelProp
             link.transform.localRotation = Quaternion.identity;
             if (!Application.isPlaying)
             {
+                // 에디터 미리보기용 마디: 프리팹에 저장되지 않고 선택/수정할 수 없다.
                 foreach (Transform t in link.GetComponentsInChildren<Transform>(true))
                 {
                     t.gameObject.hideFlags = HideFlags.DontSave | HideFlags.NotEditable;

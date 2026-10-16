@@ -9,6 +9,6 @@ public class InvisibleWallEditor : LevelPropEditor
     private void OnSceneGUI()
     {
         var wall = (InvisibleWall)target;
-        AreaHandles.Draw(wall, serializedObject, wall, wall.BlocksProps ? new Color(1f, 0.4f, 0.4f) : new Color(0.8f, 0.5f, 1f), "투명벽");
+        AreaHandles.Draw(wall, wall, wall.BlocksProps ? new Color(1f, 0.4f, 0.4f) : new Color(0.8f, 0.5f, 1f), "투명벽");
     }
 }
