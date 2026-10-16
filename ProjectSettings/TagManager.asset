@@ -23,7 +23,7 @@ TagManager:
   - Cheese
   - Circle
   - Wall
-  - 
+  - Decoration
   - 
   - 
   - 
@@ -45,6 +45,30 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Background
+    uniqueID: 1386680321
+    locked: 0
+  - name: Decoration
+    uniqueID: 1386680322
+    locked: 0
+  - name: Ground
+    uniqueID: 1386680323
+    locked: 0
+  - name: Water
+    uniqueID: 1386680324
+    locked: 0
+  - name: Props
+    uniqueID: 1386680325
+    locked: 0
+  - name: Characters
+    uniqueID: 1386680326
+    locked: 0
+  - name: Effects
+    uniqueID: 1386680327
+    locked: 0
+  - name: UI
+    uniqueID: 1386680328
     locked: 0
   m_RenderingLayers:
   - Default
