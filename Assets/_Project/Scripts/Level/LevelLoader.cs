@@ -18,6 +18,8 @@ public class LevelLoader : MonoBehaviour
 
     public LevelRoot Current { get; private set; }
 
+    private bool enterOnStart;
+
     private void Awake()
     {
         GameManager gm = GameManager.instance;
@@ -30,21 +32,9 @@ public class LevelLoader : MonoBehaviour
         LevelRoot level = gm.CurrentLevel;
         if (level == null)
         {
-            // Game 씬을 에디터에서 바로 실행한 경우: 정식 경로(EnterLevel)로 다시 들어온다.
-            LevelRoot fallback = editorTestLevel != null ? editorTestLevel : gm.Levels.Get(0);
-#if UNITY_EDITOR
-            string testPath = UnityEditor.SessionState.GetString(TestLevelSessionKey, "");
-            if (!string.IsNullOrEmpty(testPath))
-            {
-                UnityEditor.SessionState.EraseString(TestLevelSessionKey);
-                GameObject testPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(testPath);
-                if (testPrefab != null && testPrefab.TryGetComponent(out LevelRoot testLevel))
-                {
-                    fallback = testLevel;
-                }
-            }
-#endif
-            gm.EnterLevel(fallback);
+            // Game 씬을 에디터에서 바로 실행한 경우: Start 에서 정식 경로(EnterLevel)로 다시 들어온다.
+            // Awake 에서 바로 들어가면 이 씬의 sceneLoaded 이벤트가 먼저 처리되어 프리뷰가 시작되지 않는다.
+            enterOnStart = true;
             return;
         }
 
@@ -63,5 +53,27 @@ public class LevelLoader : MonoBehaviour
             return;
         }
         spawnManager.Initialize(spawn.transform);
+    }
+
+    private void Start()
+    {
+        if (enterOnStart)
+        {
+            GameManager gm = GameManager.instance;
+            LevelRoot fallback = editorTestLevel != null ? editorTestLevel : gm.Levels.Get(0);
+#if UNITY_EDITOR
+            string testPath = UnityEditor.SessionState.GetString(TestLevelSessionKey, "");
+            if (!string.IsNullOrEmpty(testPath))
+            {
+                UnityEditor.SessionState.EraseString(TestLevelSessionKey);
+                GameObject testPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(testPath);
+                if (testPrefab != null && testPrefab.TryGetComponent(out LevelRoot testLevel))
+                {
+                    fallback = testLevel;
+                }
+            }
+#endif
+            gm.EnterLevel(fallback);
+        }
     }
 }

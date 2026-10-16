@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public class TitleScene : MonoBehaviour
@@ -30,24 +29,26 @@ public class TitleScene : MonoBehaviour
         if (isLoading)
             return;
 
-        if (Keyboard.current.upArrowKey.wasPressedThisFrame ||
-            Keyboard.current.wKey.wasPressedThisFrame)
+        // 설정 창이 열려 있으면 타이틀 메뉴는 입력을 받지 않는다.
+        if (UIManager.instance != null && UIManager.instance.IsMenuOpen)
+            return;
+
+        Vector2Int nav = GameInput.NavigatePressed;
+        if (nav.y > 0)
         {
             selectedStart = true;
             SoundManager.instance.PlaySFX(SfxType.TitleButtonChange);
             UpdateUI();
         }
 
-        if (Keyboard.current.downArrowKey.wasPressedThisFrame ||
-            Keyboard.current.sKey.wasPressedThisFrame)
+        if (nav.y < 0)
         {
             selectedStart = false;
             SoundManager.instance.PlaySFX(SfxType.TitleButtonChange);
             UpdateUI();
         }
 
-        if (Keyboard.current.enterKey.wasPressedThisFrame ||
-            Keyboard.current.spaceKey.wasPressedThisFrame)
+        if (GameInput.SubmitPressed)
         {
             SoundManager.instance.PlaySFX(SfxType.ButtonSelected);
 

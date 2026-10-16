@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 // 스테이지 선택 화면. 레벨 목록(LevelList)으로 버튼을 자동 생성한다.
@@ -107,31 +106,25 @@ public class LevelSelectScene : MonoBehaviour
 
     private void HandleInput()
     {
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard == null)
+        // 설정 창이 열려 있으면 스테이지 선택은 입력을 받지 않는다.
+        if (UIManager.instance != null && UIManager.instance.IsMenuOpen)
         {
             return;
         }
 
-        if (keyboard.escapeKey.wasPressedThisFrame)
+        if (GameInput.CancelPressed)
         {
             SceneManager.LoadScene("Title");
             return;
         }
 
-        if (isMoving)
+        Vector2Int nav = GameInput.NavigatePressed;
+        if (isMoving || nav.x == 0)
         {
             return;
         }
 
-        if (keyboard.leftArrowKey.wasPressedThisFrame || keyboard.aKey.wasPressedThisFrame)
-        {
-            MoveSelection(-1);
-        }
-        else if (keyboard.rightArrowKey.wasPressedThisFrame || keyboard.dKey.wasPressedThisFrame)
-        {
-            MoveSelection(1);
-        }
+        MoveSelection(nav.x);
     }
 
     private void MoveSelection(int direction)

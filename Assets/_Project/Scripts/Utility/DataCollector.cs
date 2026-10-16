@@ -123,6 +123,10 @@ public class DataCollector : MonoBehaviour
     {
         if (currentAttempt == null) return;
         currentAttempt.retryCount++;
+        // 재시작하면 이번 시도는 끝난다. 다음 시도는 레벨에 다시 들어올 때 새로 만든다.
+        currentAttempt.isClear = false;
+        currentAttempt.deathTime = attemptTimer;
+        CommitAttempt();
     }
 
     // 혹시 기믹도 저장해야하면 사용할 듯

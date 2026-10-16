@@ -57,7 +57,22 @@ public class SoundManager : MonoBehaviour
 
     private void Start()
     {
+        GameSettings.Changed += ApplyVolumeSettings;
         PlayLobbyBGM();
+    }
+
+    private void OnDestroy()
+    {
+        GameSettings.Changed -= ApplyVolumeSettings;
+    }
+
+    // 설정 메뉴의 볼륨을 반영한다. (재생 중인 BGM 포함)
+    private void ApplyVolumeSettings()
+    {
+        if (bgmSource != null)
+        {
+            bgmSource.volume = bgmVolume * GameSettings.BgmVolume;
+        }
     }
 
     public void PlayLobbyBGM()
@@ -79,7 +94,7 @@ public class SoundManager : MonoBehaviour
         bgmSource.Stop();
         bgmSource.clip = clip;
         bgmSource.loop = true;
-        bgmSource.volume = bgmVolume;
+        bgmSource.volume = bgmVolume * GameSettings.BgmVolume;
         bgmSource.Play();
     }
     
@@ -102,11 +117,11 @@ public class SoundManager : MonoBehaviour
             if (type == SfxType.Walk)
             {
                 sfxSource.pitch = Random.Range(0.8f, 1.2f);
-                sfxSource.volume = 0.7f;
+                sfxSource.volume = 0.7f * GameSettings.SfxVolume;
             }
             else
             {
-                sfxSource.volume = 1f;
+                sfxSource.volume = GameSettings.SfxVolume;
                 sfxSource.pitch = 1f;
             }
             
@@ -123,7 +138,7 @@ public class SoundManager : MonoBehaviour
         if (sfxSource == null || audioClip == null) return;
 
         sfxSource.pitch = Random.Range(minPitch, maxPitch);
-        sfxSource.volume = 1f;
+        sfxSource.volume = GameSettings.SfxVolume;
         sfxSource.PlayOneShot(audioClip);
     }
 }

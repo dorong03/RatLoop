@@ -15,7 +15,7 @@ public class MouseIndicator: MonoBehaviour
     // 쥐가 스테이지 버튼에 도착하면 껐다 켤다 할건데 그때 위치 초기화 시켜주죠
     private void OnEnable()
     {
-        gameObject.GetComponent<RectTransform>().anchoredPosition = startPos;   
+        rectTransform.anchoredPosition = startPos;   
     }
 
     private void Update()

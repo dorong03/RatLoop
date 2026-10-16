@@ -86,7 +86,8 @@ public class PlayerMovement : MonoBehaviour
                _animator.SetBool("isSleeping", false);
                idleTimer = 0f;
            }
-           else if(!_animator.GetBool("isLookDown") || !_animator.GetBool("isLookUp"))
+           // 위/아래를 보는 중에는 잠들지 않는다.
+           else if(!_animator.GetBool("isLookDown") && !_animator.GetBool("isLookUp"))
            {
                _animator.SetBool("isRun", false);
                idleTimer += Time.fixedDeltaTime;
@@ -218,7 +219,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void HangingObject()
     {
-        float direction = transform.rotation.eulerAngles.y == 180 ? -1f : 1f;
+        float direction = transform.right.x < 0f ? -1f : 1f;
         RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.right * direction, 1f, hangingWallLayer);
 
         if (hit.collider != null)

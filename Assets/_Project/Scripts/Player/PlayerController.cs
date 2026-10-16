@@ -121,11 +121,6 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        if (GameManager.instance.gameState == GameState.Pause)
-        {
-            moveInputBuffer = Vector2.zero;
-        }
-        
         if (_isLookingDown || _isLookingUp)
         {
             if (_playerMovement.IsMoving || !_playerMovement.IsGroundedState)

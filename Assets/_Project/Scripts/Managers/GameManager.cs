@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 
@@ -48,6 +47,8 @@ public class GameManager : MonoBehaviour
     // 나갈때 셋팅용
     public event Action OnExitLevel;
     public event Action<bool> OnPressPause;
+    // 스테이지 클리어 시 UI 알림용 (다음 스테이지 / 다시 하기 / 스테이지 선택)
+    public event Action OnLevelClear;
     // 마지막 스테이지 클리어 시 UI 알림용
     public event Action OnFinalLevelClear;
 
@@ -60,6 +61,7 @@ public class GameManager : MonoBehaviour
     public int CurrentStageNumber => currentLevelIndex + 1;
     public int LastEnteredIndex => lastEnteredIndex;
     public bool IsLastLevel => currentLevelIndex >= 0 && currentLevelIndex == levelList.Count - 1;
+    public bool HasNextLevel => currentLevelIndex >= 0 && currentLevelIndex + 1 < levelList.Count;
 
     private void Awake()
     {
@@ -68,6 +70,7 @@ public class GameManager : MonoBehaviour
             instance = this;
             DontDestroyOnLoad(gameObject);
             unlockedStage = Mathf.Max(1, PlayerPrefs.GetInt(UnlockedStageKey, 1));
+            GameSettings.ApplyAll();
         }
         else
         {
@@ -87,7 +90,7 @@ public class GameManager : MonoBehaviour
     {
         UpdateLevelTimer();
 
-        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (GameInput.PausePressed)
         {
             TogglePause();
         }
@@ -96,6 +99,27 @@ public class GameManager : MonoBehaviour
     public bool IsUnlocked(int levelIndex)
     {
         return levelIndex >= 0 && levelIndex + 1 <= unlockedStage;
+    }
+
+    public void EnterNextLevel()
+    {
+        if (HasNextLevel)
+        {
+            EnterLevel(currentLevelIndex + 1);
+        }
+        else
+        {
+            ExitLevel();
+        }
+    }
+
+    // 설정 메뉴의 "진행 초기화"
+    public void ResetProgress()
+    {
+        unlockedStage = 1;
+        lastEnteredIndex = -1;
+        PlayerPrefs.SetInt(UnlockedStageKey, unlockedStage);
+        PlayerPrefs.Save();
     }
 
     public void EnterLevel(int levelIndex)
@@ -223,6 +247,10 @@ public class GameManager : MonoBehaviour
         {
             OnFinalLevelClear?.Invoke();
         }
+        else if (OnLevelClear != null)
+        {
+            OnLevelClear.Invoke();
+        }
         else
         {
             ExitLevel();
@@ -233,15 +261,16 @@ public class GameManager : MonoBehaviour
     {
         gameState = GameState.Die;
 
-        // 플레이어 죽는 애니메이션 실행한 다음 현재 레벨로 EnterLevel 하기
-        EnterLevel(currentLevel);
+        // 기록을 먼저 남긴 뒤 현재 레벨로 다시 들어간다.
         DataCollector.instance.RecordDeath();
+        EnterLevel(currentLevel);
     }
 
     public void Retry()
     {
-        EnterLevel(currentLevel);
+        // 기록을 먼저 남겨야 다음 시도가 시작되기 전에 이번 시도가 저장된다.
         DataCollector.instance.RecordRetry();
+        EnterLevel(currentLevel);
     }
 
     public void Replay()

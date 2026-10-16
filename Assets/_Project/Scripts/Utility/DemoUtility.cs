@@ -4,8 +4,14 @@ using UnityEngine.SceneManagement;
 
 public class DemoUtility : MonoBehaviour
 {
+    // 개발용 단축키 (L: 다음 레벨, P: 처음부터). 에디터와 개발 빌드에서만 동작한다.
     void Update()
     {
+        if (!Debug.isDebugBuild || Keyboard.current == null)
+        {
+            return;
+        }
+
         if (Keyboard.current.lKey.wasPressedThisFrame)
         {
             GameManager gm = GameManager.instance;

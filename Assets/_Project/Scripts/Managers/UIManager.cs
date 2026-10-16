@@ -1,14 +1,16 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
     public static UIManager instance;
     
-    [SerializeField] private Text livesText;
+    // 남은 리플레이 횟수 표시
+    [FormerlySerializedAs("livesText")]
+    [SerializeField] private Text replayCountText;
     [SerializeField] private Text timeText;
     
     [SerializeField] private GameObject pausePanel;
@@ -21,6 +23,14 @@ public class UIManager : MonoBehaviour
 
     private Stack<GameObject> panelStack = new();
     private Stack<GameObject> previousSelectedStack = new();
+
+    // 기존 FinalClearPanel 을 복제해서 만드는 패널들
+    private GameObject clearPanel;
+    private SettingsPanel settingsPanel;
+    private GameObject settingsHint;
+
+    // 메뉴 패널이 열려 있으면 타이틀/스테이지 선택 화면은 입력을 받지 않는다.
+    public bool IsMenuOpen => panelStack.Count > 0;
     
     private void Awake()
     {
@@ -51,6 +61,7 @@ public class UIManager : MonoBehaviour
         if (finalClearPanel != null)
         {
             finalClearPanel.SetActive(false);
+            BuildExtraPanels();
         }
 
         GameManager.instance.OnReplayCountChanged += UpdateLivesText;
@@ -59,6 +70,7 @@ public class UIManager : MonoBehaviour
         GameManager.instance.OnExitLevel += HideLevelUI;
         GameManager.instance.OnPressPause += OnPressPause;
         GameManager.instance.OnFinalLevelClear += ShowFinalClearPanel;
+        GameManager.instance.OnLevelClear += ShowClearPanel;
         
         ResumeButton.onClick.AddListener(GameManager.instance.TogglePause);
         ExitButton.onClick.AddListener(GameManager.instance.ExitLevel);
@@ -68,6 +80,12 @@ public class UIManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (instance != this || GameManager.instance == null)
+        {
+            return;
+        }
+
+        GameManager.instance.OnLevelClear -= ShowClearPanel;
         GameManager.instance.OnReplayCountChanged -= UpdateLivesText;
         GameManager.instance.OnTimeChanged -= UpdateTimeText;
         GameManager.instance.OnEnterLevel -= ShowLevelUI;
@@ -78,7 +96,7 @@ public class UIManager : MonoBehaviour
 
     private void UpdateLivesText(int lives)
     {
-        livesText.text = "X "+ lives;
+        replayCountText.text = "X "+ lives;
     }
 
     private void UpdateTimeText(int time)
@@ -86,22 +104,51 @@ public class UIManager : MonoBehaviour
         timeText.text = time.ToString();
     }
 
-    // 패널이 열려있는 동안에는 항상 최상단 패널 안의 버튼이 선택된 상태를 유지한다. (키보드 전용 조작)
+    // 패널이 열려있는 동안에는 항상 최상단 패널 안의 버튼이 선택된 상태를 유지한다.
     private void Update()
     {
         if (panelStack.Count == 0)
         {
+            // 타이틀/스테이지 선택 화면에서 설정 키로 설정을 연다.
+            if (GameManager.instance.gameState == GameState.Lobby && GameInput.SettingsPressed)
+            {
+                OpenSettings();
+            }
             return;
         }
 
         GameObject topPanel = panelStack.Peek();
 
-        // 엔딩 패널은 버튼 없이 엔터/ESC로만 닫고 스테이지 선택 화면으로 돌아간다.
-        // TODO : 학교 전시용 빌드라 임시로 Update에서 Keyboard를 직접 읽는다.
-        //        전시 후 InputAction 기반으로 옮길 것.
-        if (topPanel == finalClearPanel && IsConfirmOrCancelPressed())
+        // 엔딩 패널은 버튼 없이 확인/취소로만 닫고 스테이지 선택 화면으로 돌아간다.
+        if (topPanel == finalClearPanel && (GameInput.SubmitPressed || GameInput.CancelPressed))
         {
             GameManager.instance.ExitLevel();
+            return;
+        }
+
+        // 클리어 패널: 확인 = 다음 스테이지, 재시작 키 = 다시 하기, 취소 = 스테이지 선택
+        if (topPanel == clearPanel)
+        {
+            if (GameInput.SubmitPressed) GameManager.instance.EnterNextLevel();
+            else if (GameInput.RetryPressed) GameManager.instance.Retry();
+            else if (GameInput.CancelPressed) GameManager.instance.ExitLevel();
+            return;
+        }
+
+        if (settingsPanel != null && topPanel == settingsPanel.gameObject)
+        {
+            // 일시정지 중에는 취소 키를 GameManager 가 처리(패널 하나 닫기)하므로 여기서는 닫지 않는다.
+            bool closeOnCancel = GameManager.instance.gameState != GameState.Pause;
+            if (settingsPanel.HandleInput(closeOnCancel))
+            {
+                ClosePanel();
+            }
+            return;
+        }
+
+        if (topPanel == pausePanel && GameInput.SettingsPressed)
+        {
+            OpenSettings();
             return;
         }
 
@@ -158,17 +205,63 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private bool IsConfirmOrCancelPressed()
+    private void ShowClearPanel()
     {
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard == null)
+        if (clearPanel != null)
         {
-            return false;
+            OpenPanel(clearPanel);
         }
+        else
+        {
+            GameManager.instance.ExitLevel();
+        }
+    }
 
-        return keyboard.enterKey.wasPressedThisFrame ||
-               keyboard.numpadEnterKey.wasPressedThisFrame ||
-               keyboard.escapeKey.wasPressedThisFrame;
+    public void OpenSettings()
+    {
+        if (settingsPanel != null)
+        {
+            OpenPanel(settingsPanel.gameObject);
+        }
+    }
+
+    // 클리어 패널, 설정 패널, 설정 안내 문구를 기존 엔딩 패널을 복제해서 만든다. (같은 배경과 폰트)
+    private void BuildExtraPanels()
+    {
+        Transform parent = finalClearPanel.transform.parent;
+
+        clearPanel = Instantiate(finalClearPanel, parent);
+        clearPanel.name = "ClearPanel";
+        Text[] texts = clearPanel.GetComponentsInChildren<Text>(true);
+        texts[0].text = "스테이지 클리어!";
+        texts[1].text = "확인(Enter): 다음 스테이지     재시작(R): 다시 하기     취소(Esc): 스테이지 선택";
+        texts[1].horizontalOverflow = HorizontalWrapMode.Overflow;
+        clearPanel.SetActive(false);
+
+        settingsPanel = SettingsPanel.Create(finalClearPanel, parent);
+
+        // 일시정지 화면과 타이틀/스테이지 선택 화면에 보이는 "설정" 안내
+        Text hintTemplate = finalClearPanel.GetComponentsInChildren<Text>(true)[1];
+        settingsHint = CreateHint(hintTemplate, parent, "설정: Tab");
+        if (pausePanel != null)
+        {
+            CreateHint(hintTemplate, pausePanel.transform, "설정: Tab");
+        }
+    }
+
+    private static GameObject CreateHint(Text template, Transform parent, string message)
+    {
+        Text hint = Instantiate(template, parent);
+        hint.name = "SettingsHint";
+        hint.text = message;
+        hint.fontSize = Mathf.RoundToInt(template.fontSize * 0.7f);
+        hint.horizontalOverflow = HorizontalWrapMode.Overflow;
+        hint.alignment = TextAnchor.LowerRight;
+        RectTransform rt = hint.rectTransform;
+        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 0f);
+        rt.anchoredPosition = new Vector2(-40f, 30f);
+        hint.gameObject.SetActive(true);
+        return hint.gameObject;
     }
 
     private void OpenPanel(GameObject panel)
@@ -263,14 +356,16 @@ public class UIManager : MonoBehaviour
     private void ShowLevelUI()
     {
         timeText.gameObject.SetActive(true);
-        livesText.gameObject.SetActive(true);
+        replayCountText.gameObject.SetActive(true);
+        if (settingsHint != null) settingsHint.SetActive(false);
         CloseAllPanels();
     }
 
     private void HideLevelUI()
     {
         timeText.gameObject.SetActive(false);
-        livesText.gameObject.SetActive(false);
+        replayCountText.gameObject.SetActive(false);
+        if (settingsHint != null) settingsHint.SetActive(true);
         CloseAllPanels();
     }
 
@@ -296,6 +391,16 @@ public class UIManager : MonoBehaviour
         if (finalClearPanel != null)
         {
             finalClearPanel.SetActive(false);
+        }
+
+        if (clearPanel != null)
+        {
+            clearPanel.SetActive(false);
+        }
+
+        if (settingsPanel != null)
+        {
+            settingsPanel.gameObject.SetActive(false);
         }
 
         SetSelected(null);

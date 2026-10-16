@@ -1,5 +1,4 @@
-﻿using Unity.VisualScripting;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class ButtonSelectedEffect : MonoBehaviour, ISelectHandler, IDeselectHandler
