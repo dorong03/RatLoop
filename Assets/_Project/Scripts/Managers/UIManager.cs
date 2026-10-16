@@ -16,6 +16,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject pausePanel;
     [SerializeField] private GameObject infoPanel;
     [SerializeField] private GameObject finalClearPanel;
+    [Tooltip("스테이지를 깼을 때 나오는 화면. 문구, 글꼴, 위치는 UIManager 프리팹의 ClearPanel 에서 바로 고친다.")]
+    [SerializeField] private GameObject clearPanel;
     [SerializeField] private Button ResumeButton;
     [SerializeField] private Button ExitButton;
     [SerializeField] private Button ReTryButton;
@@ -25,7 +27,6 @@ public class UIManager : MonoBehaviour
     private Stack<GameObject> previousSelectedStack = new();
 
     // 기존 FinalClearPanel 을 복제해서 만드는 패널들
-    private GameObject clearPanel;
     private SettingsPanel settingsPanel;
     private GameObject settingsHint;
 
@@ -62,6 +63,11 @@ public class UIManager : MonoBehaviour
         {
             finalClearPanel.SetActive(false);
             BuildExtraPanels();
+        }
+
+        if (clearPanel != null)
+        {
+            clearPanel.SetActive(false);
         }
 
         GameManager.instance.OnReplayCountChanged += UpdateLivesText;
@@ -225,18 +231,11 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    // 클리어 패널, 설정 패널, 설정 안내 문구를 기존 엔딩 패널을 복제해서 만든다. (같은 배경과 폰트)
+    // 설정 패널, 설정 안내 문구를 기존 엔딩 패널을 복제해서 만든다. (같은 배경과 폰트)
+    // 클리어 패널은 프리팹에 직접 들어 있다. (clearPanel)
     private void BuildExtraPanels()
     {
         Transform parent = finalClearPanel.transform.parent;
-
-        clearPanel = Instantiate(finalClearPanel, parent);
-        clearPanel.name = "ClearPanel";
-        Text[] texts = clearPanel.GetComponentsInChildren<Text>(true);
-        texts[0].text = "스테이지 클리어!";
-        texts[1].text = "확인(Enter): 다음 스테이지     재시작(R): 다시 하기     취소(Esc): 스테이지 선택";
-        texts[1].horizontalOverflow = HorizontalWrapMode.Overflow;
-        clearPanel.SetActive(false);
 
         settingsPanel = SettingsPanel.Create(finalClearPanel, parent);
 
