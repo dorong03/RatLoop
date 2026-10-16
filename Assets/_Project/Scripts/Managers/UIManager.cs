@@ -26,9 +26,10 @@ public class UIManager : MonoBehaviour
     private Stack<GameObject> panelStack = new();
     private Stack<GameObject> previousSelectedStack = new();
 
-    // 기존 FinalClearPanel 을 복제해서 만드는 패널들
-    private SettingsPanel settingsPanel;
-    private GameObject settingsHint;
+    [Tooltip("설정 화면. 문구, 글꼴, 위치는 UIManager 프리팹의 SettingsPanel 에서 바로 고친다.")]
+    [SerializeField] private SettingsPanel settingsPanel;
+    [Tooltip("타이틀/스테이지 선택 화면 오른쪽 아래의 '설정: Tab' 안내")]
+    [SerializeField] private GameObject settingsHint;
 
     // 메뉴 패널이 열려 있으면 타이틀/스테이지 선택 화면은 입력을 받지 않는다.
     public bool IsMenuOpen => panelStack.Count > 0;
@@ -62,12 +63,16 @@ public class UIManager : MonoBehaviour
         if (finalClearPanel != null)
         {
             finalClearPanel.SetActive(false);
-            BuildExtraPanels();
         }
 
         if (clearPanel != null)
         {
             clearPanel.SetActive(false);
+        }
+
+        if (settingsPanel != null)
+        {
+            settingsPanel.gameObject.SetActive(false);
         }
 
         GameManager.instance.OnReplayCountChanged += UpdateLivesText;
@@ -229,38 +234,6 @@ public class UIManager : MonoBehaviour
         {
             OpenPanel(settingsPanel.gameObject);
         }
-    }
-
-    // 설정 패널, 설정 안내 문구를 기존 엔딩 패널을 복제해서 만든다. (같은 배경과 폰트)
-    // 클리어 패널은 프리팹에 직접 들어 있다. (clearPanel)
-    private void BuildExtraPanels()
-    {
-        Transform parent = finalClearPanel.transform.parent;
-
-        settingsPanel = SettingsPanel.Create(finalClearPanel, parent);
-
-        // 일시정지 화면과 타이틀/스테이지 선택 화면에 보이는 "설정" 안내
-        Text hintTemplate = finalClearPanel.GetComponentsInChildren<Text>(true)[1];
-        settingsHint = CreateHint(hintTemplate, parent, "설정: Tab");
-        if (pausePanel != null)
-        {
-            CreateHint(hintTemplate, pausePanel.transform, "설정: Tab");
-        }
-    }
-
-    private static GameObject CreateHint(Text template, Transform parent, string message)
-    {
-        Text hint = Instantiate(template, parent);
-        hint.name = "SettingsHint";
-        hint.text = message;
-        hint.fontSize = Mathf.RoundToInt(template.fontSize * 0.7f);
-        hint.horizontalOverflow = HorizontalWrapMode.Overflow;
-        hint.alignment = TextAnchor.LowerRight;
-        RectTransform rt = hint.rectTransform;
-        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 0f);
-        rt.anchoredPosition = new Vector2(-40f, 30f);
-        hint.gameObject.SetActive(true);
-        return hint.gameObject;
     }
 
     private void OpenPanel(GameObject panel)
