@@ -47,6 +47,18 @@ public class CameraEffect : MonoBehaviour
         this.target = target;
     }
 
+    // 레벨마다 다른 카메라 줌. LevelLoader 가 Start 전에 호출한다.
+    public void SetPixelPerfectReference(Vector2Int reference)
+    {
+        PixelPerfectCamera ppc = GetComponent<PixelPerfectCamera>();
+        if (ppc == null)
+        {
+            return;
+        }
+        ppc.refResolutionX = reference.x;
+        ppc.refResolutionY = reference.y;
+    }
+
     public void SetCameraLook(bool isUp, bool isDown)
     {
         if (isUp)

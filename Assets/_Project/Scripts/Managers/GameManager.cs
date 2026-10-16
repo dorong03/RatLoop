@@ -1,36 +1,44 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 
 public enum GameState { Lobby, Preview, Playing, Pause, Die, Clear }
 
+// 다른 매니저보다 먼저 Awake 되어야 LevelLoader 가 instance 를 쓸 수 있다.
+[DefaultExecutionOrder(-100)]
 public class GameManager : MonoBehaviour
 {
+    public const string GameSceneName = "Game";
+    public const string LevelSelectSceneName = "LevelSelection";
+    // 기존 저장 데이터와 호환되도록 키 이름은 그대로 둔다. 값은 "열린 스테이지 번호(1부터)".
+    private const string UnlockedStageKey = "MaxClearLevelID";
+
     public static GameManager instance;
-    
+
     public GameState gameState;
 
-    private Dictionary<int, LevelData> levelData = new Dictionary<int, LevelData>();
-    // 정렬된 데이터 반환하기
-    public List<LevelData> SortedLevelData => levelData.Values.OrderBy(x => x.levelID).ToList();
-        
-    public int maxClearLevelID;
-    
+    [Tooltip("게임에 나오는 레벨 순서")]
+    [SerializeField] private LevelList levelList;
+
+    private int unlockedStage = 1;
+
     // 스테이지 내부 데이터들
-    public LevelData currentLevelData;
+    private LevelRoot currentLevel;
+    private int currentLevelIndex = -1;
     private int currentTimer;
     private int currentReplayCount;
 
-    private int lastEnteredId = 0;
-    public int LastEnteredId => lastEnteredId;
-    
-    [SerializeField] private bool isCamereEffectShowed = false;
-    
+    private int lastEnteredIndex = -1;
+
+    [FormerlySerializedAs("isCamereEffectShowed")]
+    [SerializeField] private bool isPreviewShown = false;
+
     private float timer;
-    
+    private Coroutine clearRoutine;
+
     // 시간 UI 업데이트 용
     public event Action<int> OnTimeChanged;
     // UI 업데이트 용
@@ -43,29 +51,38 @@ public class GameManager : MonoBehaviour
     // 마지막 스테이지 클리어 시 UI 알림용
     public event Action OnFinalLevelClear;
 
+    public LevelList Levels => levelList;
+    // 플레이할 수 있는 가장 높은 스테이지 번호 (1부터)
+    public int UnlockedStage => unlockedStage;
+    public LevelRoot CurrentLevel => currentLevel;
+    public int CurrentLevelIndex => currentLevelIndex;
+    // 데이터 기록용 스테이지 번호. 목록에 없는 테스트 레벨은 0.
+    public int CurrentStageNumber => currentLevelIndex + 1;
+    public int LastEnteredIndex => lastEnteredIndex;
+    public bool IsLastLevel => currentLevelIndex >= 0 && currentLevelIndex == levelList.Count - 1;
+
     private void Awake()
     {
         if (instance == null)
         {
             instance = this;
             DontDestroyOnLoad(gameObject);
-            LoadAllLevelData();
+            unlockedStage = Mathf.Max(1, PlayerPrefs.GetInt(UnlockedStageKey, 1));
         }
         else
         {
             Destroy(gameObject);
             return;
         }
-        
+
         Application.targetFrameRate = 60;
     }
 
     private void Start()
     {
         Cursor.visible = false;
-        maxClearLevelID = PlayerPrefs.GetInt("MaxClearLevelID", 1);
     }
-    
+
     private void Update()
     {
         UpdateLevelTimer();
@@ -76,66 +93,65 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    
-    // 레벨 데이터폴더 안에 있는 모든 파일 로드해서 아이디 중복되는지 검사하기
-    private void LoadAllLevelData()
+    public bool IsUnlocked(int levelIndex)
     {
-        LevelData[] loadedData = Resources.LoadAll<LevelData>("LevelData");
-        foreach (var data in loadedData)
-        {
-            if (!levelData.ContainsKey(data.levelID))
-            {
-                levelData.Add(data.levelID, data);
-            }
-            else
-            {
-                Debug.Log("중복된 아이디 있음" + data.levelID);
-            }
-        }
-    }
-    
-    // ID 로 데이터 불러오기
-    public LevelData GetLevelData(int id)
-    {
-        if (levelData.ContainsKey(id))
-        {
-            return levelData[id];
-        }
-        Debug.Log($"{id} 는 없는 데이터임");
-        return null;
+        return levelIndex >= 0 && levelIndex + 1 <= unlockedStage;
     }
 
-    public void EnterLevel(LevelData levelData)
+    public void EnterLevel(int levelIndex)
     {
-        lastEnteredId = levelData.levelID;
+        LevelRoot level = levelList.Get(levelIndex);
+        if (level == null)
+        {
+            Debug.LogError($"{levelIndex + 1}번 레벨이 레벨 목록에 없습니다.");
+            return;
+        }
+        EnterLevel(level);
+    }
+
+    // 목록에 없는 레벨(테스트용)도 들어갈 수 있다. 이 경우 클리어해도 다음 스테이지가 열리지 않는다.
+    public void EnterLevel(LevelRoot level)
+    {
+        if (clearRoutine != null)
+        {
+            StopCoroutine(clearRoutine);
+            clearRoutine = null;
+        }
+
+        currentLevel = level;
+        currentLevelIndex = levelList != null ? levelList.IndexOf(level) : -1;
+        if (currentLevelIndex >= 0)
+        {
+            lastEnteredIndex = currentLevelIndex;
+        }
+
         SceneManager.sceneLoaded += OnLevelLoaded;
-        SceneManager.LoadScene("Level_"+levelData.levelID);
-        
+        SceneManager.LoadScene(GameSceneName);
+
         Time.timeScale = 1f;
         gameState = GameState.Preview;
-     
-        currentLevelData = levelData;
-        currentTimer = levelData.timeLimit;
-        currentReplayCount = levelData.maxReplyCount;
+
+        currentTimer = level.TimeLimit;
+        currentReplayCount = level.MaxReplayCount;
         timer = 0;
     }
 
     public void OnLevelLoaded(Scene scene, LoadSceneMode mode)
     {
         SceneManager.sceneLoaded -= OnLevelLoaded;
-        
+
         SoundManager.instance.PlayStageBGM();
-        
+
         OnTimeChanged?.Invoke(currentTimer);
         OnReplayCountChanged?.Invoke(currentReplayCount);
         OnEnterLevel?.Invoke();
-        
+
         CameraEffect cameraEffect = Camera.main.GetComponent<CameraEffect>();
-        
-        if (cameraEffect != null && !isCamereEffectShowed)
+
+        if (cameraEffect != null && !isPreviewShown)
         {
             cameraEffect.PlayPreViewSequence(OnPreviewFinished);
-            isCamereEffectShowed = true;
+            isPreviewShown = true;
         }
         else
         {
@@ -150,42 +166,60 @@ public class GameManager : MonoBehaviour
 
     public void ExitLevel()
     {
+        if (clearRoutine != null)
+        {
+            StopCoroutine(clearRoutine);
+            clearRoutine = null;
+        }
+
         gameState = GameState.Lobby;
 
         Time.timeScale = 1;
-        currentLevelData = null;
+        currentLevel = null;
+        currentLevelIndex = -1;
         currentTimer = 0;
         currentReplayCount = 0;
         timer = 0;
-        isCamereEffectShowed = false;
-        
-        SceneManager.LoadScene("LevelSelection");
+        isPreviewShown = false;
+
+        SceneManager.LoadScene(LevelSelectSceneName);
         SoundManager.instance.PlayLobbyBGM();
         OnExitLevel?.Invoke();
     }
 
-    public async void ClearLevel()
+    public void ClearLevel()
     {
+        if (gameState == GameState.Clear)
+        {
+            return;
+        }
         gameState = GameState.Clear;
 
-        if (currentLevelData.levelID >= maxClearLevelID)
+        // 목록 순서로 다음 스테이지를 연다.
+        bool hasNext = currentLevelIndex >= 0 && currentLevelIndex + 1 < levelList.Count;
+        if (hasNext && currentLevelIndex + 2 > unlockedStage)
         {
-            if (currentLevelData.nextLevelData != null)
-            {
-                maxClearLevelID = currentLevelData.nextLevelData.levelID;
-                PlayerPrefs.SetInt("MaxClearLevelID", maxClearLevelID);
-            }
+            unlockedStage = currentLevelIndex + 2;
+            PlayerPrefs.SetInt(UnlockedStageKey, unlockedStage);
         }
+
         SoundManager.instance.PlaySFX(SfxType.Cheese);
-        if (GameObject.FindGameObjectWithTag("Player").TryGetComponent(out Animator anim))
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null && player.TryGetComponent(out Animator anim))
         {
             anim.SetTrigger("Eat");
-            DataCollector.instance.RecordClear();
         }
+        DataCollector.instance.RecordClear();
 
-        await System.Threading.Tasks.Task.Delay(2000);
+        clearRoutine = StartCoroutine(ClearRoutine());
+    }
 
-        if (currentLevelData.nextLevelData == null)
+    private IEnumerator ClearRoutine()
+    {
+        yield return new WaitForSecondsRealtime(2f);
+        clearRoutine = null;
+
+        if (IsLastLevel)
         {
             OnFinalLevelClear?.Invoke();
         }
@@ -198,18 +232,18 @@ public class GameManager : MonoBehaviour
     public void PlayerDie()
     {
         gameState = GameState.Die;
-        
-        // 플레이어 죽는 애니메이션 실행한 다음 현재 스테이지 LevelData 로 EnterLevel 하기
-        EnterLevel(currentLevelData);
+
+        // 플레이어 죽는 애니메이션 실행한 다음 현재 레벨로 EnterLevel 하기
+        EnterLevel(currentLevel);
         DataCollector.instance.RecordDeath();
     }
 
     public void Retry()
     {
-        EnterLevel(currentLevelData);
+        EnterLevel(currentLevel);
         DataCollector.instance.RecordRetry();
     }
-    
+
     public void Replay()
     {
         if (gameState == GameState.Playing)
@@ -234,7 +268,7 @@ public class GameManager : MonoBehaviour
         else if (gameState == GameState.Playing)
         {
             OnPressPause?.Invoke(true);
-        } 
+        }
         else if (gameState == GameState.Pause)
         {
             OnPressPause?.Invoke(false);

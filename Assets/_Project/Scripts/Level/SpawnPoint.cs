@@ -9,15 +9,7 @@ public class SpawnPoint : LevelProp
     public override PropCategory Category => PropCategory.Spawn;
     protected override string SortingLayerName => SortingLayers.Effects;
 
-    public override void Validate(PropValidationReport report)
-    {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, GroundSearchDistance,
-            LayerMask.GetMask(PhysicsLayers.Ground));
-        if (hit.collider == null)
-        {
-            report.Warning($"시작 위치 아래 {GroundSearchDistance}칸 안에 땅이 없습니다.", this);
-        }
-    }
+    // 땅이 아래에 있는지는 LevelRoot.Validate 가 타일맵으로 검사한다.
 
     private void OnDrawGizmos()
     {

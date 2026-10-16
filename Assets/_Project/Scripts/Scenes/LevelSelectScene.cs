@@ -1,14 +1,25 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
+// 스테이지 선택 화면. 레벨 목록(LevelList)으로 버튼을 자동 생성한다.
+// 버튼은 지그재그로 놓이고, 한 페이지에 다 들어가지 않으면 페이지를 넘긴다.
 public class LevelSelectScene : MonoBehaviour
 {
-    [Header("Manual Slots")]
-    [SerializeField] private SelectLevelButton[] levelSlots;
+    [Header("Slots")]
+    [SerializeField] private SelectLevelButton slotPrefab;
+    [SerializeField] private RectTransform slotContainer;
+    [Tooltip("첫 번째 버튼 위치 (slotContainer 기준)")]
+    [SerializeField] private Vector2 firstSlotPosition = new Vector2(-607f, -153f);
+    [Tooltip("버튼 사이 가로 간격")]
+    [SerializeField] private float slotSpacing = 167.86f;
+    [Tooltip("짝수 번째 버튼이 위로 올라가는 높이")]
+    [SerializeField] private float zigzagHeight = 77f;
+    [SerializeField, Min(1)] private int slotsPerPage = 8;
 
-    [Header("Mouse Cursor")] 
+    [Header("Mouse Cursor")]
     [SerializeField] private RectTransform mouseCursor;
     [SerializeField] private GameObject mouseIndicator;
     [SerializeField] private float moveDuration = 0.35f;
@@ -17,7 +28,9 @@ public class LevelSelectScene : MonoBehaviour
     [SerializeField] private Animator mouseAnimator;
     [SerializeField] private string jumpTriggerName = "Jump";
 
+    private readonly List<SelectLevelButton> levelSlots = new List<SelectLevelButton>();
     private int selectedIndex;
+    private int currentPage = -1;
     private bool isMoving;
     private float moveTimer;
     private Vector3 moveStartPosition;
@@ -25,8 +38,9 @@ public class LevelSelectScene : MonoBehaviour
 
     private void Start()
     {
-        RefreshSlots();
+        BuildSlots();
         selectedIndex = FindInitialSelectedIndex();
+        ShowPage(PageOf(selectedIndex));
         SnapMouseToSelectedSlot();
         SelectCurrentSlot();
     }
@@ -37,85 +51,58 @@ public class LevelSelectScene : MonoBehaviour
         HandleInput();
     }
 
-    private void RefreshSlots()
+    private void BuildSlots()
     {
-        int maxClearLevelID = GameManager.instance.maxClearLevelID;
+        LevelList levels = GameManager.instance.Levels;
+        int unlockedStage = GameManager.instance.UnlockedStage;
 
-        if (levelSlots == null)
+        for (int i = 0; i < levels.Count; i++)
+        {
+            SelectLevelButton slot = Instantiate(slotPrefab, slotContainer);
+            int column = i % slotsPerPage;
+            var rect = (RectTransform)slot.transform;
+            rect.anchoredPosition = firstSlotPosition + new Vector2(slotSpacing * column, column % 2 == 1 ? zigzagHeight : 0f);
+            slot.SetUp(i, levels.Get(i));
+            slot.RefreshState(unlockedStage);
+            levelSlots.Add(slot);
+        }
+    }
+
+    private int PageOf(int index) => Mathf.Max(0, index) / slotsPerPage;
+
+    private void ShowPage(int page)
+    {
+        if (page == currentPage)
         {
             return;
         }
 
-        foreach (SelectLevelButton slot in levelSlots)
+        currentPage = page;
+        for (int i = 0; i < levelSlots.Count; i++)
         {
-            if (slot != null)
-            {
-                slot.RefreshState(maxClearLevelID);
-            }
+            levelSlots[i].gameObject.SetActive(PageOf(i) == page);
         }
+        // 비활성 상태였던 버튼의 위치가 바로 반영되도록 갱신한다.
+        Canvas.ForceUpdateCanvases();
     }
 
     private int FindInitialSelectedIndex()
     {
-        int lastEnteredIndex = FindLastEnteredSlotIndex();
-        if (lastEnteredIndex >= 0)
+        int lastEntered = GameManager.instance.LastEnteredIndex;
+        if (lastEntered >= 0 && lastEntered < levelSlots.Count && levelSlots[lastEntered].IsUnlocked)
         {
-            return lastEnteredIndex;
+            return lastEntered;
         }
 
-        int bestIndex = -1;
-        int bestLevelID = int.MinValue;
-        int maxClearLevelID = GameManager.instance.maxClearLevelID;
-
-        if (levelSlots == null)
+        // 마지막으로 연 스테이지
+        for (int i = levelSlots.Count - 1; i >= 0; i--)
         {
-            return -1;
-        }
-
-        for (int i = 0; i < levelSlots.Length; i++)
-        {
-            LevelData data = GetLevelData(i);
-            if (data == null || data.levelID > maxClearLevelID)
-            {
-                continue;
-            }
-
-            if (data.levelID > bestLevelID)
-            {
-                bestLevelID = data.levelID;
-                bestIndex = i;
-            }
-        }
-
-        if (bestIndex >= 0)
-        {
-            return bestIndex;
-        }
-
-        return FindNextPlayableSlotIndex(0, 1);
-    }
-
-    private int FindLastEnteredSlotIndex()
-    {
-        int lastEnteredId = GameManager.instance.LastEnteredId;
-        int maxClearLevelID = GameManager.instance.maxClearLevelID;
-
-        if (lastEnteredId <= 0 || lastEnteredId > maxClearLevelID || levelSlots == null)
-        {
-            return -1;
-        }
-
-        for (int i = 0; i < levelSlots.Length; i++)
-        {
-            LevelData data = GetLevelData(i);
-            SelectLevelButton slot = GetSlot(i);
-            if (data != null && data.levelID == lastEnteredId && slot != null && slot.IsUnlocked)
+            if (levelSlots[i].IsUnlocked)
             {
                 return i;
             }
         }
-
-        return -1;
+        return 0;
     }
 
     private void HandleInput()
@@ -156,42 +143,42 @@ public class LevelSelectScene : MonoBehaviour
             return;
         }
 
+        bool pageChanged = PageOf(nextIndex) != currentPage;
         selectedIndex = nextIndex;
-        bool mouseDir = direction == 1 ? true : false;
-        if (mouseIndicator != null)
+
+        if (pageChanged)
         {
-            mouseIndicator.SetActive(false);
+            // 페이지가 바뀌면 이동 연출 없이 새 페이지의 버튼으로 바로 옮긴다.
+            ShowPage(PageOf(selectedIndex));
+            SetMouseDirection(direction == 1);
+            SnapMouseToSelectedSlot();
+            if (mouseIndicator != null)
+            {
+                mouseIndicator.SetActive(true);
+            }
         }
-        StartMouseMove(GetMouseTargetPosition(selectedIndex), mouseDir);
+        else
+        {
+            if (mouseIndicator != null)
+            {
+                mouseIndicator.SetActive(false);
+            }
+            StartMouseMove(GetMouseTargetPosition(selectedIndex), direction == 1);
+        }
         SelectCurrentSlot();
     }
 
     private int FindNextPlayableSlotIndex(int startIndex, int direction)
     {
-        if (levelSlots == null)
+        for (int i = startIndex; i >= 0 && i < levelSlots.Count; i += direction)
         {
-            return -1;
-        }
-
-        for (int i = startIndex; i >= 0 && i < levelSlots.Length; i += direction)
-        {
-            SelectLevelButton slot = levelSlots[i];
-            if (slot != null && slot.IsUnlocked)
+            if (levelSlots[i] != null && levelSlots[i].IsUnlocked)
             {
                 return i;
             }
         }
 
         return -1;
-    }
-
-    private void EnterSelectedLevel()
-    {
-        SelectLevelButton slot = GetSelectedSlot();
-        if (slot != null && slot.IsUnlocked)
-        {
-            slot.OnClickLevelButton();
-        }
     }
 
     private void SnapMouseToSelectedSlot()
@@ -202,6 +189,14 @@ public class LevelSelectScene : MonoBehaviour
         }
     }
 
+    private void SetMouseDirection(bool right)
+    {
+        if (mouseCursor != null)
+        {
+            mouseCursor.rotation = Quaternion.Euler(0f, right ? 0f : 180f, 0f);
+        }
+    }
+
     private void StartMouseMove(Vector3 targetPosition, bool mouseDir)
     {
         if (mouseCursor == null)
@@ -209,15 +204,8 @@ public class LevelSelectScene : MonoBehaviour
             return;
         }
 
-        Quaternion mouseDirection = Quaternion.Euler(0,0,0);
-        
-        if (!mouseDir)
-        {
-            mouseDirection.y = 180;
-        }
-        
-        mouseCursor.rotation = mouseDirection;
-        
+        SetMouseDirection(mouseDir);
+
         isMoving = true;
         moveTimer = 0f;
         moveStartPosition = mouseCursor.position;
@@ -235,7 +223,7 @@ public class LevelSelectScene : MonoBehaviour
         {
             return;
         }
-        
+
         moveTimer += Time.deltaTime;
         float duration = Mathf.Max(0.01f, moveDuration);
         float t = Mathf.Clamp01(moveTimer / duration);
@@ -247,7 +235,10 @@ public class LevelSelectScene : MonoBehaviour
         {
             isMoving = false;
             mouseCursor.position = moveEndPosition;
-            mouseIndicator.SetActive(true);
+            if (mouseIndicator != null)
+            {
+                mouseIndicator.SetActive(true);
+            }
         }
     }
 
@@ -264,7 +255,7 @@ public class LevelSelectScene : MonoBehaviour
 
     private void SelectCurrentSlot()
     {
-        SelectLevelButton slot = GetSelectedSlot();
+        SelectLevelButton slot = GetSlot(selectedIndex);
         if (slot == null)
         {
             return;
@@ -277,24 +268,8 @@ public class LevelSelectScene : MonoBehaviour
         }
     }
 
-    private SelectLevelButton GetSelectedSlot()
-    {
-        return GetSlot(selectedIndex);
-    }
-
     private SelectLevelButton GetSlot(int index)
     {
-        if (levelSlots == null || index < 0 || index >= levelSlots.Length)
-        {
-            return null;
-        }
-
-        return levelSlots[index];
-    }
-
-    private LevelData GetLevelData(int index)
-    {
-        SelectLevelButton slot = GetSlot(index);
-        return slot != null ? slot.LevelData : null;
+        return index >= 0 && index < levelSlots.Count ? levelSlots[index] : null;
     }
 }

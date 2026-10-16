@@ -66,9 +66,9 @@ public class DataCollector : MonoBehaviour
 
     private void OnEnterLevel()
     {
-        if (GameManager.instance.currentLevelData == null) return;
+        if (GameManager.instance.CurrentLevel == null) return;
 
-        currentAttempt = new AttemptData(GameManager.instance.currentLevelData.levelID);
+        currentAttempt = new AttemptData(GameManager.instance.CurrentStageNumber);
         attemptTimer = 0f;
         isTracking = true;
         hasFirstInput = false;

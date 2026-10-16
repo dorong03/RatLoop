@@ -9,10 +9,9 @@ public class SelectLevelButton : MonoBehaviour
         Playable
     }
 
-    private LevelData levelData;
-
-    [Header("Level")]
-    [SerializeField] private LevelData defaultLevelData;
+    // 레벨 목록 순서 (0부터). 스테이지 번호는 LevelIndex + 1.
+    private int levelIndex = -1;
+    private LevelRoot level;
 
     [Header("UI")]
     [SerializeField] private Button _button;
@@ -23,7 +22,8 @@ public class SelectLevelButton : MonoBehaviour
     private bool isUnlocked;
     private LevelSelectState currentState;
 
-    public LevelData LevelData => levelData != null ? levelData : defaultLevelData;
+    public int LevelIndex => levelIndex;
+    public LevelRoot Level => level;
     public Transform MousePoint => mousePoint != null ? mousePoint : transform;
     public bool IsUnlocked => isUnlocked;
     public LevelSelectState CurrentState => currentState;
@@ -42,16 +42,17 @@ public class SelectLevelButton : MonoBehaviour
         }
     }
 
-    public void SetUp(LevelData levelData)
+    public void SetUp(int index, LevelRoot levelRoot)
     {
-        this.levelData = levelData;
-        RefreshState(GameManager.instance.maxClearLevelID);
+        levelIndex = index;
+        level = levelRoot;
+        name = $"{index + 1}_Button";
+        RefreshState(GameManager.instance.UnlockedStage);
     }
 
-    public void RefreshState(int maxClearLevelID)
+    public void RefreshState(int unlockedStage)
     {
-        LevelData data = LevelData;
-        if (data == null)
+        if (level == null)
         {
             isUnlocked = false;
             currentState = LevelSelectState.Locked;
@@ -60,7 +61,7 @@ public class SelectLevelButton : MonoBehaviour
             return;
         }
 
-        if (maxClearLevelID < data.levelID)
+        if (levelIndex + 1 > unlockedStage)
         {
             ApplyState(LevelSelectState.Locked);
         }
@@ -77,7 +78,7 @@ public class SelectLevelButton : MonoBehaviour
             return;
         }
 
-        GameManager.instance.EnterLevel(LevelData);
+        GameManager.instance.EnterLevel(levelIndex);
     }
 
     private void ApplyState(LevelSelectState state)

@@ -12,8 +12,8 @@ public class SpawnManager : MonoBehaviour
     [SerializeField] private GameObject ghostPrefab;
     [SerializeField] private Transform spawnPoint;
 
-    private List<List<InputFrame>> allRecordedFrames;
-    private List<ActiveGhost> activeGhostList;
+    private readonly List<List<InputFrame>> allRecordedFrames = new List<List<InputFrame>>();
+    private readonly List<ActiveGhost> activeGhostList = new List<ActiveGhost>();
     private int currentReplayIndex;
 
     private InputRecorder currentPlayerRecorder;
@@ -21,18 +21,33 @@ public class SpawnManager : MonoBehaviour
 
     private void Awake()
     {
-        if (instance == null)
+        if (instance == null || instance == this)
         {
             instance = this;
-            allRecordedFrames = new List<List<InputFrame>>();
-            activeGhostList = new List<ActiveGhost>();
-            currentReplayIndex = 0;
-            SpawnPlayer();
         }
         else
         {
             Destroy(gameObject);
         }
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this)
+        {
+            instance = null;
+        }
+    }
+
+    // LevelLoader 가 레벨을 생성한 직후 호출한다. (이 컴포넌트의 Awake 보다 먼저 불릴 수 있다)
+    public void Initialize(Transform levelSpawnPoint)
+    {
+        instance = this;
+        spawnPoint = levelSpawnPoint;
+        allRecordedFrames.Clear();
+        activeGhostList.Clear();
+        currentReplayIndex = 0;
+        SpawnPlayer();
     }
 
     private void FixedUpdate()
@@ -122,8 +137,7 @@ public class SpawnManager : MonoBehaviour
         activeGhostList.Clear();
         
         SpawnPlayer();
-        currentPlayer.GetComponent<InputRecorder>().StartRecording();
-        
+
         CameraEffect cameraEffect = FindFirstObjectByType<CameraEffect>();
         if (cameraEffect != null)
         {
@@ -133,20 +147,17 @@ public class SpawnManager : MonoBehaviour
         currentReplayIndex = 0;
         SoundManager.instance.PlaySFX(SfxType.Replay);
 
-        for (int i = 0; i < 1; i++)
+        foreach (var record in allRecordedFrames)
         {
-            foreach (var record in allRecordedFrames)
+            GameObject ghost = Instantiate(ghostPrefab, spawnPoint.position, Quaternion.identity);
+            GhostController ghostController = ghost.GetComponent<GhostController>();
+            ActiveGhost addedGhost = new ActiveGhost
             {
-                GameObject ghost = Instantiate(ghostPrefab, spawnPoint.position, Quaternion.identity);
-                GhostController ghostController = ghost.GetComponent<GhostController>();
-                ActiveGhost addedGhost = new ActiveGhost
-                {
-                    controller = ghostController,
-                    recordedFrames = record
-                };
+                controller = ghostController,
+                recordedFrames = record
+            };
 
-                activeGhostList.Add(addedGhost);
-            }
+            activeGhostList.Add(addedGhost);
         }
     }
 }

@@ -8,13 +8,10 @@ public class DemoUtility : MonoBehaviour
     {
         if (Keyboard.current.lKey.wasPressedThisFrame)
         {
-            if (GameManager.instance.currentLevelData != null)
+            GameManager gm = GameManager.instance;
+            if (gm.CurrentLevel != null && gm.CurrentLevelIndex >= 0 && gm.CurrentLevelIndex + 1 < gm.Levels.Count)
             {
-                LevelData currentLevelData = GameManager.instance.currentLevelData;
-                if (currentLevelData.nextLevelData != null)
-                {
-                    GameManager.instance.EnterLevel(currentLevelData.nextLevelData);
-                }
+                gm.EnterLevel(gm.CurrentLevelIndex + 1);
             }
         }
 

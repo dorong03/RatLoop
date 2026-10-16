@@ -48,8 +48,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   gameState: 0
-  maxClearLevelID: 0
-  currentLevelData: {fileID: 0}
+  levelList: {fileID: 11400000, guid: 65003088854dd924ab8aecefbab14fa0, type: 2}
+  isPreviewShown: 0
 --- !u!114 &7810423968646349750
 MonoBehaviour:
   m_ObjectHideFlags: 0

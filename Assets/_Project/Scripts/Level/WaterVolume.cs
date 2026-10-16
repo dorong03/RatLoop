@@ -50,6 +50,10 @@ public class WaterVolume : LevelProp
     [Tooltip("0 이면 빠져도 죽지 않는다.")]
     [SerializeField, Range(0f, 10f)] private float drownTime = 3f;
 
+    [PlannerField("타일 자동 배치", 8)]
+    [Tooltip("끄면 크기를 바꿔도 물 타일을 다시 깔지 않는다. (직접 그린 물 그림을 보존할 때)")]
+    [SerializeField] private bool autoTiles = true;
+
     [Header("그림")]
     [SerializeField] private WaterTiles visualTiles = new WaterTiles();
 
@@ -73,6 +77,15 @@ public class WaterVolume : LevelProp
 
     public Vector2Int Size => new Vector2Int(width, height);
     public float SurfaceY => transform.position.y + height;
+
+    // 기존 레벨 변환용: 직접 그린 물 그림을 그대로 쓰고 자동 배치를 끈다.
+    public void UseCustomVisual(Color color)
+    {
+        autoTiles = false;
+        visualTiles.color = color;
+    }
+
+    public Tilemap VisualTilemap => GetComponentInChildren<Tilemap>(true);
 
     public void SetSize(int newWidth, int newHeight)
     {
@@ -123,8 +136,13 @@ public class WaterVolume : LevelProp
             return;
         }
 
-        tilemap.ClearAllTiles();
         tilemap.color = visualTiles.color;
+        if (!autoTiles)
+        {
+            return;
+        }
+
+        tilemap.ClearAllTiles();
         for (int y = 0; y < height; y++)
         {
             int row = y == height - 1 ? 0 : (y == 0 ? 2 : 1);
