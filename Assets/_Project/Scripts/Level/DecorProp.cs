@@ -1,7 +1,7 @@
 using UnityEngine;
 
 // 부딪히지 않는 장식. 공중에 떠 있는 광고판처럼 플레이어가 그냥 지나간다.
-public class DecorProp : LevelProp
+public class DecorProp : SizedProp
 {
     [PlannerField("둥둥 떠다니기", 0)]
     [SerializeField] private bool bobbing;
@@ -36,6 +36,8 @@ public class DecorProp : LevelProp
 
     public override void Validate(PropValidationReport report)
     {
+        base.Validate(report);
+
         foreach (Collider2D col in GetComponentsInChildren<Collider2D>(true))
         {
             if (!col.isTrigger)

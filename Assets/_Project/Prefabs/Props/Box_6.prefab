@@ -75,6 +75,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PhysicsProp
   catalogId: box_6
+  size: 1
+  baseScale: {x: 1, y: 1}
+  flipX: 0
   mass: 5
   gravityScale: 1
   linearDamping: 3

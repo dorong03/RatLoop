@@ -216,3 +216,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StaticProp
   catalogId: water_pack
+  size: 1
+  baseScale: {x: 1, y: 1}
+  flipX: 0

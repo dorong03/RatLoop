@@ -137,6 +137,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DecorProp
   catalogId: decor_wall_clock
+  size: 1
+  baseScale: {x: 1, y: 1}
+  flipX: 0
   bobbing: 0
   bobHeight: 0.2
   bobSpeed: 1.5

@@ -169,6 +169,7 @@ public static class PlannerFieldUtility
             prop.ApplySettings();
         }
         EditorUtility.SetDirty(source);
+        EditorUtility.SetDirty(source.transform);
         AssetDatabase.SaveAssetIfDirty(source);
     }
 

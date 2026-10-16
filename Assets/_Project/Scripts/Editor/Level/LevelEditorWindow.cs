@@ -652,6 +652,15 @@ public partial class LevelEditorWindow : EditorWindow
         {
             if (PlannerFieldUtility.DrawSharedFields(instanceOrPrefab))
             {
+                // 크기처럼 오브젝트에 직접 반영되는 값은 이미 놓은 같은 프롭에도 바로 맞춘다.
+                LevelRoot level = LevelEditorTools.CurrentLevel;
+                if (level != null)
+                {
+                    foreach (LevelProp prop in level.GetComponentsInChildren<LevelProp>(true))
+                    {
+                        prop.ApplySettings();
+                    }
+                }
                 MarkReportDirty();
             }
 
@@ -699,9 +708,20 @@ public partial class LevelEditorWindow : EditorWindow
             }
             if (GUILayout.Button("좌우 뒤집기", EditorStyles.miniButton))
             {
-                Undo.RecordObject(t, "좌우 뒤집기");
-                Vector3 s = t.localScale;
-                t.localScale = new Vector3(-s.x, s.y, s.z);
+                if (t.TryGetComponent(out SizedProp sized))
+                {
+                    // 크기 프롭은 크기를 직접 계산하므로 뒤집기 값을 바꾼다.
+                    Undo.RecordObjects(new UnityEngine.Object[] { sized, t }, "좌우 뒤집기");
+                    sized.FlipX = !sized.FlipX;
+                    sized.ApplySettings();
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(sized);
+                }
+                else
+                {
+                    Undo.RecordObject(t, "좌우 뒤집기");
+                    Vector3 s = t.localScale;
+                    t.localScale = new Vector3(-s.x, s.y, s.z);
+                }
             }
         }
     }

@@ -1,7 +1,7 @@
 using UnityEngine;
 
 // 움직이지 않는 발판 (버스, 생수 묶음 ...). 밟을 수 있고 밀리지 않는다.
-public class StaticProp : LevelProp
+public class StaticProp : SizedProp
 {
     public override PropCategory Category => PropCategory.Static;
     protected override string SortingLayerName => SortingLayers.Props;
@@ -9,6 +9,8 @@ public class StaticProp : LevelProp
 
     public override void Validate(PropValidationReport report)
     {
+        base.Validate(report);
+
         if (GetComponentsInChildren<Collider2D>(true).Length == 0)
         {
             report.Warning($"{name}: 콜라이더가 없어 밟을 수 없습니다. 장식이라면 장식 프롭으로 만드세요.", this);

@@ -138,6 +138,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StaticProp
   catalogId: bus_gray
+  size: 1
+  baseScale: {x: 2, y: 2}
+  flipX: 0
 --- !u!1 &1366416663143552849
 GameObject:
   m_ObjectHideFlags: 0

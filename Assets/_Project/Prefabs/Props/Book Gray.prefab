@@ -335,6 +335,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PhysicsProp
   catalogId: book_gray
+  size: 1
+  baseScale: {x: 1, y: 1}
+  flipX: 0
   mass: 9
   gravityScale: 3.3
   linearDamping: 3

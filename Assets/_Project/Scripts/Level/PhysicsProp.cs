@@ -3,7 +3,7 @@ using UnityEngine;
 // 밀거나 쌓을 수 있는 물리 프롭 (공, 박스, 책, 병 ...).
 // 여기 있는 값이 Rigidbody2D / Collider2D 의 원본이다. Rigidbody2D 를 직접 고치지 말고 이 값을 고친다.
 [RequireComponent(typeof(Rigidbody2D))]
-public class PhysicsProp : LevelProp
+public class PhysicsProp : SizedProp
 {
     [PlannerField("질량", 0)]
     [SerializeField, Range(0.1f, 200f)] private float mass = 1f;
@@ -67,6 +67,8 @@ public class PhysicsProp : LevelProp
 
     public override void Validate(PropValidationReport report)
     {
+        base.Validate(report);
+
         if (mass <= 0f)
         {
             report.Error($"{name}: 질량은 0보다 커야 합니다.", this);
