@@ -1,0 +1,247 @@
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Tilemaps;
+
+// 레벨 프리팹의 루트. 레벨 설정값과 레벨 전체에 대한 세이프티 체크를 담당한다.
+//
+// 구조:
+//   LevelRoot
+//     Background            배경 (패럴랙스)
+//     Grid
+//       Decoration          뒤쪽 장식 타일 (충돌 없음)
+//       Ground              걷는 땅/벽 타일
+//       DecorationFront     앞쪽 장식 타일 (충돌 없음)
+//     Water                 WaterVolume 들
+//     Props                 프롭들 (치즈 포함)
+//     Bounds                레벨 경계 벽
+//     SpawnPoint
+public class LevelRoot : MonoBehaviour
+{
+    public enum CameraZoom
+    {
+        [InspectorName("보통")] Normal, // 기준 해상도 228x128
+        [InspectorName("넓게")] Wide    // 기준 해상도 320x180 (더 넓게 보임)
+    }
+
+    [PlannerField("레벨 이름", 0)]
+    [SerializeField] private string displayName;
+
+    [PlannerField("제한 시간 (초)", 1)]
+    [SerializeField, Range(5, 600)] private int timeLimit = 60;
+
+    [PlannerField("리플레이 횟수", 2)]
+    [SerializeField, Range(0, 10)] private int maxReplayCount = 1;
+
+    [PlannerField("카메라 줌", 3)]
+    [SerializeField] private CameraZoom cameraZoom = CameraZoom.Normal;
+
+    public string DisplayName => string.IsNullOrEmpty(displayName) ? name : displayName;
+    public int TimeLimit => timeLimit;
+    public int MaxReplayCount => maxReplayCount;
+    public CameraZoom Zoom => cameraZoom;
+
+    public Vector2Int PixelPerfectReference =>
+        cameraZoom == CameraZoom.Wide ? new Vector2Int(320, 180) : new Vector2Int(228, 128);
+
+    public SpawnPoint SpawnPoint => GetComponentInChildren<SpawnPoint>(true);
+
+    public Tilemap GroundTilemap
+    {
+        get
+        {
+            foreach (Tilemap tm in GetComponentsInChildren<Tilemap>(true))
+            {
+                if (tm.gameObject.layer == PhysicsLayers.Index(PhysicsLayers.Ground))
+                {
+                    return tm;
+                }
+            }
+            return null;
+        }
+    }
+
+    // 레벨 전체 세이프티 체크. 저장, 목록 등록, 테스트 플레이 전에 실행한다.
+    public void Validate(PropValidationReport report, PropCatalog catalog = null)
+    {
+        if (timeLimit <= 0)
+        {
+            report.Error("제한 시간은 0초보다 길어야 해요.", this);
+        }
+        if (maxReplayCount < 0)
+        {
+            report.Error("리플레이 횟수는 0 이상이어야 해요.", this);
+        }
+
+        SpawnPoint[] spawns = GetComponentsInChildren<SpawnPoint>(true);
+        if (spawns.Length != 1)
+        {
+            report.Error($"시작 위치는 하나만 있어야 해요. 지금 {spawns.Length}개예요.", this);
+        }
+
+        GoalProp[] goals = GetComponentsInChildren<GoalProp>(true);
+        if (goals.Length != 1)
+        {
+            report.Error($"치즈는 하나만 있어야 해요. 지금 {goals.Length}개예요.", this);
+        }
+
+        Tilemap ground = GroundTilemap;
+        if (ground == null)
+        {
+            report.Error("지형(Ground) 타일맵이 없어요.", this);
+        }
+        else if (spawns.Length == 1 && !HasGroundBelow(ground, spawns[0].transform.position, SpawnPoint.GroundSearchDistance))
+        {
+            report.Warning($"시작 위치 아래 {SpawnPoint.GroundSearchDistance}칸 안에 땅이 없어요.", spawns[0]);
+        }
+
+        foreach (LevelProp prop in GetComponentsInChildren<LevelProp>(true))
+        {
+            prop.Validate(report);
+
+            // 고정 프롭은 지형에 걸쳐 있어도 밀려나지 않으므로 물리 프롭만 검사한다.
+            if (ground != null && prop is PhysicsProp && IsInsideGround(ground, prop))
+            {
+                report.Warning($"{prop.name}: 지형 타일에 박혀 있어요. 시작하자마자 튕겨 나갈 수 있어요.", prop);
+            }
+
+#if UNITY_EDITOR
+            string differs = SharedOverrides(prop);
+            if (differs != null)
+            {
+                report.Warning($"{prop.name}: 이 프롭만 공통 설정과 값이 달라요 ({differs}). '공통 설정으로 되돌리기'를 눌러 맞춰 주세요.", prop);
+            }
+
+            if (catalog != null && !(prop is SpawnPoint))
+            {
+                GameObject source = UnityEditor.PrefabUtility.GetCorrespondingObjectFromOriginalSource(prop.gameObject);
+                if (source == null || catalog.FindByPrefab(source) == null)
+                {
+                    report.Warning($"{prop.name}: 카탈로그에 없는 프롭이에요.", prop);
+                }
+            }
+#endif
+        }
+
+        CheckPhysicsOverlaps(report);
+    }
+
+#if UNITY_EDITOR
+    // 종류 공통 값([PlannerField] 중 PerInstance 가 아닌 것)을 이 개체에서만 따로 바꿨으면 그 이름들을 돌려준다.
+    private static string SharedOverrides(LevelProp prop)
+    {
+        if (!UnityEditor.PrefabUtility.IsPartOfPrefabInstance(prop))
+        {
+            return null;
+        }
+        Object source = UnityEditor.PrefabUtility.GetCorrespondingObjectFromSource(prop);
+        UnityEditor.PropertyModification[] mods = UnityEditor.PrefabUtility.GetPropertyModifications(prop.gameObject);
+        if (source == null || mods == null)
+        {
+            return null;
+        }
+
+        var names = new List<string>();
+        const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Instance |
+                                                    System.Reflection.BindingFlags.Public |
+                                                    System.Reflection.BindingFlags.NonPublic;
+        for (System.Type t = prop.GetType(); t != null && t != typeof(MonoBehaviour); t = t.BaseType)
+        {
+            foreach (System.Reflection.FieldInfo field in t.GetFields(flags | System.Reflection.BindingFlags.DeclaredOnly))
+            {
+                var attr = (PlannerFieldAttribute)System.Attribute.GetCustomAttribute(field, typeof(PlannerFieldAttribute));
+                if (attr == null || attr.PerInstance)
+                {
+                    continue;
+                }
+                foreach (UnityEditor.PropertyModification m in mods)
+                {
+                    if (m.target == source && (m.propertyPath == field.Name || m.propertyPath.StartsWith(field.Name + ".")))
+                    {
+                        names.Add(attr.Label);
+                        break;
+                    }
+                }
+            }
+        }
+        return names.Count > 0 ? string.Join(", ", names) : null;
+    }
+#endif
+
+    private static bool HasGroundBelow(Tilemap ground, Vector3 worldPosition, float distance)
+    {
+        Vector3Int cell = ground.WorldToCell(worldPosition);
+        for (int i = 0; i <= Mathf.CeilToInt(distance); i++)
+        {
+            if (ground.HasTile(cell + Vector3Int.down * i))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // 콜라이더 영역 안쪽(가장자리 제외)에 지형 타일이 있으면 박혀 있다고 본다.
+    private static bool IsInsideGround(Tilemap ground, LevelProp prop)
+    {
+        foreach (Collider2D col in prop.GetComponentsInChildren<Collider2D>(true))
+        {
+            if (col.isTrigger)
+            {
+                continue;
+            }
+
+            Bounds b = ColliderBounds.Get(col);
+            b.Expand(-0.2f);
+            if (b.size.x <= 0f || b.size.y <= 0f)
+            {
+                continue;
+            }
+
+            Vector3Int min = ground.WorldToCell(b.min);
+            Vector3Int max = ground.WorldToCell(b.max);
+            for (int x = min.x; x <= max.x; x++)
+            {
+                for (int y = min.y; y <= max.y; y++)
+                {
+                    if (ground.HasTile(new Vector3Int(x, y, 0)))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private void CheckPhysicsOverlaps(PropValidationReport report)
+    {
+        var bodies = new List<PhysicsProp>(GetComponentsInChildren<PhysicsProp>(true));
+        for (int i = 0; i < bodies.Count; i++)
+        {
+            for (int j = i + 1; j < bodies.Count; j++)
+            {
+                if (Overlaps(bodies[i], bodies[j]))
+                {
+                    report.Warning($"{bodies[i].name}, {bodies[j].name}: 서로 겹쳐 있어요.", bodies[i]);
+                }
+            }
+        }
+    }
+
+    private static bool Overlaps(LevelProp a, LevelProp b)
+    {
+        foreach (Collider2D ca in a.GetComponentsInChildren<Collider2D>(true))
+        {
+            Bounds ba = ColliderBounds.Get(ca);
+            ba.Expand(-0.1f);
+            foreach (Collider2D cb in b.GetComponentsInChildren<Collider2D>(true))
+            {
+                if (!ca.isTrigger && !cb.isTrigger && ba.Intersects(ColliderBounds.Get(cb)))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+}

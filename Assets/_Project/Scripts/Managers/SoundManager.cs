@@ -1,0 +1,151 @@
+using UnityEngine;
+using System.Collections.Generic;
+
+public enum SfxType
+{
+    Walk,
+    Jump,
+    Land,
+    Cheese,
+    Die,
+    Replay,
+    StageError,
+    WaterEnter,
+    TitleButtonChange,
+    ButtonSelected
+}
+
+public class SoundManager : MonoBehaviour
+{
+    public static SoundManager instance;
+
+    [Header("오디오 소스")]
+    [SerializeField] private AudioSource sfxSource;
+    [SerializeField] private AudioSource bgmSource; 
+
+    [Header("BGM 설정")]
+    [SerializeField] private AudioClip lobbyBgmClip;
+    [SerializeField] private AudioClip stageBgmClip;
+    [SerializeField, Range(0f, 1f)] private float bgmVolume = 0.5f;
+
+    [Header("사운드 클립 등록")]
+    [SerializeField] private List<SoundData> sfxClips;
+    
+    private Dictionary<SfxType, AudioClip> sfxDictionary = new Dictionary<SfxType, AudioClip>();
+
+    private void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+        
+        foreach (var data in sfxClips)
+        {
+            if (!sfxDictionary.ContainsKey(data.type))
+            {
+                sfxDictionary.Add(data.type, data.clip);
+            }
+        }
+    }
+
+    private void Start()
+    {
+        GameSettings.Changed += ApplyVolumeSettings;
+        PlayLobbyBGM();
+    }
+
+    private void OnDestroy()
+    {
+        GameSettings.Changed -= ApplyVolumeSettings;
+    }
+
+    // 설정 메뉴의 볼륨을 반영한다. (재생 중인 BGM 포함)
+    private void ApplyVolumeSettings()
+    {
+        if (bgmSource != null)
+        {
+            bgmSource.volume = bgmVolume * GameSettings.BgmVolume;
+        }
+    }
+
+    public void PlayLobbyBGM()
+    {
+        ChangeBGM(lobbyBgmClip);
+    }
+
+    public void PlayStageBGM()
+    {
+        ChangeBGM(stageBgmClip);
+    }
+
+    private void ChangeBGM(AudioClip clip)
+    {
+        if (bgmSource == null || clip == null) return;
+        
+        if (bgmSource.clip == clip && bgmSource.isPlaying) return;
+
+        bgmSource.Stop();
+        bgmSource.clip = clip;
+        bgmSource.loop = true;
+        bgmSource.volume = bgmVolume * GameSettings.BgmVolume;
+        bgmSource.Play();
+    }
+    
+    public void PlaySFX(SfxType type)
+    {
+        if (sfxSource == null)
+        {
+            Debug.LogWarning("SoundManager에 SFX AudioSource가 연결되어 있지 않습니다.");
+            return;
+        }
+
+        if (sfxDictionary.TryGetValue(type, out AudioClip clip))
+        {
+            if (clip == null)
+            {
+                Debug.LogWarning($"인스펙터 창에서 사운드 클립 넣어주기 --> {type}");
+                return;
+            }
+
+            if (type == SfxType.Walk)
+            {
+                sfxSource.pitch = Random.Range(0.8f, 1.2f);
+                sfxSource.volume = 0.7f * GameSettings.SfxVolume;
+            }
+            else
+            {
+                sfxSource.volume = GameSettings.SfxVolume;
+                sfxSource.pitch = 1f;
+            }
+            
+            sfxSource.PlayOneShot(clip);
+        }
+        else
+        {
+            Debug.LogWarning($"인스펙터 창에서 사운드 클립 넣어주기 --> {type}");
+        }
+    }
+    
+    public void PlaySFX(AudioClip audioClip, float minPitch, float maxPitch)
+    {
+        if (sfxSource == null || audioClip == null) return;
+
+        sfxSource.pitch = Random.Range(minPitch, maxPitch);
+        sfxSource.volume = GameSettings.SfxVolume;
+        sfxSource.PlayOneShot(audioClip);
+    }
+}
+
+[System.Serializable]
+public class SoundData
+{
+    public SfxType type;
+    public AudioClip clip;
+}

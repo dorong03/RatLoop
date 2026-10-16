@@ -6,35 +6,14 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Resources/Scenes/GameScene/Title.unity
+    path: Assets/_Project/Scenes/Title.unity
     guid: d00fb467f2b2041be8242f93d91486f5
   - enabled: 1
-    path: Assets/Resources/Scenes/GameScene/LevelSelection.unity
+    path: Assets/_Project/Scenes/LevelSelection.unity
     guid: bec08e84ebed4d246b980f3181db14fe
   - enabled: 1
-    path: Assets/Resources/Scenes/LevelScene/00.MinSeung/Level_1.unity
-    guid: 359a72e90e70f403ab1ba8d94b62b786
-  - enabled: 1
-    path: Assets/Resources/Scenes/LevelScene/00.MinSeung/Level_2.unity
-    guid: f7562d7eb5de441eaa851e9725308bf9
-  - enabled: 1
-    path: Assets/Resources/Scenes/LevelScene/00.MinSeung/Level_3.unity
-    guid: 25dbf93d78a47461fa76666fe253eaf1
-  - enabled: 1
-    path: Assets/Resources/Scenes/LevelScene/00.MinSeung/Level_4.unity
-    guid: 08b526bc378b9994e99e680f56f6d275
-  - enabled: 1
-    path: Assets/Resources/Scenes/LevelScene/00.MinSeung/Level_5.unity
-    guid: d5b28b0c862711f4c8dcbb289840b622
-  - enabled: 1
-    path: Assets/Resources/Scenes/LevelScene/00.MinSeung/Level_6.unity
-    guid: b8a869872314f4f688c5e7712932cc52
-  - enabled: 1
-    path: Assets/Resources/Scenes/LevelScene/00.MinSeung/Level_7.unity
-    guid: f80b5842018c649409b7daf92f9ad5e3
-  - enabled: 1
-    path: Assets/Resources/Scenes/LevelScene/00.MinSeung/Level_8.unity
-    guid: 80186de16e7844247a87433c091241cf
+    path: Assets/_Project/Scenes/Game.unity
+    guid: 3fbb01281803d034f893a9345fd8da85
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0
