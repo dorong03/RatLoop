@@ -95,6 +95,27 @@ public static class TileSheetImporter
         return CreateTiles(assetPath);
     }
 
+    // 이미지를 픽셀 아트 설정으로 바꾸고 칸 크기대로 자른다. (타일은 만들지 않는다. 프롭 조각용)
+    public static void SliceSheet(string assetPath, int cellSize)
+    {
+        cellSize = Mathf.Max(1, cellSize);
+        var importer = (TextureImporter)AssetImporter.GetAtPath(assetPath);
+        if (importer == null)
+        {
+            return;
+        }
+
+        importer.textureType = TextureImporterType.Sprite;
+        importer.spriteImportMode = SpriteImportMode.Multiple;
+        importer.spritePixelsPerUnit = cellSize;
+        importer.filterMode = FilterMode.Point;
+        importer.textureCompression = TextureImporterCompression.Uncompressed;
+        importer.mipmapEnabled = false;
+        importer.alphaIsTransparency = true;
+        importer.SaveAndReimport();
+        SliceIfNeeded(importer, assetPath, Path.GetFileNameWithoutExtension(assetPath), cellSize);
+    }
+
     private static void SliceIfNeeded(TextureImporter importer, string assetPath, string sheetName, int cellSize)
     {
         var factory = new SpriteDataProviderFactories();

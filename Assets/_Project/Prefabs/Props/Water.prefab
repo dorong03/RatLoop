@@ -434,6 +434,7 @@ MonoBehaviour:
   angularDrag: 5
   flowAngle: 0
   flowStrength: 0
+  enterDepth: 0.35
   drownTime: 3
   autoTiles: 1
   visualTiles:
