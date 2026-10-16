@@ -435,6 +435,7 @@ MonoBehaviour:
   flowAngle: 0
   flowStrength: 0
   drownTime: 3
+  autoTiles: 1
   visualTiles:
     tiles:
     - {fileID: 11400000, guid: a43065e4d4e0a33479964fe60869215d, type: 2}

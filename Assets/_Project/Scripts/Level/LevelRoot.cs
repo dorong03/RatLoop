@@ -142,7 +142,7 @@ public class LevelRoot : MonoBehaviour
                 continue;
             }
 
-            Bounds b = col.bounds;
+            Bounds b = ColliderBounds.Get(col);
             b.Expand(-0.2f);
             if (b.size.x <= 0f || b.size.y <= 0f)
             {
@@ -184,11 +184,11 @@ public class LevelRoot : MonoBehaviour
     {
         foreach (Collider2D ca in a.GetComponentsInChildren<Collider2D>(true))
         {
-            Bounds ba = ca.bounds;
+            Bounds ba = ColliderBounds.Get(ca);
             ba.Expand(-0.1f);
             foreach (Collider2D cb in b.GetComponentsInChildren<Collider2D>(true))
             {
-                if (!ca.isTrigger && !cb.isTrigger && ba.Intersects(cb.bounds))
+                if (!ca.isTrigger && !cb.isTrigger && ba.Intersects(ColliderBounds.Get(cb)))
                 {
                     return true;
                 }
