@@ -11,6 +11,8 @@ public static class PhysicsLayers
     public const string Pole = "Pole";
     public const string Cheese = "Cheese";
     public const string Wall = "Wall";
+    // 투명벽 중 "물체도 막기" 를 켠 것. 플레이어, 고스트, 프롭(Ground 레이어)과 모두 충돌한다.
+    public const string Barrier = "Barrier";
     // 아무것과도 충돌하지 않는 장식용 레이어 (공중에 떠 있는 오브젝트, 장식 타일)
     public const string Decoration = "Decoration";
 

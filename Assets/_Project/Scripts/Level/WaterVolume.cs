@@ -8,7 +8,7 @@ using UnityEngine.Tilemaps;
 // 부력은 BuoyancyEffector2D 대신 직접 계산해서, 프롭마다 질량과 별개로 뜨는 정도를 줄 수 있다.
 [ExecuteAlways]
 [RequireComponent(typeof(BoxCollider2D))]
-public class WaterVolume : LevelProp
+public class WaterVolume : LevelProp, IAreaProp
 {
     private const string PlayerTag = "Player";
     private const string GhostTag = "Ghost";
@@ -76,6 +76,7 @@ public class WaterVolume : LevelProp
     protected override string PhysicsLayerName => PhysicsLayers.Water;
 
     public Vector2Int Size => new Vector2Int(width, height);
+    public Vector2Int AreaSize => Size;
     public float SurfaceY => transform.position.y + height;
 
     // 기존 레벨 변환용: 직접 그린 물 그림을 그대로 쓰고 자동 배치를 끈다.
@@ -97,6 +98,17 @@ public class WaterVolume : LevelProp
     public override void ApplySettings()
     {
         SnapToGrid();
+        ApplyDerived();
+    }
+
+    // 값이 바뀔 때마다 위치를 다시 맞추면 실행 취소와 부딪히므로, 위치 맞춤 없이 파생 값만 갱신한다.
+    protected override void OnEditorValueChanged()
+    {
+        ApplyDerived();
+    }
+
+    private void ApplyDerived()
+    {
         base.ApplySettings();
 
         gameObject.tag = "Water";

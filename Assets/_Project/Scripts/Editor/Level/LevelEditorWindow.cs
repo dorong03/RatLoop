@@ -1,20 +1,29 @@
 using System.Collections.Generic;
-using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
 // 기획자용 레벨 에디터. 메뉴: RatLoop > 레벨 에디터 (Ctrl+Shift+L)
-// 하이어라키/인스펙터를 몰라도 이 창 하나로 레벨을 만들고, 타일을 칠하고, 프롭을 배치하고, 테스트할 수 있다.
-public class LevelEditorWindow : EditorWindow
+//
+// 사용 흐름
+//   1. 레벨 목록에서 레벨을 열거나 새로 만든다.
+//   2. 위쪽 모드 버튼(선택 / 타일 / 프롭 / 시작·치즈 / 검사)을 고르면 그 모드의 씬 도구가 바로 켜진다.
+//   3. 저장하거나 테스트 플레이를 누른다.
+// 이 파일은 창 화면(UI)이고, 씬 화면에서 동작하는 도구는 LevelEditorWindow.Scene.cs 에 있다.
+public partial class LevelEditorWindow : EditorWindow
 {
-    private enum Tab { Tiles, Props, Selection, Check }
+    private enum Mode { Select, Tiles, Props, Points, Check }
     private enum TileLayer { Ground, DecorationBack, DecorationFront }
-    private enum Tool { None, PaintTile, EraseTile, PlaceProp }
+    private enum Relocate { None, Spawn, Goal }
 
-    private static readonly string[] TabLabels = { "타일", "프롭", "선택한 것", "세이프티 체크" };
-    private static readonly string[] TileLayerLabels = { "지형 (밟고 부딪힘)", "뒤 장식 (통과)", "앞 장식 (통과)" };
+    private static readonly string[] ModeLabels = { "선택·이동", "타일", "프롭", "시작·치즈", "검사" };
+    private static readonly string[] TileLayerLabels = { "지형", "뒤 장식", "앞 장식" };
+    private static readonly string[] TileLayerHelp =
+    {
+        "밟고 부딪히는 땅과 벽입니다.",
+        "캐릭터 뒤에 그려지는 장식입니다. 지나갈 수 있습니다.",
+        "캐릭터 앞에 그려지는 장식입니다. 지나갈 수 있습니다."
+    };
     private static readonly string[] TileLayerObjectNames = { "Ground", "Decoration", "DecorationFront" };
     private static readonly string[] SnapLabels = { "0.25칸", "0.5칸", "1칸" };
     private static readonly float[] SnapValues = { 0.25f, 0.5f, 1f };
@@ -22,39 +31,51 @@ public class LevelEditorWindow : EditorWindow
     private static readonly (PropCategory? category, string label)[] PropFilters =
     {
         (null, "전체"), (PropCategory.Physics, "물리"), (PropCategory.Static, "고정"), (PropCategory.Decoration, "장식"),
-        (PropCategory.Rope, "로프"), (PropCategory.Water, "물"), (PropCategory.Gimmick, "기믹")
+        (PropCategory.Rope, "로프"), (PropCategory.Water, "물"), (PropCategory.Barrier, "투명벽"), (PropCategory.Gimmick, "기믹")
     };
 
-    private const string TilesRoot = "Assets/_Project/Art/Tiles";
-    private const float IconSize = 40f;
+    private static readonly Color ErrorColor = new Color(1f, 0.45f, 0.4f);
+    private static readonly Color WarningColor = new Color(1f, 0.85f, 0.35f);
+    private static readonly Color OkColor = new Color(0.55f, 0.9f, 0.55f);
+    private static readonly Color SelectedTint = new Color(0.35f, 0.65f, 1f);
 
-    private Tab tab;
-    private Tool tool;
-    private TileLayer tileLayer;
-    private TileBase selectedTile;
-    private int tileGroupIndex;
+    [SerializeField] private Mode mode;
+    [SerializeField] private TileLayer tileLayer;
+    [SerializeField] private int snapIndex = 1;
+    [SerializeField] private bool settingsOpen;
+    [SerializeField] private bool eraser;
+
+    private readonly TilePaletteView palette = new TilePaletteView();
     private PropCatalog.Entry selectedProp;
     private int propFilterIndex;
-    private int snapIndex = 1;
+    private string propSearch = "";
+    private Relocate relocate;
     private string newLevelName = "";
     private Vector2 scroll;
-    private PropValidationReport lastReport;
+    private Vector2 propScroll;
 
-    private List<string> tileGroupNames;
-    private Dictionary<string, List<TileBase>> tileGroups;
+    private PropValidationReport report;
+    private bool reportDirty = true;
+    private double nextValidateTime;
+
+    private GUIStyle titleStyle;
+    private GUIStyle bannerStyle;
+    private GUIStyle hintStyle;
+    private GUIStyle cardTitleStyle;
 
     [MenuItem("RatLoop/레벨 에디터 %#l", priority = 0)]
     public static void Open()
     {
         var window = GetWindow<LevelEditorWindow>("레벨 에디터");
-        window.minSize = new Vector2(320f, 420f);
+        window.minSize = new Vector2(340f, 460f);
     }
 
     private void OnEnable()
     {
         SceneView.duringSceneGui += OnSceneGUI;
         Selection.selectionChanged += Repaint;
-        EditorApplication.hierarchyChanged += Repaint;
+        EditorApplication.hierarchyChanged += MarkReportDirty;
+        Undo.undoRedoPerformed += OnUndoRedo;
         PrefabStage.prefabStageOpened += OnStageChanged;
         PrefabStage.prefabStageClosing += OnStageChanged;
     }
@@ -63,66 +84,116 @@ public class LevelEditorWindow : EditorWindow
     {
         SceneView.duringSceneGui -= OnSceneGUI;
         Selection.selectionChanged -= Repaint;
-        EditorApplication.hierarchyChanged -= Repaint;
+        EditorApplication.hierarchyChanged -= MarkReportDirty;
+        Undo.undoRedoPerformed -= OnUndoRedo;
         PrefabStage.prefabStageOpened -= OnStageChanged;
         PrefabStage.prefabStageClosing -= OnStageChanged;
     }
 
     private void OnStageChanged(PrefabStage stage)
     {
-        tool = Tool.None;
-        lastReport = null;
+        mode = Mode.Select;
+        relocate = Relocate.None;
+        selectedProp = null;
+        reportDirty = true;
         Repaint();
     }
 
-    // ================================================================ 창
+    private void OnUndoRedo()
+    {
+        // 실행 취소로 타일 데이터가 바뀌면 화면과 충돌 모양이 따라오지 않을 수 있어서 다시 그린다.
+        LevelRoot level = LevelEditorTools.CurrentLevel;
+        if (level != null)
+        {
+            foreach (var tilemap in level.GetComponentsInChildren<UnityEngine.Tilemaps.Tilemap>(true))
+            {
+                tilemap.RefreshAllTiles();
+            }
+        }
+        MarkReportDirty();
+        Repaint();
+        SceneView.RepaintAll();
+    }
+
+    private void MarkReportDirty()
+    {
+        reportDirty = true;
+    }
+
+    // 문제 검사는 바뀐 뒤 잠깐 기다렸다가 한 번만 실행한다. (타일을 칠하는 동안 매 프레임 돌지 않게)
+    private void OnInspectorUpdate()
+    {
+        if (reportDirty && EditorApplication.timeSinceStartup >= nextValidateTime && LevelEditorTools.CurrentLevel != null)
+        {
+            report = LevelEditorTools.Validate();
+            reportDirty = false;
+            nextValidateTime = EditorApplication.timeSinceStartup + 0.6;
+            Repaint();
+        }
+    }
+
+    // ================================================================ 화면
+
+    private void EnsureStyles()
+    {
+        if (titleStyle != null)
+        {
+            return;
+        }
+
+        titleStyle = new GUIStyle(EditorStyles.boldLabel) { fontSize = 13, alignment = TextAnchor.MiddleLeft };
+        cardTitleStyle = new GUIStyle(EditorStyles.boldLabel) { fontSize = 12 };
+        hintStyle = new GUIStyle(EditorStyles.helpBox) { fontSize = 11, wordWrap = true, alignment = TextAnchor.MiddleLeft };
+        bannerStyle = new GUIStyle(EditorStyles.helpBox)
+        {
+            fontSize = 12,
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.MiddleLeft,
+            padding = new RectOffset(10, 10, 4, 4)
+        };
+    }
 
     private void OnGUI()
     {
+        EnsureStyles();
+
         if (EditorApplication.isPlayingOrWillChangePlaymode)
         {
-            EditorGUILayout.HelpBox("테스트 플레이 중입니다. 플레이를 멈추면 레벨로 돌아옵니다.", MessageType.Info);
+            EditorGUILayout.HelpBox("테스트 플레이 중입니다. 플레이를 멈추면 레벨 편집 화면으로 돌아옵니다.", MessageType.Info);
             return;
         }
 
         LevelRoot level = LevelEditorTools.CurrentLevel;
-        scroll = EditorGUILayout.BeginScrollView(scroll);
         if (level == null)
         {
-            DrawLevelBrowser();
+            DrawBrowser();
+            return;
         }
-        else
-        {
-            DrawEditingHeader(level);
-            DrawLevelSettings(level);
-            EditorGUILayout.Space(6);
-            Tab newTab = (Tab)GUILayout.Toolbar((int)tab, TabLabels, GUILayout.Height(24));
-            if (newTab != tab)
-            {
-                tab = newTab;
-                if (tab == Tab.Check)
-                {
-                    lastReport = LevelEditorTools.Validate();
-                }
-            }
-            EditorGUILayout.Space(4);
 
-            switch (tab)
-            {
-                case Tab.Tiles: DrawTilesTab(level); break;
-                case Tab.Props: DrawPropsTab(); break;
-                case Tab.Selection: DrawSelectionTab(level); break;
-                case Tab.Check: DrawCheckTab(); break;
-            }
+        DrawHeader(level);
+        DrawStatusAndSettings(level);
+        DrawModeToolbar();
+
+        scroll = EditorGUILayout.BeginScrollView(scroll);
+        EditorGUILayout.Space(4);
+        switch (mode)
+        {
+            case Mode.Select: DrawSelectMode(level); break;
+            case Mode.Tiles: DrawTilesMode(level); break;
+            case Mode.Props: DrawPropsMode(); break;
+            case Mode.Points: DrawPointsMode(level); break;
+            case Mode.Check: DrawCheckMode(); break;
         }
+        EditorGUILayout.Space(6);
         EditorGUILayout.EndScrollView();
+
+        DrawHintBar();
     }
 
     // ---------------------------------------------------------------- 레벨 목록 화면
 
-    private void DrawLevelBrowser()
+    private void DrawBrowser()
     {
-        EditorGUILayout.LabelField("레벨 목록 (게임에 나오는 순서)", EditorStyles.boldLabel);
         LevelList list = LevelEditorTools.LevelList;
         if (list == null)
         {
@@ -130,352 +201,329 @@ public class LevelEditorWindow : EditorWindow
             return;
         }
 
+        scroll = EditorGUILayout.BeginScrollView(scroll);
+        EditorGUILayout.Space(6);
+        EditorGUILayout.LabelField("레벨 목록", titleStyle);
+        EditorGUILayout.LabelField("게임에 나오는 순서입니다. ▲▼ 로 순서를 바꾸면 스테이지 번호가 바뀝니다.", EditorStyles.miniLabel);
+        EditorGUILayout.Space(4);
+
         var inList = new HashSet<LevelRoot>();
         for (int i = 0; i < list.Count; i++)
         {
             LevelRoot lv = list.Get(i);
             inList.Add(lv);
-            using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
-            {
-                GUILayout.Label($"{i + 1}.", GUILayout.Width(24));
-                GUILayout.Label(lv != null ? $"{lv.DisplayName}  ({lv.name})" : "(비어 있음)");
-                GUILayout.FlexibleSpace();
-                using (new EditorGUI.DisabledScope(i == 0))
-                {
-                    if (GUILayout.Button("▲", GUILayout.Width(24))) { LevelEditorTools.MoveInList(i, -1); GUIUtility.ExitGUI(); }
-                }
-                using (new EditorGUI.DisabledScope(i == list.Count - 1))
-                {
-                    if (GUILayout.Button("▼", GUILayout.Width(24))) { LevelEditorTools.MoveInList(i, 1); GUIUtility.ExitGUI(); }
-                }
-                using (new EditorGUI.DisabledScope(lv == null))
-                {
-                    if (GUILayout.Button("열기", GUILayout.Width(44))) { LevelEditorTools.OpenLevel(lv); GUIUtility.ExitGUI(); }
-                }
-                if (GUILayout.Button("빼기", GUILayout.Width(44)) &&
-                    EditorUtility.DisplayDialog("레벨 빼기", $"{i + 1}번 레벨을 목록에서 뺄까요?\n레벨 파일은 지워지지 않습니다.", "빼기", "취소"))
-                {
-                    LevelEditorTools.RemoveFromList(i);
-                    GUIUtility.ExitGUI();
-                }
-            }
+            DrawLevelCard(lv, i, list.Count);
         }
 
-        var notInList = LevelEditorTools.FindAllLevels().FindAll(l => !inList.Contains(l));
-        if (notInList.Count > 0)
+        var others = LevelEditorTools.FindAllLevels().FindAll(l => !inList.Contains(l));
+        if (others.Count > 0)
         {
-            EditorGUILayout.Space(8);
-            EditorGUILayout.LabelField("목록에 없는 레벨", EditorStyles.boldLabel);
-            foreach (LevelRoot lv in notInList)
+            EditorGUILayout.Space(10);
+            EditorGUILayout.LabelField("목록에 없는 레벨", cardTitleStyle);
+            foreach (LevelRoot lv in others)
             {
-                using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
-                {
-                    GUILayout.Label($"{lv.DisplayName}  ({lv.name})");
-                    GUILayout.FlexibleSpace();
-                    if (GUILayout.Button("목록에 추가", GUILayout.Width(80))) { LevelEditorTools.AddToList(lv); GUIUtility.ExitGUI(); }
-                    if (GUILayout.Button("열기", GUILayout.Width(44))) { LevelEditorTools.OpenLevel(lv); GUIUtility.ExitGUI(); }
-                }
+                DrawLevelCard(lv, -1, list.Count);
             }
         }
 
-        EditorGUILayout.Space(10);
-        EditorGUILayout.LabelField("새 레벨 만들기", EditorStyles.boldLabel);
-        using (new EditorGUILayout.HorizontalScope())
+        EditorGUILayout.Space(12);
+        EditorGUILayout.LabelField("새 레벨 만들기", cardTitleStyle);
+        using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
         {
             newLevelName = EditorGUILayout.TextField("레벨 이름", newLevelName);
-            if (GUILayout.Button("만들기", GUILayout.Width(60)))
+            if (GUILayout.Button("만들고 열기", GUILayout.Height(28)))
             {
-                LevelEditorTools.CreateLevel(newLevelName, addToList: true);
+                string levelName = string.IsNullOrWhiteSpace(newLevelName) ? $"스테이지 {list.Count + 1}" : newLevelName.Trim();
+                LevelEditorTools.CreateLevel(levelName, addToList: true);
                 newLevelName = "";
                 GUIUtility.ExitGUI();
             }
+            EditorGUILayout.LabelField("바닥, 시작 위치, 치즈가 들어 있는 상태로 시작하고 목록 맨 뒤에 추가됩니다.", EditorStyles.miniLabel);
         }
-        EditorGUILayout.HelpBox("새 레벨은 바닥, 시작 위치, 치즈가 들어 있는 템플릿에서 시작하고 목록 맨 뒤에 추가됩니다.", MessageType.None);
+        EditorGUILayout.EndScrollView();
     }
 
-    // ---------------------------------------------------------------- 편집 화면
+    private void DrawLevelCard(LevelRoot lv, int index, int count)
+    {
+        using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
+        {
+            GUILayout.Label(index >= 0 ? (index + 1).ToString() : "-", titleStyle, GUILayout.Width(26));
+            using (new EditorGUILayout.VerticalScope())
+            {
+                GUILayout.Label(lv != null ? lv.DisplayName : "(비어 있음)", cardTitleStyle);
+                if (lv != null)
+                {
+                    GUILayout.Label($"{lv.name}  ·  제한 {lv.TimeLimit}초  ·  리플레이 {lv.MaxReplayCount}회", EditorStyles.miniLabel);
+                }
+            }
+            GUILayout.FlexibleSpace();
 
-    private void DrawEditingHeader(LevelRoot level)
+            if (index >= 0)
+            {
+                using (new EditorGUI.DisabledScope(index == 0))
+                {
+                    if (GUILayout.Button("▲", GUILayout.Width(26), GUILayout.Height(26))) { LevelEditorTools.MoveInList(index, -1); GUIUtility.ExitGUI(); }
+                }
+                using (new EditorGUI.DisabledScope(index == count - 1))
+                {
+                    if (GUILayout.Button("▼", GUILayout.Width(26), GUILayout.Height(26))) { LevelEditorTools.MoveInList(index, 1); GUIUtility.ExitGUI(); }
+                }
+            }
+            else if (lv != null && GUILayout.Button("목록에 추가", GUILayout.Width(80), GUILayout.Height(26)))
+            {
+                LevelEditorTools.AddToList(lv);
+                GUIUtility.ExitGUI();
+            }
+
+            using (new EditorGUI.DisabledScope(lv == null))
+            {
+                if (GUILayout.Button("열기", GUILayout.Width(48), GUILayout.Height(26))) { LevelEditorTools.OpenLevel(lv); GUIUtility.ExitGUI(); }
+            }
+            if (index >= 0 && GUILayout.Button("빼기", GUILayout.Width(48), GUILayout.Height(26)) &&
+                EditorUtility.DisplayDialog("레벨 빼기", $"{index + 1}번 레벨을 목록에서 뺄까요?\n레벨 파일은 지워지지 않습니다.", "빼기", "취소"))
+            {
+                LevelEditorTools.RemoveFromList(index);
+                GUIUtility.ExitGUI();
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------- 편집 화면 공통
+
+    private void DrawHeader(LevelRoot level)
     {
         PrefabStage stage = PrefabStageUtility.GetCurrentPrefabStage();
         bool dirty = stage != null && stage.scene.isDirty;
         LevelList list = LevelEditorTools.LevelList;
         int index = list != null ? list.IndexOf(AssetDatabase.LoadAssetAtPath<LevelRoot>(LevelEditorTools.CurrentLevelPath)) : -1;
-        string order = index >= 0 ? $"{index + 1}번 스테이지" : "목록에 없음";
+        string order = index >= 0 ? $"스테이지 {index + 1}" : "목록에 없음";
 
-        using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
+        using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))
         {
-            GUILayout.Label($"편집 중: {level.DisplayName}  ({order}){(dirty ? "  *저장 안 됨" : "")}", EditorStyles.boldLabel);
-        }
-        using (new EditorGUILayout.HorizontalScope())
-        {
-            if (GUILayout.Button("저장", GUILayout.Height(26)))
+            if (GUILayout.Button("‹ 목록", EditorStyles.toolbarButton, GUILayout.Width(56)))
             {
-                lastReport = LevelEditorTools.SaveCurrentLevel();
-                ShowNotification(new GUIContent(lastReport.HasErrors ? "저장했지만 오류가 있습니다" : "저장했습니다"));
-                if (lastReport.HasErrors)
-                {
-                    tab = Tab.Check;
-                }
-            }
-            if (GUILayout.Button("테스트 플레이", GUILayout.Height(26)))
-            {
-                var report = LevelEditorTools.Validate();
-                if (report.HasErrors)
-                {
-                    lastReport = report;
-                    tab = Tab.Check;
-                    ShowNotification(new GUIContent("오류를 먼저 고쳐주세요"));
-                }
-                else
-                {
-                    tool = Tool.None;
-                    LevelEditorTools.TestPlay();
-                    GUIUtility.ExitGUI();
-                }
-            }
-            if (GUILayout.Button("화면 맞추기", GUILayout.Height(26)))
-            {
-                LevelEditorTools.FrameLevel();
-            }
-            if (GUILayout.Button("레벨 목록", GUILayout.Height(26)))
-            {
-                tool = Tool.None;
+                SetMode(Mode.Select);
                 StageUtility.GoToMainStage();
                 GUIUtility.ExitGUI();
             }
-        }
-    }
-
-    private void DrawLevelSettings(LevelRoot level)
-    {
-        EditorGUILayout.Space(4);
-        EditorGUILayout.LabelField("레벨 설정", EditorStyles.boldLabel);
-        using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
-        {
-            var so = new SerializedObject(level);
-            so.Update();
-            PlannerFieldUtility.DrawPlannerFields(so);
-            so.ApplyModifiedProperties();
-        }
-    }
-
-    // ---------------------------------------------------------------- 타일
-
-    private void DrawTilesTab(LevelRoot level)
-    {
-        EnsureTileGroups();
-        tileLayer = (TileLayer)GUILayout.SelectionGrid((int)tileLayer, TileLayerLabels, 3);
-        if (FindTargetTilemap(level) == null)
-        {
-            EditorGUILayout.HelpBox($"이 레벨에 '{TileLayerObjectNames[(int)tileLayer]}' 타일맵이 없습니다.", MessageType.Warning);
-        }
-
-        using (new EditorGUILayout.HorizontalScope())
-        {
-            DrawToolToggle(Tool.PaintTile, "칠하기", selectedTile != null);
-            DrawToolToggle(Tool.EraseTile, "지우기", true);
-            if (GUILayout.Button("멈추기")) { tool = Tool.None; }
-        }
-        EditorGUILayout.HelpBox("씬 화면에서 왼쪽 버튼으로 칠하고, Shift 를 누른 채 칠하면 지웁니다. Esc 로 멈춥니다.", MessageType.None);
-
-        if (tileGroupNames.Count == 0)
-        {
-            EditorGUILayout.HelpBox("타일이 없습니다: " + TilesRoot, MessageType.Warning);
-            return;
-        }
-        tileGroupIndex = EditorGUILayout.Popup("타일 묶음", Mathf.Clamp(tileGroupIndex, 0, tileGroupNames.Count - 1), tileGroupNames.ToArray());
-        List<TileBase> tiles = tileGroups[tileGroupNames[tileGroupIndex]];
-
-        int columns = Mathf.Max(1, Mathf.FloorToInt((position.width - 30f) / (IconSize + 4f)));
-        for (int i = 0; i < tiles.Count; i += columns)
-        {
-            using (new EditorGUILayout.HorizontalScope())
+            GUILayout.Label($"{level.DisplayName}  ({order})", titleStyle);
+            GUILayout.FlexibleSpace();
+            if (dirty)
             {
-                for (int j = i; j < Mathf.Min(i + columns, tiles.Count); j++)
+                GUILayout.Label("● 저장 안 됨", EditorStyles.miniBoldLabel);
+            }
+
+            GUI.backgroundColor = dirty ? new Color(1f, 0.9f, 0.5f) : Color.white;
+            if (GUILayout.Button("저장", EditorStyles.toolbarButton, GUILayout.Width(48)))
+            {
+                report = LevelEditorTools.SaveCurrentLevel();
+                reportDirty = false;
+                ShowNotification(new GUIContent(report.HasErrors ? "저장했지만 오류가 있습니다" : "저장했습니다"));
+                if (report.HasErrors)
                 {
-                    TileBase tile = tiles[j];
-                    Rect r = GUILayoutUtility.GetRect(IconSize, IconSize, GUILayout.Width(IconSize), GUILayout.Height(IconSize));
-                    bool selected = tile == selectedTile;
-                    if (selected)
-                    {
-                        EditorGUI.DrawRect(r, new Color(0.25f, 0.55f, 1f, 0.6f));
-                    }
-                    DrawSprite(new Rect(r.x + 2, r.y + 2, r.width - 4, r.height - 4), (tile as Tile)?.sprite);
-                    if (GUI.Button(r, new GUIContent("", tile.name), GUIStyle.none))
-                    {
-                        selectedTile = tile;
-                        tool = Tool.PaintTile;
-                        FocusSceneView();
-                    }
+                    SetMode(Mode.Check);
                 }
             }
+            GUI.backgroundColor = new Color(0.6f, 0.9f, 0.6f);
+            if (GUILayout.Button("▶ 테스트 플레이", EditorStyles.toolbarButton, GUILayout.Width(104)))
+            {
+                RequestTestPlay();
+            }
+            GUI.backgroundColor = Color.white;
         }
     }
 
-    private void EnsureTileGroups()
+    private void RequestTestPlay()
     {
-        if (tileGroups != null)
+        report = LevelEditorTools.Validate();
+        reportDirty = false;
+        if (report.HasErrors)
         {
+            SetMode(Mode.Check);
+            ShowNotification(new GUIContent("오류를 먼저 고쳐주세요"));
             return;
         }
 
-        tileGroups = new Dictionary<string, List<TileBase>>();
-        foreach (string guid in AssetDatabase.FindAssets("t:TileBase", new[] { TilesRoot }))
-        {
-            string path = AssetDatabase.GUIDToAssetPath(guid);
-            var tile = AssetDatabase.LoadAssetAtPath<TileBase>(path);
-            if (tile == null)
-            {
-                continue;
-            }
-            string group = Path.GetFileName(Path.GetDirectoryName(path));
-            if (!tileGroups.TryGetValue(group, out var list))
-            {
-                tileGroups[group] = list = new List<TileBase>();
-            }
-            list.Add(tile);
-        }
-        foreach (var list in tileGroups.Values)
-        {
-            list.Sort((a, b) => TileNumber(a).CompareTo(TileNumber(b)));
-        }
-        tileGroupNames = new List<string>(tileGroups.Keys);
-        tileGroupNames.Sort();
+        SetMode(Mode.Select);
+        LevelEditorTools.TestPlay();
+        GUIUtility.ExitGUI();
     }
 
-    private static int TileNumber(TileBase tile)
+    private void DrawStatusAndSettings(LevelRoot level)
     {
-        int underscore = tile.name.LastIndexOf('_');
-        return underscore >= 0 && int.TryParse(tile.name.Substring(underscore + 1), out int n) ? n : int.MaxValue;
-    }
-
-    private Tilemap FindTargetTilemap(LevelRoot level)
-    {
-        string objectName = TileLayerObjectNames[(int)tileLayer];
-        foreach (Tilemap tm in level.GetComponentsInChildren<Tilemap>(true))
+        int errors = 0, warnings = 0;
+        if (report != null)
         {
-            if (tm.name == objectName && tm.GetComponentInParent<WaterVolume>() == null)
+            foreach (var e in report.Entries)
             {
-                return tm;
+                if (e.severity == PropValidationReport.Severity.Error) errors++;
+                else warnings++;
             }
         }
-        return null;
-    }
 
-    // ---------------------------------------------------------------- 프롭
-
-    private void DrawPropsTab()
-    {
-        PropCatalog catalog = LevelEditorTools.Catalog;
-        if (catalog == null)
-        {
-            EditorGUILayout.HelpBox("PropCatalog 에셋을 찾을 수 없습니다.", MessageType.Error);
-            return;
-        }
-
-        var labels = new string[PropFilters.Length];
-        for (int i = 0; i < labels.Length; i++)
-        {
-            labels[i] = PropFilters[i].label;
-        }
-        propFilterIndex = GUILayout.SelectionGrid(propFilterIndex, labels, 4);
+        string text;
+        Color color;
+        if (report == null) { text = "검사 중..."; color = Color.white; }
+        else if (errors > 0) { text = $"오류 {errors}개" + (warnings > 0 ? $", 경고 {warnings}개" : "") + "  (눌러서 보기)"; color = ErrorColor; }
+        else if (warnings > 0) { text = $"경고 {warnings}개  (눌러서 보기)"; color = WarningColor; }
+        else { text = "문제 없음"; color = OkColor; }
 
         using (new EditorGUILayout.HorizontalScope())
         {
-            DrawToolToggle(Tool.PlaceProp, "배치하기", selectedProp != null);
-            if (GUILayout.Button("멈추기")) { tool = Tool.None; }
-            GUILayout.Label("칸 맞춤", GUILayout.Width(44));
-            snapIndex = EditorGUILayout.Popup(snapIndex, SnapLabels, GUILayout.Width(70));
-        }
-        EditorGUILayout.HelpBox("프롭을 고른 뒤 씬 화면을 클릭하면 놓입니다. 놓은 프롭은 '선택한 것' 탭에서 값을 바꿉니다. Esc 로 멈춥니다.", MessageType.None);
-
-        PropCategory? filter = PropFilters[propFilterIndex].category;
-        var entries = new List<PropCatalog.Entry>();
-        foreach (PropCatalog.Entry e in catalog.Entries)
-        {
-            if (!e.hiddenInPalette && e.prefab != null && (filter == null || e.Category == filter))
+            GUI.backgroundColor = color;
+            if (GUILayout.Button(text, EditorStyles.miniButton, GUILayout.Height(20)))
             {
-                entries.Add(e);
+                SetMode(Mode.Check);
             }
+            GUI.backgroundColor = Color.white;
         }
 
-        const float cell = 72f;
-        int columns = Mathf.Max(1, Mathf.FloorToInt((position.width - 30f) / (cell + 4f)));
-        for (int i = 0; i < entries.Count; i += columns)
+        string summary = $"레벨 설정   ·   제한 {level.TimeLimit}초   ·   리플레이 {level.MaxReplayCount}회   ·   카메라 {(level.Zoom == LevelRoot.CameraZoom.Wide ? "넓게" : "보통")}";
+        settingsOpen = EditorGUILayout.Foldout(settingsOpen, summary, true);
+        if (settingsOpen)
         {
-            using (new EditorGUILayout.HorizontalScope())
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                for (int j = i; j < Mathf.Min(i + columns, entries.Count); j++)
+                var so = new SerializedObject(level);
+                so.Update();
+                if (PlannerFieldUtility.DrawPlannerFields(so))
                 {
-                    PropCatalog.Entry e = entries[j];
-                    Rect r = GUILayoutUtility.GetRect(cell, cell + 16f, GUILayout.Width(cell), GUILayout.Height(cell + 16f));
-                    bool selected = selectedProp != null && selectedProp.id == e.id;
-                    EditorGUI.DrawRect(r, selected ? new Color(0.25f, 0.55f, 1f, 0.6f) : new Color(0f, 0f, 0f, 0.15f));
-                    Sprite icon = e.GetIcon();
-                    Rect iconRect = new Rect(r.x + 6, r.y + 4, cell - 12, cell - 12);
-                    if (icon != null)
-                    {
-                        DrawSprite(iconRect, icon);
-                    }
-                    else
-                    {
-                        GUI.Label(iconRect, e.Category == PropCategory.Water ? "물" : "?", EditorStyles.centeredGreyMiniLabel);
-                    }
-                    GUI.Label(new Rect(r.x, r.yMax - 18, r.width, 18), e.displayName, EditorStyles.centeredGreyMiniLabel);
-                    if (GUI.Button(r, new GUIContent("", e.description), GUIStyle.none))
-                    {
-                        selectedProp = e;
-                        tool = Tool.PlaceProp;
-                        FocusSceneView();
-                    }
+                    MarkReportDirty();
                 }
+                so.ApplyModifiedProperties();
             }
-        }
-
-        if (selectedProp != null && !string.IsNullOrEmpty(selectedProp.description))
-        {
-            EditorGUILayout.HelpBox($"{selectedProp.displayName}: {selectedProp.description}", MessageType.None);
         }
     }
 
-    // ---------------------------------------------------------------- 선택한 것
-
-    private void DrawSelectionTab(LevelRoot level)
+    private void DrawModeToolbar()
     {
-        using (new EditorGUILayout.HorizontalScope())
+        EditorGUILayout.Space(2);
+        Mode newMode = (Mode)GUILayout.Toolbar((int)mode, ModeLabels, GUILayout.Height(28));
+        if (newMode != mode)
         {
-            if (GUILayout.Button("시작 위치 선택"))
-            {
-                SelectAndFrame(level.SpawnPoint != null ? level.SpawnPoint.gameObject : null);
-            }
-            if (GUILayout.Button("치즈 선택"))
-            {
-                GoalProp goal = level.GetComponentInChildren<GoalProp>(true);
-                SelectAndFrame(goal != null ? goal.gameObject : null);
-            }
+            SetMode(newMode);
         }
+    }
 
+    private void SetMode(Mode newMode)
+    {
+        mode = newMode;
+        if (mode != Mode.Points)
+        {
+            relocate = Relocate.None;
+        }
+        if (mode != Mode.Props)
+        {
+            selectedProp = null;
+        }
+        if (mode == Mode.Check)
+        {
+            report = LevelEditorTools.Validate();
+            reportDirty = false;
+        }
+        GUIUtility.keyboardControl = 0;
+        Repaint();
+        SceneView.RepaintAll();
+    }
+
+    private void DrawHintBar()
+    {
+        GUILayout.Label(CurrentHint(), hintStyle, GUILayout.MinHeight(34));
+    }
+
+    private string CurrentHint()
+    {
+        switch (mode)
+        {
+            case Mode.Tiles:
+                if (eraser) return "지우개: 씬 화면에서 클릭하거나 끌어서 지웁니다.   Esc: 끝내기";
+                return palette.HasStamp
+                    ? "씬 화면에서 클릭하거나 끌어서 칠합니다.   Shift: 지우기   Esc: 끝내기"
+                    : "위 팔레트에서 타일이나 영역을 고르세요.";
+            case Mode.Props:
+                return selectedProp != null
+                    ? $"'{selectedProp.displayName}' : 씬 화면을 클릭하면 놓입니다.   Esc: 끝내기"
+                    : "위에서 놓을 프롭을 고르세요.";
+            case Mode.Points:
+                return relocate != Relocate.None
+                    ? $"씬 화면을 클릭하거나 끌면 {(relocate == Relocate.Spawn ? "시작 위치" : "치즈")}가 그 자리로 옮겨집니다.   Esc: 끝내기"
+                    : "버튼을 눌러 옮기거나, 씬 화면의 원을 끌어서 옮깁니다.";
+            case Mode.Check:
+                return "빨간 오류가 있으면 테스트 플레이를 할 수 없습니다. 노란 경고는 확인만 하면 됩니다.";
+            default:
+                return "씬 화면에서 프롭을 클릭해 고르고 끌어서 옮깁니다.   (W: 이동, E: 회전)";
+        }
+    }
+
+    // ---------------------------------------------------------------- 선택·이동
+
+    private void DrawSelectMode(LevelRoot level)
+    {
         GameObject go = Selection.activeGameObject;
         LevelProp prop = go != null ? go.GetComponentInParent<LevelProp>() : null;
-        if (prop == null || !prop.transform.IsChildOf(level.transform))
+        if (prop != null && prop.transform.IsChildOf(level.transform))
         {
-            EditorGUILayout.HelpBox("씬 화면에서 프롭을 클릭하면 여기서 값을 바꿀 수 있습니다.\n옮길 때는 씬 화면에서 끌어서 옮깁니다. (W 키: 이동 도구)", MessageType.Info);
-            return;
+            DrawSelectedProp(level, prop);
+            EditorGUILayout.Space(8);
+        }
+        else
+        {
+            EditorGUILayout.HelpBox("씬 화면에서 프롭을 클릭하면 여기서 값을 바꿀 수 있습니다.", MessageType.None);
         }
 
-        EditorGUILayout.LabelField(prop.name, EditorStyles.boldLabel);
-        var so = new SerializedObject(prop);
-        so.Update();
+        EditorGUILayout.LabelField("이 레벨에 있는 프롭", cardTitleStyle);
+        var props = new List<LevelProp>(level.GetComponentsInChildren<LevelProp>(true));
+        props.Sort((a, b) => a.Category != b.Category ? a.Category.CompareTo(b.Category) : string.CompareOrdinal(a.name, b.name));
+        if (props.Count == 0)
+        {
+            EditorGUILayout.LabelField("아직 없습니다. '프롭' 모드에서 놓아보세요.", EditorStyles.miniLabel);
+        }
+        PropCategory? current = null;
+        foreach (LevelProp p in props)
+        {
+            if (current != p.Category)
+            {
+                current = p.Category;
+                EditorGUILayout.LabelField(CategoryLabel(p.Category), EditorStyles.miniBoldLabel);
+            }
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                bool isSelected = p == prop;
+                GUI.backgroundColor = isSelected ? SelectedTint : Color.white;
+                if (GUILayout.Button(p.name, EditorStyles.miniButtonLeft))
+                {
+                    SelectAndFrame(p.gameObject);
+                }
+                GUI.backgroundColor = Color.white;
+                if (GUILayout.Button("찾기", EditorStyles.miniButtonRight, GUILayout.Width(40)))
+                {
+                    SelectAndFrame(p.gameObject);
+                }
+            }
+        }
+    }
+
+    private void DrawSelectedProp(LevelRoot level, LevelProp prop)
+    {
         using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
         {
-            if (PlannerFieldUtility.GetPlannerProperties(so).Count == 0)
+            using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUILayout.LabelField("조절할 값이 없습니다.", EditorStyles.miniLabel);
+                EditorGUILayout.LabelField(prop.name, titleStyle);
+                GUILayout.FlexibleSpace();
+                EditorGUILayout.LabelField(CategoryLabel(prop.Category), EditorStyles.miniLabel, GUILayout.Width(60));
             }
-            else
+
+            var so = new SerializedObject(prop);
+            so.Update();
+            if (PlannerFieldUtility.GetPlannerProperties(so).Count > 0)
             {
+                EditorGUI.BeginChangeCheck();
                 PlannerFieldUtility.DrawPlannerFields(so);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    MarkReportDirty();
+                }
             }
             so.ApplyModifiedProperties();
 
@@ -486,55 +534,72 @@ public class LevelEditorWindow : EditorWindow
                     PlannerFieldUtility.RevertToPrefabDefaults(so);
                 }
             }
-        }
 
-        if (!(prop is WaterVolume) && !(prop is SpawnPoint))
-        {
-            EditorGUILayout.LabelField("각도", EditorStyles.boldLabel);
-            using (new EditorGUILayout.HorizontalScope())
+            DrawPositionFields(prop.transform);
+
+            if (!(prop is IAreaProp) && !(prop is SpawnPoint))
             {
-                Transform t = prop.transform;
-                EditorGUI.BeginChangeCheck();
-                float angle = EditorGUILayout.FloatField(Mathf.Round(t.localEulerAngles.z * 10f) / 10f, GUILayout.Width(60));
-                if (EditorGUI.EndChangeCheck())
+                DrawAngleFields(prop.transform);
+            }
+            else if (prop is IAreaProp)
+            {
+                EditorGUILayout.LabelField("크기는 위 칸 수를 바꾸거나 씬 화면의 손잡이를 끌어서 바꿉니다.", EditorStyles.miniLabel);
+            }
+
+            var r = new PropValidationReport();
+            prop.Validate(r);
+            foreach (PropValidationReport.Entry e in r.Entries)
+            {
+                EditorGUILayout.HelpBox(e.message, e.severity == PropValidationReport.Severity.Error ? MessageType.Error : MessageType.Warning);
+            }
+
+            bool unique = prop is SpawnPoint || prop is GoalProp;
+            using (new EditorGUI.DisabledScope(unique))
+            {
+                if (GUILayout.Button(unique ? "시작 위치와 치즈는 지울 수 없습니다" : "이 프롭 지우기"))
                 {
-                    SetAngle(t, angle);
-                }
-                foreach (float step in new[] { -90f, -15f, 15f, 90f })
-                {
-                    if (GUILayout.Button(step > 0 ? $"+{step}" : step.ToString()))
-                    {
-                        SetAngle(t, t.localEulerAngles.z + step);
-                    }
-                }
-                if (GUILayout.Button("좌우 뒤집기"))
-                {
-                    Undo.RecordObject(t, "좌우 뒤집기");
-                    Vector3 s = t.localScale;
-                    t.localScale = new Vector3(-s.x, s.y, s.z);
+                    Undo.DestroyObjectImmediate(prop.gameObject);
+                    MarkReportDirty();
+                    GUIUtility.ExitGUI();
                 }
             }
         }
-        else if (prop is WaterVolume)
-        {
-            EditorGUILayout.HelpBox("물 크기는 위 칸 수를 바꾸거나, 씬 화면의 파란 손잡이를 끌어서 바꿉니다.", MessageType.None);
-        }
+    }
 
-        var report = new PropValidationReport();
-        prop.Validate(report);
-        foreach (PropValidationReport.Entry e in report.Entries)
+    private static void DrawPositionFields(Transform t)
+    {
+        EditorGUI.BeginChangeCheck();
+        Vector2 pos = EditorGUILayout.Vector2Field("위치 (X, Y)", new Vector2(t.position.x, t.position.y));
+        if (EditorGUI.EndChangeCheck())
         {
-            EditorGUILayout.HelpBox(e.message, e.severity == PropValidationReport.Severity.Error ? MessageType.Error : MessageType.Warning);
+            Undo.RecordObject(t, "위치 변경");
+            t.position = new Vector3(pos.x, pos.y, t.position.z);
         }
+    }
 
-        EditorGUILayout.Space(6);
-        bool unique = prop is SpawnPoint || prop is GoalProp;
-        using (new EditorGUI.DisabledScope(unique))
+    private static void DrawAngleFields(Transform t)
+    {
+        using (new EditorGUILayout.HorizontalScope())
         {
-            if (GUILayout.Button(unique ? "시작 위치와 치즈는 지울 수 없습니다" : "이 프롭 지우기"))
+            EditorGUILayout.LabelField("각도", GUILayout.Width(40));
+            EditorGUI.BeginChangeCheck();
+            float angle = EditorGUILayout.FloatField(Mathf.Round(t.localEulerAngles.z * 10f) / 10f, GUILayout.Width(52));
+            if (EditorGUI.EndChangeCheck())
             {
-                Undo.DestroyObjectImmediate(prop.gameObject);
-                GUIUtility.ExitGUI();
+                SetAngle(t, angle);
+            }
+            foreach (float step in new[] { -90f, -15f, 15f, 90f })
+            {
+                if (GUILayout.Button(step > 0 ? $"+{step}" : step.ToString(), EditorStyles.miniButton))
+                {
+                    SetAngle(t, t.localEulerAngles.z + step);
+                }
+            }
+            if (GUILayout.Button("좌우 뒤집기", EditorStyles.miniButton))
+            {
+                Undo.RecordObject(t, "좌우 뒤집기");
+                Vector3 s = t.localScale;
+                t.localScale = new Vector3(-s.x, s.y, s.z);
             }
         }
     }
@@ -546,34 +611,252 @@ public class LevelEditorWindow : EditorWindow
         t.localEulerAngles = new Vector3(e.x, e.y, Mathf.Repeat(angle, 360f));
     }
 
-    // ---------------------------------------------------------------- 세이프티 체크
-
-    private void DrawCheckTab()
+    private static string CategoryLabel(PropCategory c)
     {
-        if (GUILayout.Button("다시 검사", GUILayout.Height(24)))
+        switch (c)
         {
-            lastReport = LevelEditorTools.Validate();
+            case PropCategory.Physics: return "물리 프롭";
+            case PropCategory.Static: return "고정 프롭";
+            case PropCategory.Decoration: return "장식";
+            case PropCategory.Rope: return "로프";
+            case PropCategory.Water: return "물";
+            case PropCategory.Gimmick: return "기믹";
+            case PropCategory.Goal: return "치즈";
+            case PropCategory.Spawn: return "시작 위치";
+            case PropCategory.Barrier: return "투명벽";
+            default: return c.ToString();
+        }
+    }
+
+    // ---------------------------------------------------------------- 타일
+
+    private void DrawTilesMode(LevelRoot level)
+    {
+        EditorGUILayout.LabelField("어디에 칠할까요?", cardTitleStyle);
+        tileLayer = (TileLayer)GUILayout.Toolbar((int)tileLayer, TileLayerLabels, GUILayout.Height(24));
+        EditorGUILayout.LabelField(TileLayerHelp[(int)tileLayer], EditorStyles.miniLabel);
+        if (FindTargetTilemap(level) == null)
+        {
+            EditorGUILayout.HelpBox($"이 레벨에 '{TileLayerObjectNames[(int)tileLayer]}' 타일맵이 없습니다.", MessageType.Warning);
         }
 
-        if (lastReport == null)
-        {
-            lastReport = LevelEditorTools.Validate();
-        }
+        EditorGUILayout.Space(4);
+        eraser = GUILayout.Toolbar(eraser ? 1 : 0, new[] { "칠하기", "지우개" }, GUILayout.Height(24)) == 1;
+        EditorGUILayout.Space(4);
 
-        if (lastReport.Entries.Count == 0)
+        using (new EditorGUI.DisabledScope(eraser))
         {
-            EditorGUILayout.HelpBox("문제가 없습니다.", MessageType.Info);
+            float height = Mathf.Clamp(position.height - 400f, 180f, 640f);
+            if (palette.Draw(height))
+            {
+                eraser = false;
+                SceneView.RepaintAll();
+            }
+            if (palette.HasStamp && GUILayout.Button("선택 해제", EditorStyles.miniButton))
+            {
+                palette.ClearSelection();
+                SceneView.RepaintAll();
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------- 프롭
+
+    private void DrawPropsMode()
+    {
+        PropCatalog catalog = LevelEditorTools.Catalog;
+        if (catalog == null)
+        {
+            EditorGUILayout.HelpBox("PropCatalog 에셋을 찾을 수 없습니다.", MessageType.Error);
             return;
         }
 
-        foreach (PropValidationReport.Entry e in lastReport.Entries)
+        propSearch = GUILayout.TextField(propSearch, EditorStyles.toolbarSearchField);
+        int columnsForChips = Mathf.Max(2, Mathf.FloorToInt((position.width - 20f) / 64f));
+        var labels = new string[PropFilters.Length];
+        for (int i = 0; i < labels.Length; i++)
+        {
+            labels[i] = PropFilters[i].label;
+        }
+        propFilterIndex = GUILayout.SelectionGrid(propFilterIndex, labels, columnsForChips, EditorStyles.miniButton);
+
+        using (new EditorGUILayout.HorizontalScope())
+        {
+            GUILayout.Label("놓는 간격", EditorStyles.miniLabel, GUILayout.Width(52));
+            snapIndex = EditorGUILayout.Popup(snapIndex, SnapLabels, GUILayout.Width(70));
+            GUILayout.Label("(물, 투명벽은 항상 1칸)", EditorStyles.miniLabel);
+        }
+
+        PropCategory? filter = PropFilters[propFilterIndex].category;
+        string search = propSearch.Trim();
+        var entries = new List<PropCatalog.Entry>();
+        foreach (PropCatalog.Entry e in catalog.Entries)
+        {
+            if (e.hiddenInPalette || e.prefab == null)
+            {
+                continue;
+            }
+            if (filter != null && e.Category != filter)
+            {
+                continue;
+            }
+            if (search.Length > 0 && e.displayName.IndexOf(search, System.StringComparison.OrdinalIgnoreCase) < 0)
+            {
+                continue;
+            }
+            entries.Add(e);
+        }
+
+        EditorGUILayout.Space(2);
+        if (entries.Count == 0)
+        {
+            EditorGUILayout.LabelField("해당하는 프롭이 없습니다.", EditorStyles.miniLabel);
+        }
+
+        const float cell = 76f;
+        int columns = Mathf.Max(1, Mathf.FloorToInt((position.width - 24f) / (cell + 4f)));
+        for (int i = 0; i < entries.Count; i += columns)
+        {
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                for (int j = i; j < Mathf.Min(i + columns, entries.Count); j++)
+                {
+                    DrawPropCell(entries[j], cell);
+                }
+            }
+        }
+
+        if (selectedProp != null)
+        {
+            EditorGUILayout.Space(4);
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField(selectedProp.displayName, cardTitleStyle);
+                if (!string.IsNullOrEmpty(selectedProp.description))
+                {
+                    EditorGUILayout.LabelField(selectedProp.description, EditorStyles.wordWrappedMiniLabel);
+                }
+            }
+        }
+    }
+
+    private void DrawPropCell(PropCatalog.Entry e, float cell)
+    {
+        Rect r = GUILayoutUtility.GetRect(cell, cell + 16f, GUILayout.Width(cell), GUILayout.Height(cell + 16f));
+        bool selected = selectedProp != null && selectedProp.id == e.id;
+        EditorGUI.DrawRect(r, selected ? new Color(0.25f, 0.55f, 1f, 0.55f) : new Color(0f, 0f, 0f, 0.15f));
+        Sprite icon = e.GetIcon();
+        var iconRect = new Rect(r.x + 6, r.y + 4, cell - 12, cell - 12);
+        if (icon != null)
+        {
+            TilePaletteView.DrawSprite(FitRect(iconRect, icon), icon);
+        }
+        else
+        {
+            GUI.Label(iconRect, CategoryLabel(e.Category), EditorStyles.centeredGreyMiniLabel);
+        }
+        GUI.Label(new Rect(r.x, r.yMax - 18, r.width, 18), e.displayName, EditorStyles.centeredGreyMiniLabel);
+        if (GUI.Button(r, new GUIContent("", e.displayName + (string.IsNullOrEmpty(e.description) ? "" : "\n" + e.description)), GUIStyle.none))
+        {
+            selectedProp = selected ? null : e;
+            SceneView.RepaintAll();
+        }
+    }
+
+    private static Rect FitRect(Rect box, Sprite sprite)
+    {
+        Rect tr = sprite.textureRect;
+        float aspect = tr.width / tr.height;
+        Rect fit = box;
+        if (aspect > box.width / box.height)
+        {
+            fit.height = box.width / aspect;
+            fit.y += (box.height - fit.height) * 0.5f;
+        }
+        else
+        {
+            fit.width = box.height * aspect;
+            fit.x += (box.width - fit.width) * 0.5f;
+        }
+        return fit;
+    }
+
+    // ---------------------------------------------------------------- 시작·치즈
+
+    private void DrawPointsMode(LevelRoot level)
+    {
+        DrawPointCard("시작 위치", level.SpawnPoint != null ? level.SpawnPoint.transform : null, Relocate.Spawn,
+            "쥐가 처음 나타나는 곳입니다. 아래로 10칸 안에 땅이 있어야 합니다.");
+        EditorGUILayout.Space(6);
+        GoalProp goal = level.GetComponentInChildren<GoalProp>(true);
+        DrawPointCard("치즈", goal != null ? goal.transform : null, Relocate.Goal,
+            "쥐가 먹으면 레벨이 클리어됩니다.");
+        EditorGUILayout.Space(6);
+        EditorGUILayout.LabelField("놓는 간격", EditorStyles.miniLabel);
+        snapIndex = GUILayout.Toolbar(snapIndex, SnapLabels);
+    }
+
+    private void DrawPointCard(string title, Transform target, Relocate which, string description)
+    {
+        using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+        {
+            EditorGUILayout.LabelField(title, cardTitleStyle);
+            EditorGUILayout.LabelField(description, EditorStyles.wordWrappedMiniLabel);
+            if (target == null)
+            {
+                EditorGUILayout.HelpBox($"{title}가 레벨에 없습니다.", MessageType.Error);
+                return;
+            }
+
+            DrawPositionFields(target);
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                bool active = relocate == which;
+                GUI.backgroundColor = active ? SelectedTint : Color.white;
+                if (GUILayout.Button(active ? "옮기는 중... (Esc: 끝내기)" : "씬 화면을 클릭해서 옮기기", GUILayout.Height(24)))
+                {
+                    relocate = active ? Relocate.None : which;
+                    SceneView.RepaintAll();
+                }
+                GUI.backgroundColor = Color.white;
+                if (GUILayout.Button("찾기", GUILayout.Width(50), GUILayout.Height(24)))
+                {
+                    SelectAndFrame(target.gameObject);
+                }
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------- 검사
+
+    private void DrawCheckMode()
+    {
+        if (GUILayout.Button("다시 검사", GUILayout.Height(24)))
+        {
+            report = LevelEditorTools.Validate();
+            reportDirty = false;
+        }
+
+        if (report == null)
+        {
+            report = LevelEditorTools.Validate();
+            reportDirty = false;
+        }
+
+        if (report.Entries.Count == 0)
+        {
+            EditorGUILayout.HelpBox("문제가 없습니다. 저장하고 테스트 플레이를 해보세요.", MessageType.Info);
+            return;
+        }
+
+        foreach (PropValidationReport.Entry e in report.Entries)
         {
             using (new EditorGUILayout.HorizontalScope())
             {
                 EditorGUILayout.HelpBox(e.message, e.severity == PropValidationReport.Severity.Error ? MessageType.Error : MessageType.Warning);
                 using (new EditorGUI.DisabledScope(e.context == null))
                 {
-                    if (GUILayout.Button("보기", GUILayout.Width(44), GUILayout.Height(38)))
+                    if (GUILayout.Button("찾기", GUILayout.Width(44), GUILayout.Height(38)))
                     {
                         var c = e.context as Component;
                         SelectAndFrame(c != null ? c.gameObject : e.context as GameObject);
@@ -581,172 +864,21 @@ public class LevelEditorWindow : EditorWindow
                 }
             }
         }
-        EditorGUILayout.HelpBox("빨간 오류가 있으면 테스트 플레이를 할 수 없습니다. 노란 경고는 확인만 하면 됩니다.", MessageType.None);
-    }
-
-    // ================================================================ 씬 화면
-
-    private void OnSceneGUI(SceneView view)
-    {
-        if (tool == Tool.None)
-        {
-            return;
-        }
-
-        LevelRoot level = LevelEditorTools.CurrentLevel;
-        if (level == null)
-        {
-            tool = Tool.None;
-            return;
-        }
-
-        Event e = Event.current;
-        int controlId = GUIUtility.GetControlID(FocusType.Passive);
-        if (e.type == EventType.Layout)
-        {
-            HandleUtility.AddDefaultControl(controlId);
-        }
-
-        if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Escape)
-        {
-            tool = Tool.None;
-            e.Use();
-            Repaint();
-            return;
-        }
-
-        Vector3 world = HandleUtility.GUIPointToWorldRay(e.mousePosition).origin;
-        world.z = 0f;
-
-        if (tool == Tool.PaintTile || tool == Tool.EraseTile)
-        {
-            HandleTileTool(level, world, e);
-        }
-        else if (tool == Tool.PlaceProp)
-        {
-            HandlePropTool(level, world, e);
-        }
-
-        if (e.type == EventType.MouseMove)
-        {
-            view.Repaint();
-        }
-    }
-
-    private void HandleTileTool(LevelRoot level, Vector3 world, Event e)
-    {
-        Tilemap tm = FindTargetTilemap(level);
-        if (tm == null)
-        {
-            return;
-        }
-
-        bool erase = tool == Tool.EraseTile || e.shift;
-        Vector3Int cell = tm.WorldToCell(world);
-        Vector3 min = tm.CellToWorld(cell);
-        Vector3 size = tm.layoutGrid.cellSize;
-        var rect = new Rect(min.x, min.y, size.x, size.y);
-        Handles.DrawSolidRectangleWithOutline(rect,
-            erase ? new Color(1f, 0.2f, 0.2f, 0.25f) : new Color(0.2f, 0.6f, 1f, 0.25f),
-            erase ? Color.red : Color.cyan);
-
-        if ((e.type == EventType.MouseDown || e.type == EventType.MouseDrag) && e.button == 0 && !e.alt)
-        {
-            // 한 번 누르고 끄는 동안 칠한 것이 실행 취소 한 번이 된다.
-            if (e.type == EventType.MouseDown)
-            {
-                Undo.IncrementCurrentGroup();
-                Undo.SetCurrentGroupName(erase ? "타일 지우기" : "타일 칠하기");
-            }
-            TileBase newTile = erase ? null : selectedTile;
-            if (tm.GetTile(cell) != newTile)
-            {
-                Undo.RecordObject(tm, erase ? "타일 지우기" : "타일 칠하기");
-                tm.SetTile(cell, newTile);
-                EditorUtility.SetDirty(tm);
-            }
-            e.Use();
-        }
-    }
-
-    private void HandlePropTool(LevelRoot level, Vector3 world, Event e)
-    {
-        if (selectedProp == null || selectedProp.prefab == null)
-        {
-            return;
-        }
-
-        bool isWater = selectedProp.Category == PropCategory.Water;
-        float snap = isWater ? 1f : SnapValues[snapIndex];
-        Vector3 pos = new Vector3(Snap(world.x, snap), Snap(world.y, snap), 0f);
-        if (isWater)
-        {
-            pos = new Vector3(Mathf.Floor(world.x), Mathf.Floor(world.y), 0f);
-        }
-
-        Handles.color = Color.cyan;
-        Handles.DrawWireDisc(pos, Vector3.forward, 0.3f);
-        Handles.Label(pos + Vector3.up * 0.6f, selectedProp.displayName, EditorStyles.boldLabel);
-
-        if (e.type == EventType.MouseDown && e.button == 0 && !e.alt)
-        {
-            PlaceProp(level, selectedProp, pos);
-            e.Use();
-        }
-    }
-
-    private static float Snap(float v, float step) => Mathf.Round(v / step) * step;
-
-    private static void PlaceProp(LevelRoot level, PropCatalog.Entry entry, Vector3 position)
-    {
-        // 배치 한 번이 실행 취소 한 번이 되도록 그룹을 나눈다.
-        Undo.IncrementCurrentGroup();
-        Undo.SetCurrentGroupName(entry.displayName + " 배치");
-
-        string containerName = entry.Category == PropCategory.Water ? "Water" : "Props";
-        Transform parent = level.transform.Find(containerName);
-        if (parent == null)
-        {
-            parent = new GameObject(containerName).transform;
-            parent.SetParent(level.transform, false);
-            Undo.RegisterCreatedObjectUndo(parent.gameObject, "컨테이너 추가");
-        }
-
-        var go = (GameObject)PrefabUtility.InstantiatePrefab(entry.prefab, parent);
-        go.transform.position = position;
-        Undo.RegisterCreatedObjectUndo(go, entry.displayName + " 배치");
-        if (go.TryGetComponent(out LevelProp prop))
-        {
-            prop.ApplySettings();
-        }
-        Selection.activeGameObject = go;
     }
 
     // ================================================================ 공통
 
-    private void DrawToolToggle(Tool target, string label, bool enabled)
+    private UnityEngine.Tilemaps.Tilemap FindTargetTilemap(LevelRoot level)
     {
-        using (new EditorGUI.DisabledScope(!enabled))
+        string objectName = TileLayerObjectNames[(int)tileLayer];
+        foreach (var tm in level.GetComponentsInChildren<UnityEngine.Tilemaps.Tilemap>(true))
         {
-            bool on = tool == target;
-            bool now = GUILayout.Toggle(on, label, "Button");
-            if (now != on)
+            if (tm.name == objectName && tm.GetComponentInParent<WaterVolume>() == null)
             {
-                tool = now ? target : Tool.None;
-                if (now)
-                {
-                    FocusSceneView();
-                }
+                return tm;
             }
         }
-    }
-
-    private static void FocusSceneView()
-    {
-        if (SceneView.lastActiveSceneView != null)
-        {
-            SceneView.lastActiveSceneView.Repaint();
-        }
+        return null;
     }
 
     private static void SelectAndFrame(GameObject go)
@@ -760,30 +892,5 @@ public class LevelEditorWindow : EditorWindow
         {
             SceneView.lastActiveSceneView.FrameSelected();
         }
-    }
-
-    private static void DrawSprite(Rect rect, Sprite sprite)
-    {
-        if (sprite == null || sprite.texture == null)
-        {
-            return;
-        }
-
-        Texture2D tex = sprite.texture;
-        Rect tr = sprite.textureRect;
-        var uv = new Rect(tr.x / tex.width, tr.y / tex.height, tr.width / tex.width, tr.height / tex.height);
-        float aspect = tr.width / tr.height;
-        Rect fit = rect;
-        if (aspect > rect.width / rect.height)
-        {
-            fit.height = rect.width / aspect;
-            fit.y += (rect.height - fit.height) * 0.5f;
-        }
-        else
-        {
-            fit.width = rect.height * aspect;
-            fit.x += (rect.width - fit.width) * 0.5f;
-        }
-        GUI.DrawTextureWithTexCoords(fit, tex, uv);
     }
 }

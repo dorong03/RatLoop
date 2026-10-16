@@ -9,7 +9,14 @@ public enum PropCategory
     Water,       // 물 영역
     Gimmick,     // 특수 동작이 있는 오브젝트
     Goal,        // 치즈 (레벨에 하나)
-    Spawn        // 시작 위치 (레벨에 하나)
+    Spawn,       // 시작 위치 (레벨에 하나)
+    Barrier      // 눈에 보이지 않는 벽 (투명벽)
+}
+
+// 칸 단위 크기를 가진 영역 프롭 (물, 투명벽). 오브젝트 위치는 영역의 왼쪽 아래 모서리다.
+public interface IAreaProp
+{
+    Vector2Int AreaSize { get; }
 }
 
 // 레벨에 배치하는 모든 오브젝트의 베이스.
@@ -63,10 +70,17 @@ public abstract class LevelProp : MonoBehaviour
         {
             if (this != null && !Application.isPlaying)
             {
-                ApplySettings();
+                OnEditorValueChanged();
             }
         };
 #endif
+    }
+
+    // 에디터에서 값이 바뀌거나 실행 취소/다시 실행이 된 뒤 불린다.
+    // 위치를 옮기는 것처럼 실행 취소와 충돌할 수 있는 작업은 여기서 하지 않는다.
+    protected virtual void OnEditorValueChanged()
+    {
+        ApplySettings();
     }
 
     protected void ApplySortingLayer()
