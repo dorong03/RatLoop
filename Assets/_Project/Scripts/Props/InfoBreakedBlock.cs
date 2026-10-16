@@ -5,7 +5,7 @@ using System.Collections;
 public class InfoBreakedBlock : LevelProp
 {
     [Header("Hit Settings")]
-    [PlannerField("부서지기까지 타격 수", 1)]
+    [PlannerField("부서질 때까지 맞는 횟수", 1)]
     [SerializeField, Range(1, 10)] private int breakHitCount = 3;
     [SerializeField] private float minUpwardVelocity = 0.5f;
     [SerializeField] private float bottomHitTolerance = 0.08f;

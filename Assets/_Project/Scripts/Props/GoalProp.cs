@@ -34,7 +34,7 @@ public class GoalProp : LevelProp
         Collider2D col = GetComponent<Collider2D>();
         if (col == null || !col.isTrigger)
         {
-            report.Error("치즈에 트리거 콜라이더가 없어 먹을 수 없습니다.", this);
+            report.Error("치즈에 트리거 콜라이더가 없어서 먹을 수 없어요.", this);
         }
     }
 

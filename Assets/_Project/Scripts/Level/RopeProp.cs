@@ -13,13 +13,13 @@ public class RopeProp : LevelProp
     [PlannerField("마디 무게", 1)]
     [SerializeField, Range(0.1f, 10f)] private float segmentMass = 1.3f;
 
-    [PlannerField("흔들림 저항", 2)]
+    [PlannerField("흔들림 감속", 2)]
     [SerializeField, Range(0f, 5f)] private float segmentDamping = 0.3f;
 
     [Header("구성")]
-    [Tooltip("마디 하나. Rigidbody2D, HingeJoint2D, Collider2D 가 있어야 한다.")]
+    [Tooltip("마디 하나의 프리팹이에요. Rigidbody2D, HingeJoint2D, Collider2D가 있어야 해요.")]
     [SerializeField] private GameObject linkPrefab;
-    [Tooltip("마디 사이 간격 (로프 로컬 좌표)")]
+    [Tooltip("마디 사이 간격이에요. (로프 로컬 좌표)")]
     [SerializeField] private float segmentSpacing = 1.25f;
     [SerializeField] private Transform segmentRoot;
 
@@ -165,16 +165,16 @@ public class RopeProp : LevelProp
     {
         if (linkPrefab == null)
         {
-            report.Error($"{name}: 로프 마디 프리팹이 비어 있습니다.", this);
+            report.Error($"{name}: 로프 마디 프리팹이 비어 있어요.", this);
         }
         else if (linkPrefab.GetComponent<HingeJoint2D>() == null || linkPrefab.GetComponent<Rigidbody2D>() == null)
         {
-            report.Error($"{name}: 로프 마디에 HingeJoint2D 와 Rigidbody2D 가 필요합니다.", this);
+            report.Error($"{name}: 로프 마디에 HingeJoint2D와 Rigidbody2D가 필요해요.", this);
         }
 
         if (segmentRoot == null)
         {
-            report.Error($"{name}: 마디를 넣을 Segments 오브젝트가 없습니다.", this);
+            report.Error($"{name}: 마디를 넣을 Segments 오브젝트가 없어요.", this);
         }
     }
 

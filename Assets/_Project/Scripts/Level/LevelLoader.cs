@@ -8,7 +8,7 @@ public class LevelLoader : MonoBehaviour
     [SerializeField] private SpawnManager spawnManager;
     [SerializeField] private CameraEffect cameraEffect;
 
-    [Tooltip("Game 씬을 바로 실행했을 때 불러올 레벨. 비워두면 레벨 목록의 첫 레벨.")]
+    [Tooltip("Game 씬을 바로 실행했을 때 불러올 레벨이에요. 비워 두면 목록의 첫 레벨을 불러와요.")]
     [SerializeField] private LevelRoot editorTestLevel;
 
 #if UNITY_EDITOR
@@ -25,7 +25,7 @@ public class LevelLoader : MonoBehaviour
         GameManager gm = GameManager.instance;
         if (gm == null)
         {
-            Debug.LogError("GameManager 가 없습니다. Game 씬에 GameManager 프리팹을 넣어주세요.");
+            Debug.LogError("GameManager가 없어요. Game 씬에 GameManager 프리팹을 넣어 주세요.");
             return;
         }
 
@@ -49,7 +49,7 @@ public class LevelLoader : MonoBehaviour
         SpawnPoint spawn = Current.SpawnPoint;
         if (spawn == null)
         {
-            Debug.LogError($"{level.name} 에 SpawnPoint 가 없습니다.");
+            Debug.LogError($"{level.name}에 시작 위치(SpawnPoint)가 없어요.");
             return;
         }
         spawnManager.Initialize(spawn.transform);

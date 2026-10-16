@@ -31,31 +31,31 @@ public class WaterVolume : LevelProp, IAreaProp
     [SerializeField, Range(1, 32)] private int height = 3;
 
     [PlannerField("부력", 2)]
-    [Tooltip("1 이면 물체가 반쯤 잠긴 채 뜬다. 클수록 더 높이 뜬다.")]
+    [Tooltip("1이면 물체가 반쯤 잠긴 채로 떠요. 클수록 더 높이 떠요.")]
     [SerializeField, Range(0f, 5f)] private float buoyancy = 1f;
 
-    [PlannerField("물속 이동 저항", 3)]
+    [PlannerField("물속 이동 감속", 3)]
     [SerializeField, Range(0f, 20f)] private float linearDrag = 10.46f;
 
-    [PlannerField("물속 회전 저항", 4)]
+    [PlannerField("물속 회전 감속", 4)]
     [SerializeField, Range(0f, 20f)] private float angularDrag = 5f;
 
-    [PlannerField("물살 방향(도)", 5)]
+    [PlannerField("물살 방향 (도)", 5)]
     [SerializeField, Range(-180f, 180f)] private float flowAngle;
 
     [PlannerField("물살 세기", 6)]
     [SerializeField, Range(0f, 50f)] private float flowStrength;
 
-    [PlannerField("빠지는 깊이", 9)]
-    [Tooltip("몸이 이 비율 이상 물에 잠겨야 빠진 것으로 본다. 물가에 살짝 걸친 정도로는 빠지지 않는다.")]
+    [PlannerField("빠지는 깊이", 7)]
+    [Tooltip("몸이 이 비율 이상 잠겨야 물에 빠진 걸로 봐요. 물가에 살짝 걸친 정도로는 빠지지 않아요.")]
     [SerializeField, Range(0.05f, 1f)] private float enterDepth = 0.35f;
 
-    [PlannerField("플레이어 익사 시간(초)", 7)]
-    [Tooltip("0 이면 빠져도 죽지 않는다.")]
+    [PlannerField("익사 시간 (초)", 8)]
+    [Tooltip("물에 빠진 쥐가 이 시간 뒤에 죽어요. 0이면 죽지 않아요.")]
     [SerializeField, Range(0f, 10f)] private float drownTime = 3f;
 
-    [PlannerField("타일 자동 배치", 8, PerInstance = true)]
-    [Tooltip("끄면 크기를 바꿔도 물 타일을 다시 깔지 않는다. (직접 그린 물 그림을 보존할 때)")]
+    [PlannerField("물 타일 자동으로 깔기", 9, PerInstance = true)]
+    [Tooltip("끄면 크기를 바꿔도 물 타일을 다시 깔지 않아요. 직접 그린 물을 지킬 때 꺼요.")]
     [SerializeField] private bool autoTiles = true;
 
     [Header("그림")]
@@ -177,14 +177,14 @@ public class WaterVolume : LevelProp, IAreaProp
     {
         if (width < 1 || height < 1)
         {
-            report.Error($"{name}: 물 크기는 1칸 이상이어야 합니다.", this);
+            report.Error($"{name}: 물 크기는 1칸 이상이어야 해요.", this);
         }
 
         for (int i = 0; i < 9; i++)
         {
             if (visualTiles.tiles == null || visualTiles.tiles.Length != 9 || visualTiles.tiles[i] == null)
             {
-                report.Warning($"{name}: 물 타일이 비어 있어 일부 칸이 보이지 않습니다.", this);
+                report.Warning($"{name}: 물 타일이 비어 있어서 일부 칸이 보이지 않아요.", this);
                 break;
             }
         }

@@ -10,15 +10,15 @@ public class PropCatalog : ScriptableObject
     [System.Serializable]
     public class Entry
     {
-        [Tooltip("레벨 파일이 프롭을 찾을 때 쓰는 고유 ID. 한 번 정하면 바꾸지 않는다.")]
+        [Tooltip("레벨 파일이 프롭을 찾을 때 쓰는 고유 ID예요. 한 번 정하면 바꾸지 마세요.")]
         public string id;
         [Tooltip("팔레트에 보이는 이름")]
         public string displayName;
         public GameObject prefab;
-        [Tooltip("비워두면 프리팹의 첫 번째 스프라이트를 쓴다.")]
+        [Tooltip("비워 두면 프리팹의 첫 번째 그림을 써요.")]
         public Sprite icon;
         [TextArea] public string description;
-        [Tooltip("켜면 팔레트에 보이지 않는다. (치즈, 시작 위치처럼 레벨에 하나만 있는 것)")]
+        [Tooltip("켜면 팔레트에 보이지 않아요. 치즈, 시작 위치처럼 레벨에 하나만 있는 것에 써요.")]
         public bool hiddenInPalette;
 
         public LevelProp Prop => prefab != null ? prefab.GetComponent<LevelProp>() : null;
@@ -57,24 +57,24 @@ public class PropCatalog : ScriptableObject
         {
             if (string.IsNullOrEmpty(e.id))
             {
-                report.Error($"카탈로그: '{e.displayName}' 의 ID 가 비어 있습니다.", this);
+                report.Error($"카탈로그: '{e.displayName}'의 ID가 비어 있어요.", this);
             }
             else if (!ids.Add(e.id))
             {
-                report.Error($"카탈로그: ID '{e.id}' 가 중복됩니다.", this);
+                report.Error($"카탈로그: ID '{e.id}'가 겹쳐요.", this);
             }
 
             if (e.prefab == null)
             {
-                report.Error($"카탈로그: '{e.displayName}' 의 프리팹이 비어 있습니다.", this);
+                report.Error($"카탈로그: '{e.displayName}'의 프리팹이 비어 있어요.", this);
             }
             else if (e.Prop == null)
             {
-                report.Error($"카탈로그: '{e.displayName}' 프리팹에 LevelProp 이 없습니다.", e.prefab);
+                report.Error($"카탈로그: '{e.displayName}' 프리팹에 LevelProp이 없어요.", e.prefab);
             }
             else if (e.Prop.CatalogId != e.id)
             {
-                report.Warning($"카탈로그: '{e.displayName}' 프리팹의 ID 가 카탈로그와 다릅니다.", e.prefab);
+                report.Warning($"카탈로그: '{e.displayName}' 프리팹의 ID가 카탈로그와 달라요.", e.prefab);
             }
         }
     }

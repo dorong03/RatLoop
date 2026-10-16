@@ -271,7 +271,7 @@ public partial class LevelEditorWindow
         {
             parent = new GameObject(containerName).transform;
             parent.SetParent(level.transform, false);
-            Undo.RegisterCreatedObjectUndo(parent.gameObject, "컨테이너 추가");
+            Undo.RegisterCreatedObjectUndo(parent.gameObject, "프롭 묶음 추가");
         }
 
         var go = (GameObject)PrefabUtility.InstantiatePrefab(entry.prefab, parent);
@@ -296,25 +296,29 @@ public partial class LevelEditorWindow
         }
 
         Handles.BeginGUI();
-        float width = Mathf.Min(view.position.width - 20f, 620f);
-        GUI.Box(new Rect(10f, 10f, width, 26f), text, bannerStyle ?? EditorStyles.helpBox);
+        var content = new GUIContent(text);
+        float width = Mathf.Min(EditorUI.Banner.CalcSize(content).x + 4f, view.position.width - 20f);
+        GUI.Box(new Rect(10f, 10f, width, 26f), content, EditorUI.Banner);
         Handles.EndGUI();
     }
 
+    // 지금 켜진 도구 이름(굵게)과 조작법. 창 바닥 줄의 안내와 같은 글을 쓴다.
     private string BannerText(SceneTool tool)
     {
         switch (tool)
         {
             case SceneTool.Paint:
-                return $"타일 칠하기 ({TileLayerLabels[(int)tileLayer]})   클릭·끌기: 칠하기   Shift: 지우기   Esc: 끝내기";
+                return $"<b>타일 칠하기 · {TileLayerLabels[(int)tileLayer]}</b>   {CurrentHint()}";
             case SceneTool.Erase:
-                return $"타일 지우기 ({TileLayerLabels[(int)tileLayer]})   클릭·끌기: 지우기   Esc: 끝내기";
+                return $"<b>타일 지우기 · {TileLayerLabels[(int)tileLayer]}</b>   {CurrentHint()}";
             case SceneTool.Place:
-                return $"프롭 놓기: {selectedProp.displayName}   클릭: 놓기   Esc: 끝내기";
+                return $"<b>놓기 · {selectedProp.displayName}</b>   {CurrentHint()}";
             case SceneTool.Relocate:
-                return $"{(relocate == Relocate.Spawn ? "시작 위치" : "치즈")} 옮기기   클릭·끌기: 옮기기   Esc: 끝내기";
+                return $"<b>{(relocate == Relocate.Spawn ? "시작 위치" : "치즈")} 옮기기</b>   {CurrentHint()}";
             default:
-                return mode == Mode.Select || mode == Mode.Points ? "선택·이동   프롭을 클릭해 고르고 끌어서 옮깁니다" : null;
+                if (mode == Mode.Select) return $"<b>선택</b>   {CurrentHint()}";
+                if (mode == Mode.Points) return "<b>시작·치즈</b>   씬 화면의 원을 끌어서 옮겨요";
+                return null;
         }
     }
 

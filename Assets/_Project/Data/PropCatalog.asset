@@ -140,13 +140,13 @@ MonoBehaviour:
     description: 
     hiddenInPalette: 0
   - id: bottle_empty_large
-    displayName: "\uBE48 \uBCD1 (\uD070)"
+    displayName: "\uBE48 \uBCD1 (\uD070 \uAC83)"
     prefab: {fileID: 8266930110130702034, guid: 70d54686b42919a4cad2dbf39f339033, type: 3}
     icon: {fileID: 0}
     description: 
     hiddenInPalette: 0
   - id: bottle_empty_small
-    displayName: "\uBE48 \uBCD1 (\uC791\uC740)"
+    displayName: "\uBE48 \uBCD1 (\uC791\uC740 \uAC83)"
     prefab: {fileID: 8266930110130702034, guid: d33e61af4db4dcb49ac5c001d48ae43c, type: 3}
     icon: {fileID: 0}
     description: 
@@ -158,82 +158,86 @@ MonoBehaviour:
     description: 
     hiddenInPalette: 0
   - id: tissue
-    displayName: "\uD734\uC9C0 (\uC2E4\uD5D8 \uC911)"
+    displayName: "\uD734\uC9C0 (\uB9CC\uB4DC\uB294 \uC911)"
     prefab: {fileID: 5411365239829090961, guid: dfa299c03f496461c961af1c75d393de, type: 3}
     icon: {fileID: 0}
-    description: "\uAD74\uB7EC\uAC00\uBA74 \uD480\uB9AC\uB294 \uD734\uC9C0. \uC544\uC9C1
-      \uC644\uC131\uB418\uC9C0 \uC54A\uC558\uB2E4."
+    description: "\uAD74\uB7EC\uAC00\uBA74 \uD480\uB9AC\uB294 \uD734\uC9C0\uC608\uC694.
+      \uC544\uC9C1 \uB9CC\uB4DC\uB294 \uC911\uC774\uC5D0\uC694."
     hiddenInPalette: 0
   - id: bus_blue
     displayName: "\uBC84\uC2A4 (\uD30C\uB791)"
     prefab: {fileID: 1254372488254001003, guid: e0ad8b39ac505b44491ce178a1f1cfc7, type: 3}
     icon: {fileID: 0}
-    description: "\uBC1F\uC744 \uC218 \uC788\uB294 \uACE0\uC815 \uBC1C\uD310"
+    description: "\uBC1F\uC744 \uC218 \uC788\uACE0 \uC6C0\uC9C1\uC774\uC9C0 \uC54A\uB294
+      \uBC1C\uD310\uC774\uC5D0\uC694."
     hiddenInPalette: 0
   - id: bus_gray
     displayName: "\uBC84\uC2A4 (\uD68C\uC0C9)"
     prefab: {fileID: 1254372488254001003, guid: cae6498bade8f1f469161ece5988ae63, type: 3}
     icon: {fileID: 0}
-    description: "\uBC1F\uC744 \uC218 \uC788\uB294 \uACE0\uC815 \uBC1C\uD310"
+    description: "\uBC1F\uC744 \uC218 \uC788\uACE0 \uC6C0\uC9C1\uC774\uC9C0 \uC54A\uB294
+      \uBC1C\uD310\uC774\uC5D0\uC694."
     hiddenInPalette: 0
   - id: bus_red
     displayName: "\uBC84\uC2A4 (\uBE68\uAC15)"
     prefab: {fileID: 1254372488254001003, guid: d8ed0e0445ea40643b40ba19b3d513f7, type: 3}
     icon: {fileID: 0}
-    description: "\uBC1F\uC744 \uC218 \uC788\uB294 \uACE0\uC815 \uBC1C\uD310"
+    description: "\uBC1F\uC744 \uC218 \uC788\uACE0 \uC6C0\uC9C1\uC774\uC9C0 \uC54A\uB294
+      \uBC1C\uD310\uC774\uC5D0\uC694."
     hiddenInPalette: 0
   - id: water_pack
     displayName: "\uC0DD\uC218 \uBB36\uC74C"
     prefab: {fileID: 5560752560630555366, guid: 3163abe7a6de943428e8b249a8210d70, type: 3}
     icon: {fileID: 0}
-    description: "\uBC1F\uC744 \uC218 \uC788\uB294 \uACE0\uC815 \uBC1C\uD310"
+    description: "\uBC1F\uC744 \uC218 \uC788\uACE0 \uC6C0\uC9C1\uC774\uC9C0 \uC54A\uB294
+      \uBC1C\uD310\uC774\uC5D0\uC694."
     hiddenInPalette: 0
   - id: decor_wall_clock
-    displayName: "\uBCBD\uC2DC\uACC4 (\uC7A5\uC2DD)"
+    displayName: "\uBCBD\uC2DC\uACC4"
     prefab: {fileID: 4609362887362061678, guid: 69e99524c87131a4685967a87d1df68c, type: 3}
     icon: {fileID: 0}
-    description: "\uBD80\uB52A\uD788\uC9C0 \uC54A\uB294 \uC7A5\uC2DD"
+    description: "\uBD80\uB52A\uD788\uC9C0 \uC54A\uB294 \uC7A5\uC2DD\uC774\uC5D0\uC694."
     hiddenInPalette: 0
   - id: rope_chain
     displayName: "\uCCB4\uC778 \uB85C\uD504"
     prefab: {fileID: 72053292553036492, guid: dfb80c2da93a7a044a4165bd78a12c68, type: 3}
     icon: {fileID: 0}
-    description: "E \uD0A4\uB85C \uB9E4\uB2EC\uB9B4 \uC218 \uC788\uB2E4"
+    description: "E \uD0A4\uB97C \uB20C\uB7EC \uB9E4\uB2EC\uB9B4 \uC218 \uC788\uC5B4\uC694."
     hiddenInPalette: 0
   - id: water
     displayName: "\uBB3C"
     prefab: {fileID: 4779457640514489826, guid: 7ddc4c7da4961844aaee462d24bb00b4, type: 3}
     icon: {fileID: 0}
-    description: "\uD06C\uAE30\uB97C \uC815\uD558\uBA74 \uADF8\uB9BC\uACFC \uD310\uC815\uC774
-      \uAC19\uC774 \uB9DE\uCDB0\uC9C4\uB2E4"
+    description: "\uD06C\uAE30\uB97C \uBC14\uAFB8\uBA74 \uADF8\uB9BC\uACFC \uD310\uC815\uC774
+      \uD568\uAED8 \uB9DE\uCDB0\uC838\uC694."
     hiddenInPalette: 0
   - id: info_block
     displayName: "\uC548\uB0B4 \uBE14\uB85D"
     prefab: {fileID: 7959695954682629718, guid: 6d88e36e5aeb442faba6e7395cc82981, type: 3}
     icon: {fileID: 0}
-    description: "\uBD80\uC220 \uC218 \uC788\uAC8C \uCF1C\uBA74 \uC544\uB798\uC5D0\uC11C
-      \uCCD0\uC11C \uBD80\uC21C\uB2E4"
+    description: "'\uBD80\uC220 \uC218 \uC788\uC74C'\uC744 \uCF1C\uBA74 \uC544\uB798\uC5D0\uC11C
+      \uCCD0\uC11C \uBD80\uC220 \uC218 \uC788\uC5B4\uC694."
     hiddenInPalette: 0
   - id: cheese
     displayName: "\uCE58\uC988"
     prefab: {fileID: 1723293409309942786, guid: 89d1343a9ab90d448b8aa2bdba1fb6d1, type: 3}
     icon: {fileID: 0}
-    description: "\uB808\uBCA8\uC5D0 \uD558\uB098. \uB808\uBCA8 \uD15C\uD50C\uB9BF\uC5D0
-      \uB4E4\uC5B4 \uC788\uB2E4"
+    description: "\uB808\uBCA8\uC5D0 \uD558\uB098\uB9CC \uC788\uC5B4\uC694. \uC0C8
+      \uB808\uBCA8\uC5D0 \uCC98\uC74C\uBD80\uD130 \uB4E4\uC5B4 \uC788\uC5B4\uC694."
     hiddenInPalette: 1
   - id: invisible_wall
     displayName: "\uD22C\uBA85\uBCBD (\uCE90\uB9AD\uD130\uB9CC \uB9C9\uAE30)"
     prefab: {fileID: 8933821892972846989, guid: e92612a60a1fec9478bd5294d68f2011, type: 3}
     icon: {fileID: 0}
-    description: "\uB208\uC5D0 \uBCF4\uC774\uC9C0 \uC54A\uB294 \uBCBD. \uD50C\uB808\uC774\uC5B4\uC640
-      \uACE0\uC2A4\uD2B8\uB9CC \uB9C9\uACE0, \uBC15\uC2A4\uC640 \uACF5 \uAC19\uC740
-      \uBB3C\uCCB4\uB294 \uD1B5\uACFC\uD55C\uB2E4."
+    description: "\uB208\uC5D0 \uBCF4\uC774\uC9C0 \uC54A\uB294 \uBCBD\uC774\uC5D0\uC694.
+      \uC950\uC640 \uACE0\uC2A4\uD2B8\uB9CC \uB9C9\uACE0 \uBC15\uC2A4\uB098 \uACF5
+      \uAC19\uC740 \uBB3C\uCCB4\uB294 \uC9C0\uB098\uAC00\uC694."
     hiddenInPalette: 0
   - id: invisible_wall_block
     displayName: "\uD22C\uBA85\uBCBD (\uBB3C\uCCB4\uB3C4 \uB9C9\uAE30)"
     prefab: {fileID: 3009197275471715384, guid: 1c4c727feae273b459b8959ec583e12f, type: 3}
     icon: {fileID: 0}
-    description: "\uB208\uC5D0 \uBCF4\uC774\uC9C0 \uC54A\uB294 \uBCBD. \uD50C\uB808\uC774\uC5B4,
-      \uACE0\uC2A4\uD2B8, \uBC15\uC2A4\uC640 \uACF5 \uAC19\uC740 \uBB3C\uCCB4\uAE4C\uC9C0
-      \uBAA8\uB450 \uB9C9\uB294\uB2E4."
+    description: "\uB208\uC5D0 \uBCF4\uC774\uC9C0 \uC54A\uB294 \uBCBD\uC774\uC5D0\uC694.
+      \uC950\uC640 \uACE0\uC2A4\uD2B8, \uBC15\uC2A4\uB098 \uACF5 \uAC19\uC740 \uBB3C\uCCB4\uAE4C\uC9C0
+      \uBAA8\uB450 \uB9C9\uC544\uC694."
     hiddenInPalette: 0

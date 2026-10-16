@@ -27,11 +27,11 @@ public class LevelList : ScriptableObject
         {
             if (levels[i] == null)
             {
-                report.Error($"레벨 목록 {i + 1}번이 비어 있습니다.", this);
+                report.Error($"레벨 목록 {i + 1}번이 비어 있어요.", this);
             }
             else if (!seen.Add(levels[i]))
             {
-                report.Error($"레벨 목록에 '{levels[i].name}' 가 두 번 들어 있습니다.", this);
+                report.Error($"'{levels[i].name}' 레벨이 목록에 두 번 들어 있어요.", this);
             }
         }
     }

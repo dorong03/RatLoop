@@ -39,7 +39,7 @@ public class TilePaletteView
     }
 
     private static readonly float[] ZoomValues = { 1f, 1.5f, 2f, 3f };
-    private static readonly string[] ZoomLabels = { "작게", "보통-", "보통", "크게" };
+    private static readonly string[] ZoomLabels = { "작게", "보통", "크게", "아주 크게" };
 
     private List<Group> groups;
     private string[] groupNames;
@@ -108,7 +108,7 @@ public class TilePaletteView
         groupNames = new string[groups.Count];
         for (int i = 0; i < groups.Count; i++)
         {
-            groupNames[i] = $"{groups[i].name} ({groups[i].tileCount}개)";
+            groupNames[i] = $"{groups[i].name} · 타일 {groups[i].tileCount}개";
         }
         groupIndex = Mathf.Clamp(groupIndex, 0, Mathf.Max(0, groups.Count - 1));
         ClearSelection();
@@ -123,7 +123,7 @@ public class TilePaletteView
         }
         if (groups.Count == 0)
         {
-            EditorGUILayout.HelpBox("타일이 없습니다: " + TilesRoot, MessageType.Warning);
+            EditorGUILayout.HelpBox("타일이 없어요. '타일 이미지 추가'로 PNG 이미지를 넣어 주세요.", MessageType.Info);
             return false;
         }
 
@@ -152,12 +152,12 @@ public class TilePaletteView
         if (hasSelection && stamp.Count > 0)
         {
             info = stamp.Count == 1
-                ? $"선택: 1칸 ({stamp[0].tile.name})"
-                : $"선택: {stampSize.x} x {stampSize.y} 칸, 타일 {stamp.Count}개 (모양 그대로 찍힙니다)";
+                ? $"1칸 선택 · {stamp[0].tile.name}"
+                : $"{stampSize.x}×{stampSize.y}칸 선택 · 타일 {stamp.Count}개 · 고른 모양 그대로 칠해져요";
         }
         else
         {
-            info = string.IsNullOrEmpty(hoverText) ? "타일을 클릭하거나 끌어서 영역을 고르세요." : hoverText;
+            info = string.IsNullOrEmpty(hoverText) ? "타일을 클릭하거나, 끌어서 여러 칸을 함께 골라요." : hoverText;
         }
         EditorGUILayout.LabelField(info, EditorStyles.miniLabel);
         return changed;
@@ -173,7 +173,7 @@ public class TilePaletteView
         if (type == EventType.MouseMove || type == EventType.MouseDrag)
         {
             Vector2Int hover = CellAt(group, area, px, e.mousePosition);
-            hoverText = group.cells.TryGetValue(hover, out TileBase t) ? $"{t.name}  (칸 {hover.x + 1}, {hover.y + 1})" : "";
+            hoverText = group.cells.TryGetValue(hover, out TileBase t) ? $"{t.name} · {hover.x + 1}열 {hover.y + 1}행" : "";
         }
 
         bool changed = false;

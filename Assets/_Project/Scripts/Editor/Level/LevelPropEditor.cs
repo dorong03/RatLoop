@@ -3,8 +3,8 @@ using UnityEditor;
 using UnityEngine;
 
 // 모든 LevelProp 의 인스펙터.
-//  - 종류 공통 설정: 프리팹(종류)에 저장. 레벨에 놓인 개체를 골라도 프리팹 원본을 고친다.
-//  - 이 자리 설정: 물 크기, 로프 길이처럼 놓은 자리마다 다른 값.
+//  - 공통 설정: 프리팹(종류)에 저장. 레벨에 놓인 개체를 골라도 프리팹 원본을 고친다.
+//  - 이 프롭만: 물 크기, 로프 길이처럼 놓은 자리마다 다른 값.
 //  - 개발자 설정: [PlannerField] 가 없는 나머지 값 (접혀 있음)
 [CustomEditor(typeof(LevelProp), true)]
 public class LevelPropEditor : Editor
@@ -26,7 +26,7 @@ public class LevelPropEditor : Editor
 
         if (PlannerFieldUtility.HasFields(prop.GetType(), PlannerFieldUtility.Scope.Shared))
         {
-            EditorGUILayout.LabelField(editingType ? "종류 공통 설정 (모든 레벨의 같은 프롭에 적용)" : "기획자 설정", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(editingType ? "공통 설정 · 같은 프롭 모두에 적용" : "설정", EditorStyles.boldLabel);
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
                 PlannerFieldUtility.DrawSharedFields(prop);
@@ -34,8 +34,8 @@ public class LevelPropEditor : Editor
                 List<string> overrides = PlannerFieldUtility.GetSharedOverrides(prop);
                 if (overrides.Count > 0)
                 {
-                    EditorGUILayout.HelpBox($"이 자리의 프롭만 값이 다릅니다: {string.Join(", ", overrides)}", MessageType.Warning);
-                    if (GUILayout.Button("종류 설정으로 맞추기"))
+                    EditorGUILayout.HelpBox($"이 프롭만 공통 설정과 값이 달라요: {string.Join(", ", overrides)}", MessageType.Warning);
+                    if (GUILayout.Button("공통 설정으로 되돌리기"))
                     {
                         PlannerFieldUtility.RevertSharedOverrides(prop);
                     }
@@ -46,7 +46,7 @@ public class LevelPropEditor : Editor
         serializedObject.Update();
         if (PlannerFieldUtility.HasFields(prop.GetType(), PlannerFieldUtility.Scope.PerInstance))
         {
-            EditorGUILayout.LabelField("이 자리 설정", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("이 프롭만", EditorStyles.boldLabel);
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
                 PlannerFieldUtility.DrawPlannerFields(serializedObject, PlannerFieldUtility.Scope.PerInstance);

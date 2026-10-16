@@ -121,7 +121,7 @@ public static class LevelEditorTools
         string path = AssetDatabase.GenerateUniqueAssetPath($"{LevelsFolder}/Level_{NextLevelNumber():00}.prefab");
         if (!AssetDatabase.CopyAsset(TemplatePath, path))
         {
-            Debug.LogError("레벨 템플릿을 복사하지 못했습니다: " + TemplatePath);
+            Debug.LogError("레벨 템플릿을 복사하지 못했어요: " + TemplatePath);
             return null;
         }
 
@@ -177,7 +177,7 @@ public static class LevelEditorTools
         LevelRoot level = CurrentLevel;
         if (level == null)
         {
-            report.Error("열려 있는 레벨이 없습니다.");
+            report.Error("열려 있는 레벨이 없어요.");
             return report;
         }
 
@@ -219,8 +219,8 @@ public static class LevelEditorTools
         }
 
         EditorUtility.DisplayDialog("프롭 카탈로그",
-            added.Count > 0 ? $"{added.Count}개를 추가했습니다.\n{string.Join(", ", added)}\n\n팔레트에 보일 이름과 설명은 PropCatalog 에셋에서 바꿀 수 있습니다."
-                            : "추가할 프리팹이 없습니다. LevelProp 이 붙어 있고 아직 카탈로그에 없는 프리팹을 골라주세요.", "확인");
+            added.Count > 0 ? $"{added.Count}개를 추가했어요.\n{string.Join(", ", added)}\n\n팔레트에 보이는 이름과 설명은 PropCatalog 에셋에서 바꿀 수 있어요."
+                            : "추가할 프리팹이 없어요. LevelProp이 붙어 있고 아직 카탈로그에 없는 프리팹을 골라 주세요.", "확인");
     }
 
     [MenuItem("Assets/RatLoop/프롭 카탈로그에 추가", true)]
@@ -343,7 +343,7 @@ public static class LevelEditorTools
         bool ok = AssetDatabase.MoveAssetToTrash(path);
         if (!ok)
         {
-            Debug.LogError("레벨을 삭제하지 못했습니다: " + path);
+            Debug.LogError("레벨을 삭제하지 못했어요: " + path);
         }
         return ok;
     }

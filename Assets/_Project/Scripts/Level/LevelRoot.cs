@@ -19,14 +19,14 @@ public class LevelRoot : MonoBehaviour
 {
     public enum CameraZoom
     {
-        Normal, // 기준 해상도 228x128
-        Wide    // 기준 해상도 320x180 (더 넓게 보임)
+        [InspectorName("보통")] Normal, // 기준 해상도 228x128
+        [InspectorName("넓게")] Wide    // 기준 해상도 320x180 (더 넓게 보임)
     }
 
     [PlannerField("레벨 이름", 0)]
     [SerializeField] private string displayName;
 
-    [PlannerField("제한 시간(초)", 1)]
+    [PlannerField("제한 시간 (초)", 1)]
     [SerializeField, Range(5, 600)] private int timeLimit = 60;
 
     [PlannerField("리플레이 횟수", 2)]
@@ -65,33 +65,33 @@ public class LevelRoot : MonoBehaviour
     {
         if (timeLimit <= 0)
         {
-            report.Error("제한 시간은 0초보다 커야 합니다.", this);
+            report.Error("제한 시간은 0초보다 길어야 해요.", this);
         }
         if (maxReplayCount < 0)
         {
-            report.Error("리플레이 횟수는 0 이상이어야 합니다.", this);
+            report.Error("리플레이 횟수는 0 이상이어야 해요.", this);
         }
 
         SpawnPoint[] spawns = GetComponentsInChildren<SpawnPoint>(true);
         if (spawns.Length != 1)
         {
-            report.Error($"시작 위치는 정확히 1개여야 합니다. (현재 {spawns.Length}개)", this);
+            report.Error($"시작 위치는 하나만 있어야 해요. 지금 {spawns.Length}개예요.", this);
         }
 
         GoalProp[] goals = GetComponentsInChildren<GoalProp>(true);
         if (goals.Length != 1)
         {
-            report.Error($"치즈는 정확히 1개여야 합니다. (현재 {goals.Length}개)", this);
+            report.Error($"치즈는 하나만 있어야 해요. 지금 {goals.Length}개예요.", this);
         }
 
         Tilemap ground = GroundTilemap;
         if (ground == null)
         {
-            report.Error("Ground 타일맵이 없습니다.", this);
+            report.Error("지형(Ground) 타일맵이 없어요.", this);
         }
         else if (spawns.Length == 1 && !HasGroundBelow(ground, spawns[0].transform.position, SpawnPoint.GroundSearchDistance))
         {
-            report.Warning($"시작 위치 아래 {SpawnPoint.GroundSearchDistance}칸 안에 땅이 없습니다.", spawns[0]);
+            report.Warning($"시작 위치 아래 {SpawnPoint.GroundSearchDistance}칸 안에 땅이 없어요.", spawns[0]);
         }
 
         foreach (LevelProp prop in GetComponentsInChildren<LevelProp>(true))
@@ -101,14 +101,14 @@ public class LevelRoot : MonoBehaviour
             // 고정 프롭은 지형에 걸쳐 있어도 밀려나지 않으므로 물리 프롭만 검사한다.
             if (ground != null && prop is PhysicsProp && IsInsideGround(ground, prop))
             {
-                report.Warning($"{prop.name}: 지형 타일 안에 박혀 있습니다. 시작하자마자 튕겨 나갈 수 있습니다.", prop);
+                report.Warning($"{prop.name}: 지형 타일에 박혀 있어요. 시작하자마자 튕겨 나갈 수 있어요.", prop);
             }
 
 #if UNITY_EDITOR
             string differs = SharedOverrides(prop);
             if (differs != null)
             {
-                report.Warning($"{prop.name}: 이 자리의 프롭만 종류 설정과 값이 다릅니다 ({differs}). 같은 종류는 같은 값을 쓰도록 '종류 설정으로 맞추기'를 눌러주세요.", prop);
+                report.Warning($"{prop.name}: 이 프롭만 공통 설정과 값이 달라요 ({differs}). '공통 설정으로 되돌리기'를 눌러 맞춰 주세요.", prop);
             }
 
             if (catalog != null && !(prop is SpawnPoint))
@@ -116,7 +116,7 @@ public class LevelRoot : MonoBehaviour
                 GameObject source = UnityEditor.PrefabUtility.GetCorrespondingObjectFromOriginalSource(prop.gameObject);
                 if (source == null || catalog.FindByPrefab(source) == null)
                 {
-                    report.Warning($"{prop.name}: 카탈로그에 없는 프롭입니다.", prop);
+                    report.Warning($"{prop.name}: 카탈로그에 없는 프롭이에요.", prop);
                 }
             }
 #endif
@@ -222,7 +222,7 @@ public class LevelRoot : MonoBehaviour
             {
                 if (Overlaps(bodies[i], bodies[j]))
                 {
-                    report.Warning($"{bodies[i].name} 와 {bodies[j].name} 가 겹쳐 있습니다.", bodies[i]);
+                    report.Warning($"{bodies[i].name}, {bodies[j].name}: 서로 겹쳐 있어요.", bodies[i]);
                 }
             }
         }

@@ -14,7 +14,7 @@ public class InvisibleWall : LevelProp, IAreaProp
     [SerializeField, Range(1, 64)] private int height = 4;
 
     [PlannerField("물체도 막기", 2)]
-    [Tooltip("끄면 플레이어와 고스트만 막고 박스, 공 같은 물체는 통과한다.")]
+    [Tooltip("끄면 쥐와 고스트만 막고, 박스나 공 같은 물체는 지나가요.")]
     [SerializeField] private bool blockProps;
 
     public override PropCategory Category => PropCategory.Barrier;
@@ -68,7 +68,7 @@ public class InvisibleWall : LevelProp, IAreaProp
     {
         if (width < 1 || height < 1)
         {
-            report.Error($"{name}: 투명벽 크기는 1칸 이상이어야 합니다.", this);
+            report.Error($"{name}: 투명벽 크기는 1칸 이상이어야 해요.", this);
         }
     }
 

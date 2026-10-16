@@ -13,13 +13,13 @@ public class StaticProp : SizedProp
 
         if (GetComponentsInChildren<Collider2D>(true).Length == 0)
         {
-            report.Warning($"{name}: 콜라이더가 없어 밟을 수 없습니다. 장식이라면 장식 프롭으로 만드세요.", this);
+            report.Warning($"{name}: 콜라이더가 없어서 밟을 수 없어요. 장식이라면 장식 프롭으로 만들어 주세요.", this);
         }
 
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
         if (rb != null && rb.bodyType == RigidbodyType2D.Dynamic)
         {
-            report.Warning($"{name}: 고정 프롭인데 움직이는 Rigidbody2D 가 있습니다. 물리 프롭으로 바꾸세요.", this);
+            report.Warning($"{name}: 고정 프롭에 움직이는 Rigidbody2D가 있어요. 물리 프롭으로 바꿔 주세요.", this);
         }
     }
 }

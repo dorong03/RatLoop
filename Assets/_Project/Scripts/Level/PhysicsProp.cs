@@ -5,16 +5,16 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class PhysicsProp : SizedProp
 {
-    [PlannerField("질량", 0)]
+    [PlannerField("무게", 0)]
     [SerializeField, Range(0.1f, 200f)] private float mass = 1f;
 
-    [PlannerField("중력 배율", 1)]
+    [PlannerField("중력", 1)]
     [SerializeField, Range(0f, 5f)] private float gravityScale = 1f;
 
-    [PlannerField("이동 저항", 2)]
+    [PlannerField("이동 감속", 2)]
     [SerializeField, Range(0f, 10f)] private float linearDamping;
 
-    [PlannerField("회전 저항", 3)]
+    [PlannerField("회전 감속", 3)]
     [SerializeField, Range(0f, 10f)] private float angularDamping = 0.05f;
 
     [PlannerField("마찰", 4)]
@@ -23,11 +23,11 @@ public class PhysicsProp : SizedProp
     [PlannerField("튕김", 5)]
     [SerializeField, Range(0f, 1f)] private float bounciness;
 
-    [PlannerField("회전 고정", 6)]
+    [PlannerField("회전 잠금", 6)]
     [SerializeField] private bool freezeRotation;
 
     [PlannerField("물에 뜨는 정도", 7)]
-    [Tooltip("0 이면 가라앉고 1 이면 물 기본값만큼 뜬다. 질량과 상관없이 조절된다.")]
+    [Tooltip("0이면 가라앉고 1이면 물의 기본 부력만큼 떠요. 무게와 상관없이 적용돼요.")]
     [SerializeField, Range(0f, 3f)] private float floatFactor = 1f;
 
     private PhysicsMaterial2D runtimeMaterial;
@@ -71,12 +71,12 @@ public class PhysicsProp : SizedProp
 
         if (mass <= 0f)
         {
-            report.Error($"{name}: 질량은 0보다 커야 합니다.", this);
+            report.Error($"{name}: 무게는 0보다 커야 해요.", this);
         }
 
         if (GetComponentsInChildren<Collider2D>(true).Length == 0)
         {
-            report.Error($"{name}: 콜라이더가 없어 다른 물체와 부딪히지 않습니다.", this);
+            report.Error($"{name}: 콜라이더가 없어서 다른 물체와 부딪히지 않아요.", this);
         }
     }
 

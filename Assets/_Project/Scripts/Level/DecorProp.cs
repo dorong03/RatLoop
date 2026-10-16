@@ -42,7 +42,7 @@ public class DecorProp : SizedProp
         {
             if (!col.isTrigger)
             {
-                report.Warning($"{name}: 장식 프롭에 콜라이더가 있습니다. Decoration 레이어라 충돌하지는 않습니다.", this);
+                report.Warning($"{name}: 장식 프롭에 콜라이더가 있어요. Decoration 레이어라서 부딪히지는 않아요.", this);
                 break;
             }
         }

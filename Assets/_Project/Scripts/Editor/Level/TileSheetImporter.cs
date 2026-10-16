@@ -25,7 +25,7 @@ public static class TileSheetImporter
                 total += Process(AssetDatabase.GetAssetPath(obj), DefaultCellSize);
             }
         }
-        EditorUtility.DisplayDialog("타일 만들기", $"타일 {total}개를 만들었습니다.", "확인");
+        EditorUtility.DisplayDialog("타일 만들기", $"타일 {total}개를 만들었어요.", "확인");
     }
 
     [MenuItem("RatLoop/타일/선택한 이미지로 타일 만들기", true)]
@@ -70,7 +70,7 @@ public static class TileSheetImporter
             string error = AssetDatabase.MoveAsset(assetPath, target);
             if (!string.IsNullOrEmpty(error))
             {
-                Debug.LogError("타일 이미지를 옮기지 못했습니다: " + error);
+                Debug.LogError("타일 이미지를 옮기지 못했어요: " + error);
                 return 0;
             }
             assetPath = target;

@@ -3,19 +3,32 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-// 새 프롭 만들기 (코드 없이 이미지로 프롭 추가)
-// 이미지와 종류만 고르면 프리팹, 콜라이더, 레이어, 카탈로그 등록까지 자동으로 한다.
+// 새 프롭 만들기 (코드 없이 그림으로 프롭 추가)
+// 그림과 종류만 고르면 프리팹, 콜라이더, 레이어, 카탈로그 등록까지 자동으로 한다.
 // 한 장짜리 그림을 쓰거나, 칸으로 나뉜 이미지에서 여러 칸을 끌어서 골라 하나의 프롭(예: 책)으로 만들 수 있다.
 // 특수한 동작이 필요한 기믹은 개발자가 LevelProp 을 상속해 만든다. (Docs/AddingContent.md)
+//
+// 화면: 위 제목 → 스크롤되는 단계 카드(그림, 이름과 종류, 부딪히는 모양) → 바닥 줄(취소, 만들기)
 public class NewPropWindow : EditorWindow
 {
     private enum Kind { Physics, Static, Decoration }
     private enum Shape { Box, Circle }
     private enum Source { Single, Sheet }
 
-    private static readonly string[] KindLabels = { "물리 프롭 (밀고 쌓기)", "고정 프롭 (밟는 발판)", "장식 (통과)" };
+    private static readonly GUIContent[] KindLabels =
+    {
+        new GUIContent("물리 프롭", "밀거나 쌓을 수 있어요. 무게가 있어요."),
+        new GUIContent("고정 프롭", "밟을 수 있고 움직이지 않아요."),
+        new GUIContent("장식", "부딪히지 않고 지나가요.")
+    };
+    private static readonly string[] KindHelp =
+    {
+        "밀거나 쌓을 수 있는 물체예요. 박스, 공, 책 같은 것에 써요.",
+        "밟을 수 있고 움직이지 않는 발판이에요. 버스, 선반 같은 것에 써요.",
+        "부딪히지 않고 지나가는 그림이에요. 벽시계, 포스터 같은 것에 써요."
+    };
     private static readonly string[] ShapeLabels = { "사각형", "원" };
-    private static readonly string[] SourceLabels = { "한 장 그림", "이미지에서 여러 칸 고르기" };
+    private static readonly string[] SourceLabels = { "한 장짜리 그림", "여러 칸을 묶은 그림" };
     private static readonly float[] ZoomValues = { 1f, 2f, 3f, 4f };
     private static readonly string[] ZoomLabels = { "작게", "보통", "크게", "아주 크게" };
     private const string PropsFolder = "Assets/_Project/Prefabs/Props/Custom";
@@ -36,6 +49,7 @@ public class NewPropWindow : EditorWindow
     private float mass = 3f;
     private string description = "";
     private System.Action<string> onCreated;
+    private Vector2 bodyScroll;
 
     // 여러 칸 고르기
     private Texture2D sheet;
@@ -51,76 +65,126 @@ public class NewPropWindow : EditorWindow
     public static void Open(System.Action<string> created)
     {
         var w = GetWindow<NewPropWindow>(true, "새 프롭 만들기", true);
-        w.minSize = new Vector2(400f, 520f);
-        w.maxSize = new Vector2(1200f, 1000f);
+        w.minSize = new Vector2(420f, 520f);
+        w.maxSize = new Vector2(1400f, 1200f);
+        if (w.position.width < 480f || w.position.height < 640f)
+        {
+            Rect p = w.position;
+            p.size = new Vector2(Mathf.Max(p.width, 480f), Mathf.Max(p.height, 680f));
+            w.position = p;
+        }
         w.onCreated = created;
     }
 
     private void OnGUI()
     {
-        EditorGUILayout.Space(6);
-        EditorGUILayout.LabelField("1. 이미지", EditorStyles.boldLabel);
-        Source newSource = (Source)GUILayout.Toolbar((int)source, SourceLabels, GUILayout.Height(22));
-        if (newSource != source)
+        EditorGUILayout.Space(8);
+        using (new EditorGUILayout.HorizontalScope())
         {
-            source = newSource;
-            ResizeForSource();
+            GUILayout.Space(6);
+            using (new EditorGUILayout.VerticalScope())
+            {
+                GUILayout.Label("새 프롭 만들기", EditorUI.Title);
+                GUILayout.Label("그림을 고르고 종류를 정하면 프롭 팔레트에 바로 추가돼요.", EditorUI.Caption);
+            }
         }
+        EditorGUILayout.Space(4);
 
-        if (source == Source.Single)
-        {
-            DrawSingleImage();
-        }
-        else
-        {
-            DrawSheetImage();
-        }
-
-        EditorGUILayout.Space(6);
-        EditorGUILayout.LabelField("2. 이름과 종류", EditorStyles.boldLabel);
-        displayName = EditorGUILayout.TextField("이름", displayName);
-        kind = (Kind)GUILayout.SelectionGrid((int)kind, KindLabels, 1);
+        bodyScroll = EditorGUILayout.BeginScrollView(bodyScroll);
+        DrawImageStep();
+        DrawKindStep();
         if (kind != Kind.Decoration)
         {
-            shape = (Shape)GUILayout.Toolbar((int)shape, ShapeLabels);
-            EditorGUILayout.LabelField("부딪히는 모양입니다. 둥근 물건은 '원'을 고르세요.", EditorStyles.miniLabel);
+            DrawShapeStep();
         }
-        if (kind == Kind.Physics)
-        {
-            mass = EditorGUILayout.Slider("무게", mass, 0.5f, 100f);
-            EditorGUILayout.LabelField("크기, 마찰, 튕김, 물에 뜨는 정도는 만든 뒤 '선택·이동'에서 바꿀 수 있습니다.", EditorStyles.wordWrappedMiniLabel);
-        }
-        description = EditorGUILayout.TextField("설명 (선택)", description);
+        EditorGUILayout.Space(8);
+        EditorGUILayout.EndScrollView();
 
-        EditorGUILayout.Space(10);
+        // 만들기 버튼은 내용이 길어져도 항상 보이도록 바닥 줄에 둔다.
         string problem = Problem();
-        if (problem != null)
+        EditorUI.FooterBar(() =>
         {
-            EditorGUILayout.HelpBox(problem, MessageType.Info);
-        }
-        using (new EditorGUI.DisabledScope(problem != null))
-        {
-            if (GUILayout.Button("만들기", GUILayout.Height(30)))
+            using (new EditorGUILayout.HorizontalScope())
             {
-                string id = Create();
-                if (id != null)
+                GUILayout.Label(problem ?? "준비됐어요. 만들면 팔레트에서 바로 고른 상태가 돼요.", EditorUI.Caption);
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button("취소", GUILayout.Width(64), GUILayout.Height(26)))
                 {
-                    onCreated?.Invoke(id);
                     Close();
+                    GUIUtility.ExitGUI();
                 }
-                GUIUtility.ExitGUI();
+                using (new EditorGUI.DisabledScope(problem != null))
+                {
+                    if (EditorUI.Button("만들기", EditorUI.ButtonKind.Primary, GUILayout.Width(88), GUILayout.Height(26)))
+                    {
+                        string id = Create();
+                        if (id != null)
+                        {
+                            onCreated?.Invoke(id);
+                            Close();
+                        }
+                        GUIUtility.ExitGUI();
+                    }
+                }
+            }
+        });
+    }
+
+    // ---------------------------------------------------------------- 단계 카드
+
+    private void DrawImageStep()
+    {
+        EditorUI.Header("1. 그림");
+        using (EditorUI.CardScope())
+        {
+            Source newSource = (Source)GUILayout.Toolbar((int)source, SourceLabels, GUILayout.Height(24));
+            if (newSource != source)
+            {
+                source = newSource;
+                GUI.FocusControl(null);
+            }
+            EditorGUILayout.Space(4);
+            if (source == Source.Single)
+            {
+                DrawSingleImage();
+            }
+            else
+            {
+                DrawSheetImage();
             }
         }
     }
 
-    private void ResizeForSource()
+    private void DrawKindStep()
     {
-        Rect p = position;
-        p.size = source == Source.Sheet ? new Vector2(Mathf.Max(p.width, 520f), Mathf.Max(p.height, 760f)) : new Vector2(400f, 520f);
-        position = p;
+        EditorUI.Header("2. 이름과 종류");
+        using (EditorUI.CardScope())
+        {
+            displayName = EditorUI.TextField(displayName, "팔레트에 보일 이름");
+            description = EditorUI.TextField(description, "설명 (선택) · 팔레트에서 마우스를 올리면 보여요");
+            EditorGUILayout.Space(4);
+            kind = (Kind)GUILayout.Toolbar((int)kind, KindLabels, GUILayout.Height(24));
+            GUILayout.Label(KindHelp[(int)kind], EditorUI.Caption);
+        }
     }
 
-    // ---------------------------------------------------------------- 한 장 그림
+    private void DrawShapeStep()
+    {
+        EditorUI.Header(kind == Kind.Physics ? "3. 부딪히는 모양과 무게" : "3. 부딪히는 모양");
+        using (EditorUI.CardScope())
+        {
+            shape = (Shape)GUILayout.Toolbar((int)shape, ShapeLabels, GUILayout.Height(22));
+            GUILayout.Label("모양은 그림의 불투명한 부분에 맞춰져요. 둥근 물건은 원을 골라 주세요.", EditorUI.Caption);
+            if (kind == Kind.Physics)
+            {
+                EditorGUILayout.Space(4);
+                mass = EditorGUILayout.Slider("무게", mass, 0.5f, 100f);
+                GUILayout.Label("크기, 마찰, 튕김 같은 값은 만든 뒤 '선택' 탭의 공통 설정에서 바꿀 수 있어요.", EditorUI.Caption);
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------- 한 장짜리 그림
 
     private void DrawSingleImage()
     {
@@ -129,10 +193,10 @@ public class NewPropWindow : EditorWindow
             sprite = (Sprite)EditorGUILayout.ObjectField(sprite, typeof(Sprite), false, GUILayout.Width(72), GUILayout.Height(72));
             using (new EditorGUILayout.VerticalScope())
             {
-                EditorGUILayout.LabelField("프로젝트의 스프라이트를 끌어 놓거나,", EditorStyles.miniLabel);
-                if (GUILayout.Button("컴퓨터에서 PNG 고르기..."))
+                GUILayout.Label("프로젝트 창의 스프라이트를 왼쪽 칸에 끌어 놓거나, PC에서 PNG를 불러오세요.", EditorUI.Caption);
+                if (GUILayout.Button("PC에서 PNG 불러오기…"))
                 {
-                    string path = EditorUtility.OpenFilePanel("프롭 이미지", "", "png");
+                    string path = EditorUtility.OpenFilePanel("프롭 그림 고르기 (PNG)", "", "png");
                     if (!string.IsNullOrEmpty(path))
                     {
                         sprite = ImportSprite(path);
@@ -143,17 +207,18 @@ public class NewPropWindow : EditorWindow
                 if (sprite != null)
                 {
                     Vector2 size = sprite.bounds.size;
-                    EditorGUILayout.LabelField($"크기: {size.x:0.##} x {size.y:0.##} 칸", EditorStyles.miniLabel);
+                    GUILayout.Label($"크기 {size.x:0.##} × {size.y:0.##}칸", EditorStyles.miniBoldLabel);
                 }
             }
         }
     }
 
-    // ---------------------------------------------------------------- 여러 칸 고르기
+    // ---------------------------------------------------------------- 여러 칸을 묶은 그림
 
     private void DrawSheetImage()
     {
-        EditorGUILayout.LabelField("여러 칸으로 나뉜 그림(예: 책 세 칸)을 끌어서 고르면 고른 모양 그대로 하나의 프롭이 됩니다.", EditorStyles.wordWrappedMiniLabel);
+        GUILayout.Label("책처럼 여러 칸으로 그려진 그림을 끌어서 고르면, 고른 모양 그대로 하나의 프롭이 돼요.", EditorUI.Caption);
+        EditorGUILayout.Space(2);
         using (new EditorGUILayout.HorizontalScope())
         {
             EditorGUI.BeginChangeCheck();
@@ -164,17 +229,22 @@ public class NewPropWindow : EditorWindow
             }
             using (new EditorGUILayout.VerticalScope())
             {
-                EditorGUILayout.LabelField("프로젝트의 이미지를 끌어 놓거나,", EditorStyles.miniLabel);
-                cellSize = Mathf.Clamp(EditorGUILayout.IntField("칸 크기 (픽셀)", cellSize), 4, 256);
-                if (GUILayout.Button("컴퓨터에서 PNG 고르기..."))
+                GUILayout.Label("프로젝트 창의 이미지를 왼쪽 칸에 끌어 놓거나, PC에서 PNG를 불러오세요.", EditorUI.Caption);
+                using (new EditorGUILayout.HorizontalScope())
                 {
-                    string path = EditorUtility.OpenFilePanel("프롭 이미지 (여러 칸)", "", "png");
-                    if (!string.IsNullOrEmpty(path))
+                    if (GUILayout.Button("PC에서 PNG 불러오기…"))
                     {
-                        SetSheet(ImportSheet(path, cellSize));
-                        SuggestName(Path.GetFileNameWithoutExtension(path));
+                        string path = EditorUtility.OpenFilePanel("프롭 그림 고르기 (여러 칸, PNG)", "", "png");
+                        if (!string.IsNullOrEmpty(path))
+                        {
+                            SetSheet(ImportSheet(path, cellSize));
+                            SuggestName(Path.GetFileNameWithoutExtension(path));
+                        }
+                        GUIUtility.ExitGUI();
                     }
-                    GUIUtility.ExitGUI();
+                    GUILayout.Label("한 칸", EditorStyles.miniLabel, GUILayout.Width(28));
+                    cellSize = Mathf.Clamp(EditorGUILayout.IntField(cellSize, GUILayout.Width(36)), 4, 256);
+                    GUILayout.Label("픽셀", EditorStyles.miniLabel, GUILayout.Width(28));
                 }
             }
         }
@@ -186,8 +256,8 @@ public class NewPropWindow : EditorWindow
 
         if (sheetSprites.Count == 0)
         {
-            EditorGUILayout.HelpBox("이 이미지는 아직 칸으로 나뉘어 있지 않습니다. 원본은 그대로 두고, 복사본을 만들어 칸 크기대로 나눕니다.", MessageType.Info);
-            if (GUILayout.Button("복사본을 만들어 칸으로 나누기"))
+            EditorGUILayout.HelpBox("아직 칸으로 나뉘지 않은 이미지예요. 원본은 그대로 두고, 복사본을 만들어 칸 크기대로 나눌게요.", MessageType.Info);
+            if (GUILayout.Button("복사본 만들어 나누기"))
             {
                 SetSheet(ImportSheet(Path.GetFullPath(AssetDatabase.GetAssetPath(sheet)), cellSize));
                 GUIUtility.ExitGUI();
@@ -195,16 +265,18 @@ public class NewPropWindow : EditorWindow
             return;
         }
 
+        EditorGUILayout.Space(4);
         using (new EditorGUILayout.HorizontalScope())
         {
-            EditorGUILayout.LabelField("칸을 클릭하거나 끌어서 고르세요.", EditorStyles.miniLabel);
+            GUILayout.Label("칸을 클릭하거나, 끌어서 여러 칸을 함께 골라요.", EditorUI.Caption);
+            GUILayout.FlexibleSpace();
             zoomIndex = EditorGUILayout.Popup(zoomIndex, ZoomLabels, GUILayout.Width(80));
         }
 
         // 한 칸이 24, 48, 72, 96 픽셀로 보이게 한다.
         float scale = ZoomValues[zoomIndex] * 24f / Mathf.Max(1, cellSize);
         float w = sheet.width * scale, h = sheet.height * scale;
-        sheetScroll = EditorGUILayout.BeginScrollView(sheetScroll, true, true, GUILayout.Height(240));
+        sheetScroll = EditorGUILayout.BeginScrollView(sheetScroll, GUILayout.Height(Mathf.Clamp(h + 18f, 80f, 260f)));
         Rect area = GUILayoutUtility.GetRect(w, h, GUILayout.Width(w), GUILayout.Height(h));
         HandleSheetMouse(area, scale);
         DrawSheet(area, scale);
@@ -213,7 +285,8 @@ public class NewPropWindow : EditorWindow
         if (selectedSprites.Count > 0)
         {
             Vector2 size = PiecesBounds(BuildPieces()).size;
-            EditorGUILayout.LabelField($"선택: 조각 {selectedSprites.Count}개, 크기 {size.x:0.##} x {size.y:0.##} 칸", EditorStyles.miniBoldLabel);
+            EditorGUILayout.Space(4);
+            GUILayout.Label($"미리 보기 · 조각 {selectedSprites.Count}개 · {size.x:0.##} × {size.y:0.##}칸", EditorStyles.miniBoldLabel);
             DrawSelectionPreview();
         }
     }
@@ -371,9 +444,9 @@ public class NewPropWindow : EditorWindow
 
     private string Problem()
     {
-        if (source == Source.Single && sprite == null) return "이미지를 골라주세요.";
-        if (source == Source.Sheet && selectedSprites.Count == 0) return "이미지에서 프롭으로 쓸 칸을 골라주세요.";
-        if (string.IsNullOrWhiteSpace(displayName)) return "이름을 써주세요.";
+        if (source == Source.Single && sprite == null) return "그림을 골라 주세요.";
+        if (source == Source.Sheet && selectedSprites.Count == 0) return "프롭으로 쓸 칸을 골라 주세요.";
+        if (string.IsNullOrWhiteSpace(displayName)) return "이름을 입력해 주세요.";
         return null;
     }
 
@@ -535,7 +608,7 @@ public class NewPropWindow : EditorWindow
         PropCatalog catalog = LevelEditorTools.Catalog;
         if (catalog == null)
         {
-            EditorUtility.DisplayDialog("새 프롭 만들기", "PropCatalog 에셋을 찾을 수 없습니다.", "확인");
+            EditorUtility.DisplayDialog("새 프롭 만들기", "PropCatalog 에셋을 찾을 수 없어요.", "확인");
             return null;
         }
 

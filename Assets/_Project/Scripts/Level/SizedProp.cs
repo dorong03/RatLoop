@@ -6,7 +6,7 @@ using UnityEngine;
 public abstract class SizedProp : LevelProp
 {
     [PlannerField("크기", -100)]
-    [Tooltip("1 이 원래 크기. 그림과 부딪히는 모양이 함께 커지고 작아진다.")]
+    [Tooltip("1이 원래 크기예요. 그림과 부딪히는 모양이 함께 커지고 작아져요.")]
     [SerializeField, Range(0.25f, 4f)] private float size = 1f;
 
     // 크기 1 일 때의 오브젝트 크기 (프리팹을 만들 때의 크기)
@@ -49,7 +49,7 @@ public abstract class SizedProp : LevelProp
     {
         if (size <= 0f)
         {
-            report.Error($"{name}: 크기는 0보다 커야 합니다.", this);
+            report.Error($"{name}: 크기는 0보다 커야 해요.", this);
         }
     }
 }
