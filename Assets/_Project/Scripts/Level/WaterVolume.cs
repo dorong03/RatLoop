@@ -46,6 +46,10 @@ public class WaterVolume : LevelProp, IAreaProp
     [PlannerField("물살 세기", 6)]
     [SerializeField, Range(0f, 50f)] private float flowStrength;
 
+    [PlannerField("빠지는 깊이", 9)]
+    [Tooltip("몸이 이 비율 이상 물에 잠겨야 빠진 것으로 본다. 물가에 살짝 걸친 정도로는 빠지지 않는다.")]
+    [SerializeField, Range(0.05f, 1f)] private float enterDepth = 0.35f;
+
     [PlannerField("플레이어 익사 시간(초)", 7)]
     [Tooltip("0 이면 빠져도 죽지 않는다.")]
     [SerializeField, Range(0f, 10f)] private float drownTime = 3f;
@@ -68,6 +72,9 @@ public class WaterVolume : LevelProp, IAreaProp
     private readonly HashSet<int> splashedObjects = new HashSet<int>();
     private BoxCollider2D area;
     private bool isPlayerInWater;
+    // 트리거에 닿았지만 아직 충분히 잠기지 않은 캐릭터 (물가에 살짝 걸친 상태)
+    private readonly HashSet<Collider2D> touching = new HashSet<Collider2D>();
+    private readonly HashSet<Rigidbody2D> drownedGhosts = new HashSet<Rigidbody2D>();
     private int playerEnterCount;
     private Coroutine exitGraceCoroutine;
 
@@ -220,6 +227,8 @@ public class WaterVolume : LevelProp, IAreaProp
             return;
         }
 
+        CheckCharactersEntering();
+
         CollectBodies();
         if (bodies.Count == 0)
         {
@@ -295,13 +304,47 @@ public class WaterVolume : LevelProp, IAreaProp
             return;
         }
 
-        if (other.CompareTag(PlayerTag))
+        if (other.CompareTag(PlayerTag) || other.CompareTag(GhostTag))
         {
-            OnPlayerEnter(other);
+            touching.Add(other);
         }
-        else if (other.CompareTag(GhostTag))
+    }
+
+    // 몸이 충분히 잠기고(빠지는 깊이 이상) 몸 중심이 물 영역 안에 있을 때만 빠진 것으로 본다.
+    // 예전 WaterBlock 처럼 물가 땅에 서서 살짝 걸친 것만으로는 빠지지 않는다.
+    private void CheckCharactersEntering()
+    {
+        if (touching.Count == 0)
         {
-            OnGhostEnter(other);
+            return;
+        }
+
+        touching.RemoveWhere(c => c == null);
+        float surfaceY = SurfaceY;
+        Bounds areaBounds = GetComponent<BoxCollider2D>().bounds;
+        foreach (Collider2D other in touching)
+        {
+            Rigidbody2D rb = other.attachedRigidbody;
+            if (rb == null)
+            {
+                continue;
+            }
+
+            bool centerInside = rb.worldCenterOfMass.x > areaBounds.min.x && rb.worldCenterOfMass.x < areaBounds.max.x;
+            bool deepEnough = GetSubmergedFraction(rb, surfaceY) >= enterDepth;
+            if (!centerInside || !deepEnough)
+            {
+                continue;
+            }
+
+            if (other.CompareTag(PlayerTag))
+            {
+                OnPlayerEnter(other);
+            }
+            else if (drownedGhosts.Add(rb))
+            {
+                OnGhostEnter(other);
+            }
         }
     }
 
@@ -312,7 +355,8 @@ public class WaterVolume : LevelProp, IAreaProp
             return;
         }
 
-        if (other.CompareTag(PlayerTag) && gameObject.activeInHierarchy)
+        touching.Remove(other);
+        if (other.CompareTag(PlayerTag) && isPlayerInWater && gameObject.activeInHierarchy)
         {
             exitGraceCoroutine = StartCoroutine(ExitGraceRoutine(other));
         }
@@ -342,6 +386,12 @@ public class WaterVolume : LevelProp, IAreaProp
         }
         SetPlayerControl(other, false);
         PlaySplashOnce(other);
+        // 고스트와 같이 물에 빠지면 사망 애니메이션을 보여준다.
+        Animator animator = other.GetComponent<Animator>();
+        if (animator != null && drownTime > 0f)
+        {
+            animator.SetTrigger("Die");
+        }
 
         if (drownTime > 0f)
         {
@@ -365,6 +415,14 @@ public class WaterVolume : LevelProp, IAreaProp
         if (other != null)
         {
             SetPlayerControl(other, true);
+            // 물살 등으로 밖으로 밀려나 살아난 경우 사망 애니메이션을 되돌린다.
+            Animator animator = other.GetComponent<Animator>();
+            if (animator != null)
+            {
+                animator.ResetTrigger("Die");
+                animator.Rebind();
+                animator.Update(0f);
+            }
         }
         exitGraceCoroutine = null;
     }

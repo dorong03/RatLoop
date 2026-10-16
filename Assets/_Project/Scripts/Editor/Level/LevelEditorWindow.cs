@@ -183,6 +183,7 @@ public partial class LevelEditorWindow : EditorWindow
         }
 
         DrawHeader(level);
+        DrawNotInListBanner(level);
         DrawStatusAndSettings(level);
         DrawModeToolbar();
 
@@ -251,6 +252,30 @@ public partial class LevelEditorWindow : EditorWindow
                 GUIUtility.ExitGUI();
             }
             EditorGUILayout.LabelField("바닥, 시작 위치, 치즈가 들어 있는 상태로 시작하고 목록 맨 뒤에 추가됩니다.", EditorStyles.miniLabel);
+        }
+
+        EditorGUILayout.Space(12);
+        EditorGUILayout.LabelField("테스트용 진행도 (이 컴퓨터에만 저장)", cardTitleStyle);
+        using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+        {
+            int unlocked = PlayerPrefs.GetInt("MaxClearLevelID", 1);
+            EditorGUILayout.LabelField($"지금 열린 스테이지: 1 ~ {Mathf.Min(unlocked, list.Count)}  (전체 {list.Count}개)", EditorStyles.miniLabel);
+            EditorGUILayout.LabelField("스테이지는 앞 스테이지를 클리어해야 열립니다. 새 레벨을 게임에서 바로 확인하려면 모두 열어 두세요.", EditorStyles.wordWrappedMiniLabel);
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("모든 스테이지 열기"))
+                {
+                    PlayerPrefs.SetInt("MaxClearLevelID", Mathf.Max(1, list.Count));
+                    PlayerPrefs.Save();
+                    ShowNotification(new GUIContent("모든 스테이지를 열었습니다"));
+                }
+                if (GUILayout.Button("진행 초기화"))
+                {
+                    PlayerPrefs.SetInt("MaxClearLevelID", 1);
+                    PlayerPrefs.Save();
+                    ShowNotification(new GUIContent("1스테이지만 열린 상태로 돌렸습니다"));
+                }
+            }
         }
         EditorGUILayout.EndScrollView();
     }
@@ -356,6 +381,27 @@ public partial class LevelEditorWindow : EditorWindow
                 RequestTestPlay();
             }
             GUI.backgroundColor = Color.white;
+        }
+    }
+
+    // 게임 목록에 없는 레벨은 스테이지 선택 화면에 나오지 않으므로 알려주고 바로 추가할 수 있게 한다.
+    private void DrawNotInListBanner(LevelRoot level)
+    {
+        LevelList list = LevelEditorTools.LevelList;
+        var asset = AssetDatabase.LoadAssetAtPath<LevelRoot>(LevelEditorTools.CurrentLevelPath);
+        if (list == null || asset == null || list.IndexOf(asset) >= 0)
+        {
+            return;
+        }
+
+        using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
+        {
+            GUILayout.Label("이 레벨은 게임 목록에 없어서 스테이지 선택 화면에 나오지 않습니다.", EditorStyles.wordWrappedMiniLabel);
+            if (GUILayout.Button("게임 목록에 추가", GUILayout.Width(110), GUILayout.Height(22)))
+            {
+                LevelEditorTools.AddToList(asset);
+                ShowNotification(new GUIContent($"스테이지 {list.Count}(으)로 추가했습니다"));
+            }
         }
     }
 
@@ -575,7 +621,7 @@ public partial class LevelEditorWindow : EditorWindow
             }
             else if (prop is IAreaProp)
             {
-                EditorGUILayout.LabelField("크기는 위 칸 수를 바꾸거나 씬 화면의 손잡이를 끌어서 바꿉니다.", EditorStyles.miniLabel);
+                EditorGUILayout.HelpBox("크기: 위 '가로/세로 칸 수'를 바꾸거나, 씬 화면에서 오른쪽 점(가로), 위쪽 점(세로), 오른쪽 위 네모(둘 다)를 끌어서 바꿉니다.", MessageType.None);
             }
 
             var r = new PropValidationReport();

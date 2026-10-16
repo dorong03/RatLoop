@@ -44,6 +44,7 @@ public partial class LevelEditorWindow
 
         if (tool == SceneTool.None)
         {
+            DrawSelectedAreaHandles(level);
             return;
         }
 
@@ -315,6 +316,23 @@ public partial class LevelEditorWindow
             default:
                 return mode == Mode.Select || mode == Mode.Points ? "선택·이동   프롭을 클릭해 고르고 끌어서 옮깁니다" : null;
         }
+    }
+
+    // 물, 투명벽을 고르면 씬 화면에 크기 손잡이를 보여준다. (인스펙터 창이 없어도 동작)
+    // 오른쪽 점: 가로, 위쪽 점: 세로, 오른쪽 위 네모: 둘 다
+    private void DrawSelectedAreaHandles(LevelRoot level)
+    {
+        GameObject go = Selection.activeGameObject;
+        LevelProp prop = go != null ? go.GetComponentInParent<LevelProp>() : null;
+        if (prop == null || !(prop is IAreaProp area) || !prop.transform.IsChildOf(level.transform))
+        {
+            return;
+        }
+
+        Color color = prop is WaterVolume ? new Color(0.3f, 0.8f, 1f)
+            : (prop is InvisibleWall wall && wall.BlocksProps ? new Color(1f, 0.4f, 0.4f) : new Color(0.8f, 0.5f, 1f));
+        string label = prop is WaterVolume ? "물" : "투명벽";
+        AreaHandles.Draw(prop, area, color, label);
     }
 
     // 시작 위치와 치즈를 항상 표시하고, 다른 도구가 꺼져 있을 때는 끌어서 옮길 수 있게 한다.

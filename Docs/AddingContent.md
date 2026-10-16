@@ -141,5 +141,5 @@ public class SpringProp : LevelProp
 - **`Awake` / `OnValidate`**: `LevelProp` 이 이미 쓰고 있으므로 직접 쓸 때는 `protected override` 로 만들고 `base.Awake()` / `base.OnValidate()` 를 먼저 부릅니다.
 - **에디터에서만 보여야 하는 것**: 예를 들어 투명벽 표시는 `OnDrawGizmos` 로 그립니다. 게임 화면에는 나오지 않습니다.
 - **칸 단위 영역 기믹**: 물이나 투명벽처럼 칸 수로 크기를 정하는 기믹은 `IAreaProp` 을 구현하고 `width`, `height` 필드를 둡니다.
-  그러면 팔레트에서 칸에 맞춰 놓이고, 크기 손잡이는 `AreaHandles.Draw` 로 붙일 수 있습니다. (`InvisibleWallEditor` 참고)
+  그러면 팔레트에서 칸에 맞춰 놓이고, 선택했을 때 레벨 에디터가 크기 손잡이(`AreaHandles`)를 자동으로 그립니다.
 - **새 물리 레이어**: 기존 레이어로 충돌 조합이 안 맞을 때만 추가합니다. 추가했다면 `PhysicsLayers` 상수와 충돌 매트릭스를 함께 고칩니다.
