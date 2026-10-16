@@ -211,6 +211,37 @@ public class NewPropWindow : EditorWindow
                 }
             }
         }
+        if (sprite != null && LooksLikeBackground(sprite.rect.width, sprite.rect.height))
+        {
+            EditorGUILayout.HelpBox(BackgroundNotice, MessageType.Warning);
+        }
+    }
+
+    // 방 전체 그림처럼 큰 그림은 프롭이 아니라 배경일 가능성이 높다.
+    private const string BackgroundNotice = "방 전체를 그린 배경 그림 같아요. 배경은 프롭이 아니라 레벨 에디터의 '레벨' 탭 > 배경에서 넣어요.";
+
+    private static bool LooksLikeBackground(float width, float height) => width >= 640f || height >= 360f;
+
+    // 큰 그림을 칸으로 나누기 전에 한 번 묻는다. (배경을 프롭으로 잘못 가져와 조각이 수천 개 생기는 것을 막는다)
+    private static bool ConfirmNotBackground(string pngPath)
+    {
+        byte[] header = new byte[24];
+        using (FileStream f = File.OpenRead(pngPath))
+        {
+            if (f.Read(header, 0, header.Length) < header.Length)
+            {
+                return true;
+            }
+        }
+        int width = (header[16] << 24) | (header[17] << 16) | (header[18] << 8) | header[19];
+        int height = (header[20] << 24) | (header[21] << 16) | (header[22] << 8) | header[23];
+        if (!LooksLikeBackground(width, height))
+        {
+            return true;
+        }
+        return EditorUtility.DisplayDialog("배경 그림 같아요",
+            $"{width} × {height}픽셀의 큰 그림이에요. 방 전체를 그린 배경이라면 레벨 에디터의 '레벨' 탭 > 배경에서 넣어 주세요.\n\n그래도 칸으로 나눠서 프롭을 만들까요?",
+            "나눠서 만들기", "취소");
     }
 
     // ---------------------------------------------------------------- 여러 칸을 묶은 그림
@@ -235,7 +266,7 @@ public class NewPropWindow : EditorWindow
                     if (GUILayout.Button("PC에서 PNG 불러오기…"))
                     {
                         string path = EditorUtility.OpenFilePanel("프롭 그림 고르기 (여러 칸, PNG)", "", "png");
-                        if (!string.IsNullOrEmpty(path))
+                        if (!string.IsNullOrEmpty(path) && ConfirmNotBackground(path))
                         {
                             SetSheet(ImportSheet(path, cellSize));
                             SuggestName(Path.GetFileNameWithoutExtension(path));
@@ -252,6 +283,11 @@ public class NewPropWindow : EditorWindow
         if (sheet == null)
         {
             return;
+        }
+
+        if (LooksLikeBackground(sheet.width, sheet.height))
+        {
+            EditorGUILayout.HelpBox(BackgroundNotice, MessageType.Warning);
         }
 
         if (sheetSprites.Count == 0)

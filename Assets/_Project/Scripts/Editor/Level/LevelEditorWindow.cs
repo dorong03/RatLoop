@@ -11,7 +11,7 @@ using UnityEngine;
 // 이 파일은 창 화면(UI)이고, 씬 화면에서 동작하는 도구는 LevelEditorWindow.Scene.cs 에 있다.
 public partial class LevelEditorWindow : EditorWindow
 {
-    private enum Mode { Select, Tiles, Props, Points, Check }
+    private enum Mode { Select, Tiles, Props, Points, Check, Level }
     private enum TileLayer { Ground, DecorationBack, DecorationFront }
     private enum Relocate { None, Spawn, Goal }
 
@@ -38,7 +38,6 @@ public partial class LevelEditorWindow : EditorWindow
     [SerializeField] private Mode mode;
     [SerializeField] private TileLayer tileLayer;
     [SerializeField] private int snapIndex = 1;
-    [SerializeField] private bool settingsOpen;
     [SerializeField] private bool progressOpen;
     [SerializeField] private bool eraser;
     [SerializeField] private bool showGrid = true;
@@ -88,6 +87,7 @@ public partial class LevelEditorWindow : EditorWindow
     {
         palette.Refresh();
         ghostCache.Clear();
+        backgroundSprites = null;
         Repaint();
     }
 
@@ -168,6 +168,7 @@ public partial class LevelEditorWindow : EditorWindow
             case Mode.Props: DrawPropsMode(); break;
             case Mode.Points: DrawPointsMode(level); break;
             case Mode.Check: DrawCheckMode(); break;
+            case Mode.Level: DrawLevelMode(level); break;
         }
         EditorGUILayout.Space(8);
         EditorGUILayout.EndScrollView();
@@ -418,7 +419,7 @@ public partial class LevelEditorWindow : EditorWindow
         return list != null && asset != null ? list.IndexOf(asset) : -1;
     }
 
-    // 레벨 하나에 대한 정보를 한곳에: 게임 목록 여부, 검사 결과, 레벨 설정
+    // 레벨 하나에 대한 정보를 한곳에: 게임 목록 여부, 검사 결과, 레벨 설정 요약 (바꾸는 곳은 레벨 탭)
     private void DrawLevelBar(LevelRoot level)
     {
         EditorGUILayout.Space(4);
@@ -430,23 +431,7 @@ public partial class LevelEditorWindow : EditorWindow
             DrawStatus();
             GUILayout.FlexibleSpace();
             string zoom = level.Zoom == LevelRoot.CameraZoom.Wide ? "넓게" : "보통";
-            var settingsLabel = new GUIContent($"레벨 설정 {(settingsOpen ? "▴" : "▾")}",
-                $"제한 시간 {level.TimeLimit}초 · 리플레이 {level.MaxReplayCount}회 · 카메라 {zoom}");
-            settingsOpen = GUILayout.Toggle(settingsOpen, settingsLabel, EditorStyles.miniButton, GUILayout.Width(80));
-        }
-
-        if (settingsOpen)
-        {
-            using (EditorUI.CardScope())
-            {
-                var so = new SerializedObject(level);
-                so.Update();
-                if (PlannerFieldUtility.DrawPlannerFields(so))
-                {
-                    MarkReportDirty();
-                }
-                so.ApplyModifiedProperties();
-            }
+            GUILayout.Label($"제한 {level.TimeLimit}초 · 리플레이 {level.MaxReplayCount}회 · 카메라 {zoom}", EditorStyles.miniLabel);
         }
         EditorGUILayout.Space(2);
     }
@@ -528,13 +513,16 @@ public partial class LevelEditorWindow : EditorWindow
 
     private void DrawModeTabs()
     {
+        // 창이 좁으면 아이콘을 빼고 글자만 보여준다.
+        bool icons = position.width >= 520f;
         var tabs = new[]
         {
-            EditorUI.Icon("MoveTool", "선택", "프롭을 골라 옮기고 설정을 바꿔요"),
-            EditorUI.Icon("Grid.PaintTool", "타일", "땅과 장식 타일을 칠해요"),
-            EditorUI.Icon("Prefab Icon", "프롭", "물체, 물, 로프, 투명벽을 놓아요"),
-            EditorUI.Icon("Favorite", "시작·치즈", "시작 위치와 치즈를 옮겨요"),
-            EditorUI.Icon("console.infoicon.sml", "검사", "레벨에 문제가 없는지 확인해요")
+            EditorUI.Icon(icons ? "MoveTool" : null, "선택", "프롭을 골라 옮기고 설정을 바꿔요"),
+            EditorUI.Icon(icons ? "Grid.PaintTool" : null, "타일", "땅과 장식 타일을 칠해요"),
+            EditorUI.Icon(icons ? "Prefab Icon" : null, "프롭", "물체, 물, 로프, 투명벽을 놓아요"),
+            EditorUI.Icon(icons ? "Favorite" : null, "시작·치즈", "시작 위치와 치즈를 옮겨요"),
+            EditorUI.Icon(icons ? "console.infoicon.sml" : null, "검사", "레벨에 문제가 없는지 확인해요"),
+            EditorUI.Icon(icons ? "Settings" : null, "레벨", "레벨 이름, 제한 시간, 배경을 바꿔요")
         };
         Mode newMode = (Mode)GUILayout.Toolbar((int)mode, tabs, GUILayout.Height(28));
         if (newMode != mode)
@@ -585,6 +573,8 @@ public partial class LevelEditorWindow : EditorWindow
                     : "'클릭해서 옮기기'를 누르거나 씬 화면의 원을 끌어서 옮겨요.";
             case Mode.Check:
                 return "빨간 오류가 있으면 테스트 플레이를 할 수 없어요. 노란 경고는 확인만 하면 돼요.";
+            case Mode.Level:
+                return "레벨 전체에 적용되는 설정이에요. 배경 그림은 누르면 바로 바뀌어요.";
             default:
                 return "씬 화면에서 프롭을 클릭해서 고르고 끌어서 옮겨요 · W 이동 · E 회전";
         }
